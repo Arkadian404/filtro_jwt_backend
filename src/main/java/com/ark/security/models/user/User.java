@@ -38,6 +38,7 @@ public class User implements UserDetails {
     private String phone;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private Boolean enabled;
 
     @OneToMany(mappedBy = "user")
     @JsonBackReference
@@ -88,4 +89,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FlavorRepository extends JpaRepository<Flavor, Integer> {
 
+
+    boolean existsFlavorByName(String name);
+
     @Modifying
     @Query("""
     update Flavor f set f.status=false where f.id=:id

@@ -1,12 +1,18 @@
 package com.ark.security.controller.admin;
 
+import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Employee;
 import com.ark.security.models.user.User;
 import com.ark.security.service.EmployeeService;
+import com.ark.security.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping ("/api/v1/admin/employee")
@@ -18,58 +24,51 @@ public class EmployeeController {
     @GetMapping("/getList")
     @PreAuthorize("hasAnyAuthority('employee:read', 'admin:read')")
     public ResponseEntity<?> getList(){
-        return ResponseEntity.ok(employeeService.getAllEmployees());
+        List<Employee> employees = employeeService.getAllEmployees();
+        return ResponseEntity.ok(employees);
     }
 
     @GetMapping("/find/{id}")
     @PreAuthorize("hasAnyAuthority('employee:read', 'admin:read')")
     public ResponseEntity<?> find(@PathVariable int id){
         Employee emp = employeeService.getEmployeeById(id);
-        if(emp == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy nhân viên: "+ id);
-        }
         return ResponseEntity.ok(emp);
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('employee:create', 'admin:create')")
     public ResponseEntity<?> create(@RequestBody Employee employee){
-        if(employee == null){
-            return ResponseEntity.badRequest().body("Nhân viên không được trống");
-        }
-        if(employee.getUser() == null){
-            return ResponseEntity.badRequest().body("Tài khoản không được trống");
-        }
         employeeService.saveEmployee(employee, employee.getUser());
-        return ResponseEntity.ok("Tạo nhân viên thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Tạo nhân viên thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('employee:update', 'admin:update')")
     public ResponseEntity<?> update(@PathVariable int id,
                                     @RequestBody Employee employee){
-        Employee oldEmployee = employeeService.getEmployeeById(id);
-        if(oldEmployee == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy nhân viên: "+ id);
-        }
-        if(employee == null){
-            return ResponseEntity.badRequest().body("Nhân viên không được trống");
-        }
-        if(employee.getUser() == null){
-            return ResponseEntity.badRequest().body("Tài khoản không được trống");
-        }
         employeeService.updateEmployee(id, employee, employee.getUser());
-        return ResponseEntity.ok("Cập nhật nhân viên thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Cập nhật nhân viên thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAnyAuthority('employee:delete', 'admin:delete')")
+    @PreAuthorize("hasAuthority('admin:delete')")
     public ResponseEntity<?> delete(@PathVariable int id){
-        Employee employee = employeeService.getEmployeeById(id);
-        if(employee == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy nhân viên: "+id);
-        }
         employeeService.deleteEmployee(id);
-        return ResponseEntity.ok("Xóa nhân viên thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Xóa nhân viên thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 }

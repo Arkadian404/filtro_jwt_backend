@@ -1,12 +1,17 @@
 package com.ark.security.controller.admin;
 
+import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.user.Role;
 import com.ark.security.models.user.User;
 import com.ark.security.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping ("/api/v1/admin/user")
@@ -18,53 +23,52 @@ public class UserController {
     @GetMapping("/getList")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getList(){
-        return ResponseEntity.ok(userService.getUsersByRole(Role.USER));
+        List<User> users = userService.getUsersByRole(Role.USER);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/find/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> find(@PathVariable int id){
         User user = userService.getUserById(id);
-        if(user == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy người dùng: "+id);
-        }
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
     public ResponseEntity<?> create(@RequestBody User user){
-        if(user == null){
-            return ResponseEntity.badRequest().body("Tài khoản không được trống");
-        }
         userService.saveUser(user);
-        return ResponseEntity.ok("Tạo tài khoản thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Tạo tài khoản thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
     public ResponseEntity<?> update(@PathVariable int id,
                                     @RequestBody User user){
-        User oldUser = userService.getUserById(id);
-        if(oldUser == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy tài khoản: "+ id);
-        }
-        if(user == null){
-            return ResponseEntity.badRequest().body("Tài khoản không được trống");
-        }
         userService.updateUser(id, user);
-        return ResponseEntity.ok("Cập nhật tài khoản thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Cập nhật tài khoản thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
+    @PreAuthorize("hasAuthority('admin:delete')")
     public ResponseEntity<?> delete(@PathVariable int id){
-        User user = userService.getUserById(id);
-        if(user == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy tài khoản: "+ id);
-        }
         userService.deleteUser(id);
-        return ResponseEntity.ok("Xóa tài khoản thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Xóa tài khoản thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
 }

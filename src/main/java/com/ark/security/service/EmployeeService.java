@@ -1,10 +1,15 @@
 package com.ark.security.service;
 
+import com.ark.security.exception.DuplicateException;
+import com.ark.security.exception.NotFoundException;
+import com.ark.security.exception.NullException;
 import com.ark.security.models.Employee;
+import com.ark.security.models.user.Role;
 import com.ark.security.models.user.User;
 import com.ark.security.repository.EmployeeRepository;
 import com.ark.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,40 +19,74 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class EmployeeService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final EmployeeRepository employeeRepository;
 
     public Employee getEmployeeById(Integer id){
-        return employeeRepository.findById(id).orElse(null);
+        return employeeRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy nhân viên: "+ id));
     }
 
     public List<Employee> getAllEmployees(){
-        return employeeRepository.findAll();
-    }
-
-    private void editEmp(User user, User newUser) {
-        newUser.setFirstname(user.getFirstname());
-        newUser.setLastname(user.getLastname());
-        newUser.setUsername(user.getUsername());
-        newUser.setEmail(user.getEmail());
-        newUser.setPassword(user.getPassword());
-        newUser.setRole(user.getRole());
-        newUser.setDob(user.getDob());
-        newUser.setAddress(user.getAddress());
-        newUser.setPhone(user.getPhone());
-        userRepository.save(newUser);
-    }
-
-    public void saveEmployee(Employee employee, User user ){
-        if(user!=null && employee!=null){
-            User newUser = new User();
-            editEmp(user, newUser);
-
-            Employee newEmployee = new Employee();
-            newEmployee.setStartOn(employee.getStartOn());
-            newEmployee.setUser(newUser);
-            employeeRepository.save(newEmployee);
-            userRepository.save(newUser);
+        List<Employee> employees = employeeRepository.findAll();
+        if(employees.isEmpty()){
+            throw new NotFoundException("Không có nhân viên nào");
         }
+        return employees;
+    }
+
+    private void addEmp(User newUser, User user) {
+        user.setFirstname(newUser.getFirstname());
+        user.setLastname(newUser.getLastname());
+        if(userRepository.existsUserByUsername(newUser.getUsername())){
+            throw new DuplicateException("Username đã tồn tại");
+        }else{
+            user.setUsername(newUser.getUsername());
+        }
+        if(userRepository.existsUserByEmail(newUser.getEmail())){
+            throw new DuplicateException("Email đã tồn tại");
+        }else{
+            user.setEmail(newUser.getEmail());
+        }
+        user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        user.setRole(newUser.getRole());
+        user.setDob(newUser.getDob());
+        user.setAddress(newUser.getAddress());
+        user.setPhone(newUser.getPhone());
+        user.setEnabled(newUser.getEnabled());
+        userRepository.save(user);
+    }
+
+
+    private void editEmp(User newUser, User user) {
+        user.setFirstname(newUser.getFirstname());
+        user.setLastname(newUser.getLastname());
+        user.setEmail(newUser.getEmail());
+        user.setDob(newUser.getDob());
+        user.setAddress(newUser.getAddress());
+        user.setPhone(newUser.getPhone());
+        user.setEnabled(newUser.getEnabled());
+        userRepository.save(user);
+    }
+
+    public void saveEmployee(Employee employee, User newUser ){
+        if(employee!=null){
+            if(newUser!=null){
+                User user = new User();
+                addEmp(newUser, user);
+
+                Employee newEmployee = new Employee();
+                newEmployee.setStartOn(employee.getStartOn());
+                newEmployee.setUser(user);
+                employeeRepository.save(newEmployee);
+                userRepository.save(user);
+
+            }else{
+                throw new NullException("Thông tin tài khoản không được để trống");
+            }
+        }else {
+            throw new NullException("Thông tin nhân viên không được để trống");
+        }
+
     }
 
 
@@ -58,13 +97,22 @@ public class EmployeeService {
             Employee oldEmployee = empOpt.get();
             User oldUser = oldEmployee.getUser();
             if(oldUser!=null){
-                editEmp(user, oldUser);
+                if(employee!=null){
+                    editEmp(user, oldUser);
 
-                oldEmployee.setStartOn(employee.getStartOn());
-                oldEmployee.setUser(oldUser);
-                employeeRepository.save(oldEmployee);
-                userRepository.save(oldUser);
+                    oldEmployee.setStartOn(employee.getStartOn());
+                    oldEmployee.setUser(oldUser);
+                    employeeRepository.save(oldEmployee);
+                    userRepository.save(oldUser);
+                }else {
+                    throw new NullException("Thông tin nhân viên không được để trống");
+                }
             }
+            else{
+                throw new NullException("Thông tin tài khoản không được để trống");
+            }
+        }else{
+            throw new NotFoundException("Không tìm thấy nhân viên: "+ id);
         }
     }
 
@@ -78,7 +126,7 @@ public class EmployeeService {
                 userRepository.delete(user);
             }
         } else{
-            throw new RuntimeException("Không tìm thấy nhân viên");
+            throw new NotFoundException("Không tìm thấy nhân viên: "+ id);
         }
     }
 

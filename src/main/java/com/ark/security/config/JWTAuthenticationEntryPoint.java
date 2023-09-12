@@ -1,5 +1,4 @@
 package com.ark.security.config;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,11 +10,12 @@ import java.io.IOException;
 
 @Component
 public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
-
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
         response.setContentType("application/json");
         response.getOutputStream().println("{ \"error\": \"" + authException.getMessage() + "\" }");
     }
+
+
 }

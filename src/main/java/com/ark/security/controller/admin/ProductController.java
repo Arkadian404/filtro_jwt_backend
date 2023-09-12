@@ -1,16 +1,21 @@
 package com.ark.security.controller.admin;
 
+import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Product;
 import com.ark.security.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/api/v1/admin/product")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -18,44 +23,53 @@ public class ProductController {
 
 
     @GetMapping("/getList")
-    @PreAuthorize("hasAuthority('admin:read')")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getProductList(){
-        return ResponseEntity.ok(productService.getAllProducts());
+        List<Product> productList = productService.getAllProducts();
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/find/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> find(@PathVariable int id){
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
     }
 
     @PostMapping("/create")
-    @PreAuthorize("hasAuthority('admin:create')")
+    @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
     public ResponseEntity<?> create(@RequestBody Product product){
-        if(product == null){
-            return ResponseEntity.badRequest().body("Không được để trống");
-        }
         productService.saveProduct(product);
-        return ResponseEntity.ok("Tạo sản phẩm thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Tạo sản phẩm thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasAuthority('admin:update')")
+    @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
     public ResponseEntity<?> update(@PathVariable int id, @Validated @RequestBody Product product){
-        Product newProduct = productService.getProductById(id);
-        if(newProduct == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy sản phẩm");
-        }
-        if(product == null){
-            return ResponseEntity.badRequest().body("Không được để trống");
-        }
         productService.updateProduct(id, product);
-        return ResponseEntity.ok("Cập nhật sản phẩm thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Cập nhật sản phẩm thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAuthority('admin:delete')")
+    @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
     public ResponseEntity<?> delete(@PathVariable int id){
-        Product product = productService.getProductById(id);
-        if(product == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy sản phẩm");
-        }
         productService.deleteProduct(id);
-        return ResponseEntity.ok("Xóa sản phẩm thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Xóa sản phẩm thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
 }

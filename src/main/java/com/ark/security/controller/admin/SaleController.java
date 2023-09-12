@@ -1,69 +1,73 @@
 package com.ark.security.controller.admin;
 
+import com.ark.security.exception.SuccessMessage;
+import com.ark.security.models.Category;
 import com.ark.security.models.Sale;
 import com.ark.security.service.SaleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/sale")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
 public class SaleController {
     private final SaleService saleService;
 
-
     @GetMapping("/getList")
-    @PreAuthorize("hasAuthority('admin:read')")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getSaleList(){
-        return ResponseEntity.ok(saleService.getAllSales());
+        List<Sale> sales = saleService.getAllSales();
+        return ResponseEntity.ok(sales);
     }
 
     @GetMapping("/find/{id}")
-    @PreAuthorize("hasAuthority('admin:read')")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getSaleById(@PathVariable int id){
         Sale sale = saleService.getSaleById(id);
-        if(sale == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy sự kiện");
-        }
         return ResponseEntity.ok(sale);
     }
 
     @PostMapping("/create")
-    @PreAuthorize("hasAuthority('admin:create')")
+    @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
     public ResponseEntity<?> create(@RequestBody Sale sale){
-        if(sale == null){
-            return ResponseEntity.badRequest().body("Sự kiện không được để trống");
-        }
         saleService.saveSale(sale);
-        return ResponseEntity.ok("Tạo sự kiện thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Tạo sự kiện thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasAuthority('admin:update')")
+    @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
     public ResponseEntity<?> update(@PathVariable int id, @RequestBody Sale sale){
-        Sale newSale = saleService.getSaleById(id);
-        if(newSale == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy sự kiện");
-        }
-        if(sale == null){
-            return ResponseEntity.badRequest().body("Sự kiện không được để trống");
-        }
         saleService.updateSale(id, sale);
-        return ResponseEntity.ok("Cập nhật sự kiện thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Cập nhật sự kiện thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAuthority('admin:delete')")
+    @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
     public ResponseEntity<?> delete(@PathVariable int id){
-        Sale sale = saleService.getSaleById(id);
-        if(sale == null){
-            return ResponseEntity.badRequest().body("Không tìm thấy sự kiện");
-        }
         saleService.deleteSale(id);
-        return ResponseEntity.ok("Xóa sự kiện thành công");
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Xoá sự kiện thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
 }

@@ -63,8 +63,7 @@ public class AuthenticationService {
                         request.getPassword()
                 )
         );
-        var user = this.userService.getByUsername(request.getUsername())
-                .orElseThrow(()-> new BadCredentialsException("User not found: " + request.getUsername()));
+        var user = this.userService.getByUsername(request.getUsername());
         var token = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
@@ -84,6 +83,19 @@ public class AuthenticationService {
                 .revoked(false)
                 .build();
         tokenService.save(savedToken);
+    }
+
+    public User getCurrentUser(HttpServletRequest request, HttpServletResponse response){
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        if(authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+            var username = jwtService.extractUsername(jwt);
+            if(username!=null){
+                return userService.getByUsername(username);
+            }
+        }
+        return null;
     }
 
     private void revokeAllUserTokens(User user){
@@ -124,7 +136,7 @@ public class AuthenticationService {
         final String username;
         username = jwtService.extractUsername(refreshToken);
         if(username!=null){
-            var user = userService.getByUsername(username).orElseThrow();
+            var user = userService.getByUsername(username);
             if(jwtService.isValidToken(refreshToken, user)){
                 String accessToken = jwtService.generateToken(user);
                 revokeAllUserTokens(user);

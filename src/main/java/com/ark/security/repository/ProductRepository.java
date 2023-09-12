@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
+    boolean existsProductByName(String name);
+
     @Modifying
     @Query("""
         update Product p set p.status=false where p.id=:id
