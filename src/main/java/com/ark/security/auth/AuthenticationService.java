@@ -1,8 +1,12 @@
 package com.ark.security.auth;
 
+import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.PasswordNotMatchException;
 import com.ark.security.exception.BadCredentialsException;
+import com.ark.security.exception.SuccessMessage;
+import com.ark.security.models.Employee;
 import com.ark.security.models.token.Token;
+import com.ark.security.service.EmployeeService;
 import com.ark.security.service.TokenService;
 import com.ark.security.models.token.TokenType;
 import com.ark.security.models.user.User;
@@ -11,10 +15,16 @@ import com.ark.security.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -25,45 +35,36 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmployeeService employeeService;
 
-    public String register(RegisterRequest request){
-        if(userService.existsUserByUsername(request.getUsername())){
-            throw new BadCredentialsException("Username already exists: " + request.getUsername());
-        }
-        if(userService.existsUserByEmail(request.getEmail())){
-            throw new BadCredentialsException("Email already exists: " + request.getEmail());
-        }
+    public void register(RegisterRequest request){
         if(!userService.matchPassword(request.getPassword(), request.getConfirmPassword())){
-            throw new PasswordNotMatchException("Password and confirm password does not match");
+            throw new PasswordNotMatchException("Mật khẩu không khớp");
         }
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .password(request.getPassword())
                 .build();
         userService.saveUser(user);
-//        var token = jwtService.generateToken(user);
-//        var refreshToken = jwtService.generateRefreshToken(user);
-//        saveUserToken(savedUser, token);
-//        return AuthenticationResponse.builder()
-//                .accessToken(token)
-//                .refreshToken(refreshToken)
-//                .build();
-        return "User registered successfully";
     }
 
 
-    public  AuthenticationResponse authenticate(AuthenticationRequest request){
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+    public AuthenticationResponse authenticate(AuthenticationRequest request){
+        try{
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException ex){
+            throw new BadCredentialsException("Tài khoản hoặc mật khẩu không đúng");
+        }
         var user = this.userService.getByUsername(request.getUsername());
+        System.out.println(user.getRole().toString().equals("ADMIN"));
         var token = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
@@ -73,6 +74,38 @@ public class AuthenticationService {
                 .refreshToken(refreshToken)
                 .build();
     }
+
+
+
+    public AuthenticationResponse authenticateEmployee(AuthenticationRequest request){
+        try{
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException ex){
+            throw new BadCredentialsException("Tài khoản hoặc mật khẩu không đúng");
+        }
+        var user = this.userService.getByUsername(request.getUsername());
+        if(user.getRole().toString().equals("EMPLOYEE") || user.getRole().toString().equals("ADMIN")){
+                var token = jwtService.generateToken(user);
+                var refreshToken = jwtService.generateRefreshToken(user);
+                revokeAllUserTokens(user);
+                saveUserToken(user, token);return AuthenticationResponse.builder()
+                        .accessToken(token)
+                        .refreshToken(refreshToken)
+                        .build();
+        }
+        else{
+            throw new BadCredentialsException("Tài khoản không có quyền truy cập");
+        }
+
+
+
+    }
+
 
     private void saveUserToken(User user, String token) {
         var savedToken = Token.builder()
@@ -90,9 +123,44 @@ public class AuthenticationService {
         final String jwt;
         if(authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
+            var role = jwtService.extractRole(jwt);
+            System.out.println(role);
             var username = jwtService.extractUsername(jwt);
             if(username!=null){
                 return userService.getByUsername(username);
+            }else{
+                throw new UsernameNotFoundException("Không tìm thấy tài khoản");
+            }
+        }
+        return null;
+    }
+
+    public Employee getCurrentEmployee(HttpServletRequest request, HttpServletResponse response){
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        if(authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+            var role = jwtService.extractRole(jwt);
+            System.out.println(role);
+            if(role!=null){
+                String roleStr = role.stream().filter(r -> r.equals("ROLE_EMPLOYEE") || r.equals("ROLE_ADMIN")).findFirst().map(
+                        Object::toString
+                ).orElse(null);
+                System.out.println(roleStr);
+                roleStr = roleStr.replace("ROLE_", "");
+                System.out.println(roleStr);
+                if(roleStr.equals("EMPLOYEE")|| roleStr.equals("ADMIN")){
+                    var username = jwtService.extractUsername(jwt);
+                    System.out.println(username);
+                    if(username!=null){
+                        User user = userService.getByUsername(username);
+                        Employee employee = employeeService.getEmployeeByUserId(user.getId());
+                        System.out.println(employee);
+                        return employee;
+                    }
+                }
+            }else{
+                throw new UsernameNotFoundException("Không tìm thấy tài khoản");
             }
         }
         return null;

@@ -26,6 +26,10 @@ public class EmployeeService {
         return employeeRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy nhân viên: "+ id));
     }
 
+    public Employee getEmployeeByUserId(Integer id){
+        return employeeRepository.findByUserId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy nhân viên: "+ id));
+    }
+
     public List<Employee> getAllEmployees(){
         List<Employee> employees = employeeRepository.findAll();
         if(employees.isEmpty()){

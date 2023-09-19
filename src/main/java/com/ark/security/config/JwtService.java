@@ -31,6 +31,10 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public ArrayList<?> extractRole(String token){
+        return extractClaim(token, claims -> claims.get("role", ArrayList.class));
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -41,9 +45,19 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+    public String generatePasswordResetToken(){
+        long expiration = System.currentTimeMillis() + 1000 * 60 * 60;
+        Date expirationDate = new Date(expiration);
+        return Jwts.builder()
+                .setExpiration(expirationDate)
+                .signWith(getSigninKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public String generateToken(UserDetails userDetails){
         return generateToken(Map.of("role", userDetails.getAuthorities()
-                .stream().map(Object::toString).collect(Collectors.toList())), userDetails);
+                .stream().map(Object::toString).collect(Collectors.toList()),
+                "username", userDetails.getUsername()), userDetails);
     }
 
     public String generateToken(
@@ -75,6 +89,11 @@ public class JwtService {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
+
+   public boolean isValidPasswordResetToken(String token){
+        return !isTokenExpired(token);
+    }
+
 
     private boolean isTokenExpired(String token){
         return extractExpiration(token).before(new Date());

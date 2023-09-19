@@ -34,7 +34,9 @@ public class UserService implements UserDetailsService {
         }
         user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
         user.setRole(Role.USER);
+        user.setEnabled(true);
         userRepository.save(user);
+
     }
 
     public void updateUser(int id, User user){
@@ -47,6 +49,9 @@ public class UserService implements UserDetailsService {
             oldUser.setLastname(user.getLastname());
             oldUser.setDob(user.getDob());
             oldUser.setAddress(user.getAddress());
+            oldUser.setProvince(user.getProvince());
+            oldUser.setDistrict(user.getDistrict());
+            oldUser.setWard(user.getWard());
             oldUser.setPhone(user.getPhone());
             oldUser.setEnabled(user.getEnabled());
             userRepository.save(oldUser);
@@ -55,6 +60,16 @@ public class UserService implements UserDetailsService {
             throw new NotFoundException("Không tìm thấy người dùng: "+ id);
         }
     }
+
+    public void updateUserPassword(int id, String password){
+        User oldUser = getUserById(id);
+        if(oldUser == null){
+            throw new NotFoundException("Không tìm thấy người dùng: "+ id);
+        }
+        oldUser.setPassword(new BCryptPasswordEncoder().encode(password));
+        userRepository.save(oldUser);
+    }
+
 
     public void deleteUser(Integer id){
         User user = getUserById(id);

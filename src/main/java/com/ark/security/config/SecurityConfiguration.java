@@ -17,6 +17,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 @Configuration
@@ -34,12 +39,13 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfiguration corsConfiguration(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("http://localhost:4200");
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200"));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.setAllowCredentials(true);
+        //corsConfiguration.setAllowCredentials(true);
         return corsConfiguration;
     }
+
 
 
 
@@ -49,29 +55,11 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> corsConfiguration()))
                 .authorizeHttpRequests(ahr-> ahr.requestMatchers("/api/v1/auth/**").permitAll()
-
-//                        .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), MANAGEMENT.name())
-//                        .requestMatchers(GET, "/api/v1/management/**").hasAnyAuthority(ADMIN_READ.getPermission(), MANAGEMENT_READ.getPermission())
-//                        .requestMatchers(POST, "/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.getPermission(), MANAGEMENT_CREATE.getPermission())
-//                        .requestMatchers(PUT, "/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.getPermission(), MANAGEMENT_UPDATE.getPermission())
-//                        .requestMatchers(DELETE, "/api/v1/management/**").hasAnyAuthority(ADMIN_DELETE.getPermission(), MANAGEMENT_DELETE.getPermission())
-
-//                        .requestMatchers("/api/v1/admin/**").hasRole(ADMIN.name())
-//                        .requestMatchers(GET, "/api/v1/admin/**").hasAuthority(ADMIN_READ.getPermission())
-//                        .requestMatchers(POST, "/api/v1/admin/**").hasAuthority(ADMIN_CREATE.getPermission())
-//                        .requestMatchers(PUT, "/api/v1/admin/**").hasAuthority(ADMIN_UPDATE.getPermission())
-//                        .requestMatchers(DELETE, "/api/v1/admin/**").hasAuthority(ADMIN_DELETE.getPermission())
-
                         .anyRequest().authenticated())
                 .sessionManagement(sm-> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .exceptionHandling(eh-> eh.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-                //.addFilterBefore(cookiesHandler, UsernamePasswordAuthenticationFilter.class)
-//                .logout(l -> l.logoutUrl("/api/v1/auth/logout")
-//                                .addLogoutHandler(logoutHandler)
-//                        .logoutSuccessHandler((rq, rs, a) -> SecurityContextHolder.clearContext())
-//                        );
         return http.build();
     }
 }

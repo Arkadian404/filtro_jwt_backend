@@ -1,6 +1,7 @@
 package com.ark.security.models;
 
 import com.ark.security.models.user.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ public class Employee  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date startOn;
 
     @OneToOne(cascade = CascadeType.REMOVE)

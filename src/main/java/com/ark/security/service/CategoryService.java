@@ -30,6 +30,8 @@ public class CategoryService {
         return categoryRepository.findCategoryByName(name).isPresent();
     }
 
+
+
     List<Category> get5Categories() {
         List<Category> categories = categoryRepository.find5Categories();
         if(categories.isEmpty()){

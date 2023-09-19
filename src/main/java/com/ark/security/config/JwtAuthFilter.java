@@ -83,6 +83,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+        }else{
+            System.out.println("JWT Token is not valid");
         }
         filterChain.doFilter(request, response);
     }

@@ -1,7 +1,8 @@
 package com.ark.security.controller.admin;
 
 import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.Product;
+import com.ark.security.models.Category;
+import com.ark.security.models.product.Product;
 import com.ark.security.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,13 @@ public class ProductController {
     public ResponseEntity<?> find(@PathVariable int id){
         Product product = productService.getProductById(id);
         return ResponseEntity.ok(product);
+    }
+
+    @GetMapping("/getListByCategory/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getListByCategory(@PathVariable int id){
+        List<Product> productList = productService.getAllProductsByCategory(id);
+        return ResponseEntity.ok(productList);
     }
 
     @PostMapping("/create")

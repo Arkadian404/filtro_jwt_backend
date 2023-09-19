@@ -27,8 +27,8 @@ public class Token implements Serializable {
     private boolean expired;
     private boolean revoked;
 
-    @JsonBackReference
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "user_id")
     private User user;
 

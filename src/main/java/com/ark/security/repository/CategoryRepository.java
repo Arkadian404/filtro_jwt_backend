@@ -1,6 +1,7 @@
 package com.ark.security.repository;
 
 import com.ark.security.models.Category;
+import com.ark.security.models.product.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
     Optional<Category> findCategoryByName(String name);
+
 
     @Query("""
     select c from Category c order by c.id limit 5

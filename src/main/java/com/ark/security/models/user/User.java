@@ -3,6 +3,7 @@ package com.ark.security.models.user;
 import com.ark.security.models.Employee;
 import com.ark.security.models.token.Token;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.List;
 @Entity
 @Table
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -33,8 +35,12 @@ public class User implements UserDetails {
     private String email;
     private String password;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date dob;
     private String address;
+    private String province;
+    private String district;
+    private String ward;
     private String phone;
     @Enumerated(EnumType.STRING)
     private Role role;

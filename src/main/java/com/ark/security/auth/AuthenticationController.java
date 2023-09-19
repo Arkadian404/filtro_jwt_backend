@@ -2,17 +2,21 @@ package com.ark.security.auth;
 
 
 import com.ark.security.config.JwtService;
+import com.ark.security.exception.SuccessMessage;
+import com.ark.security.models.Employee;
 import com.ark.security.models.user.User;
 import com.ark.security.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
@@ -25,10 +29,16 @@ public class AuthenticationController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(
+    public ResponseEntity<?> register(
             @RequestBody RegisterRequest registrationRequest
     ){
-        return ResponseEntity.ok(service.register(registrationRequest));
+        service.register(registrationRequest);
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Đăng ký thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
     }
 
 
@@ -36,29 +46,31 @@ public class AuthenticationController {
     public ResponseEntity<?> authenticate(
             @RequestBody AuthenticationRequest authenticationRequest
     ){
-        try{
             AuthenticationResponse authenticate = service.authenticate(authenticationRequest);
             return ResponseEntity.ok(authenticate);
-        }
-        catch (BadCredentialsException ex){
-            return ResponseEntity.badRequest().body("Sai tên đăng nhập hoặc mật khẩu");
-        }
-
     }
+    @PostMapping("/authenticate-employee")
+    public ResponseEntity<?> authenticateEmployee(
+            @RequestBody AuthenticationRequest authenticationRequest
+    ){
+            AuthenticationResponse authenticate = service.authenticateEmployee(authenticationRequest);
+            return ResponseEntity.ok(authenticate);
+    }
+
+
 
     @GetMapping("/current-user")
     public ResponseEntity<?>getCurrentUser(HttpServletRequest request,
                                            HttpServletResponse response){
-//        Optional<User> user = userService.getByUsername(authentication.getName());
-//        if(user.isPresent()){
-//            return ResponseEntity.ok(user.get());
-//        }
-//        return ResponseEntity.badRequest().body("Không tìm thấy tài khoản");
         User user = service.getCurrentUser(request, response);
-        if(user!=null){
-            return ResponseEntity.ok(user);
-        }
-        return ResponseEntity.badRequest().body("THUA");
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/current-employee")
+    public ResponseEntity<?>getCurrentEmployee(HttpServletRequest request,
+                                           HttpServletResponse response){
+        Employee employee = service.getCurrentEmployee(request, response);
+        return ResponseEntity.ok(employee);
     }
 
     @PostMapping("/refresh-token")

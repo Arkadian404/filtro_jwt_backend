@@ -1,5 +1,6 @@
 package com.ark.security.exception;
 
+import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,12 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import javax.naming.AuthenticationException;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 @RestControllerAdvice
@@ -28,7 +31,7 @@ public class ExceptionHandlerAdvice {
                     .description(request.getDescription(false))
                     .timestamp(new Date())
                     .build();
-            log.error("Error: {}", error.getDescription());
+            logger.error("Error: {}", error.getDescription());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
@@ -40,31 +43,56 @@ public class ExceptionHandlerAdvice {
                     .description(request.getDescription(false))
                     .timestamp(new Date())
                     .build();
-            log.error("Error: {}", error.getDescription());
+            logger.error("Error: {}", error.getDescription());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
 
     @ExceptionHandler(HttpClientErrorException.Unauthorized.class)
-    public ResponseEntity<?> handleAuthenticationException(AuthenticationException ex, WebRequest request){
+    public ResponseEntity<?> handleHttpClientErrorException(AuthenticationException ex, WebRequest request){
         var error = ErrorMessage.builder()
                 .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .message(ex.getMessage())
                 .description(request.getDescription(false))
                 .timestamp(new Date())
                 .build();
-        log.error("Error: {}", error.getDescription());
+        logger.error("Error: {}", error.getDescription());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> handleMissingRequestBody(HttpMessageNotReadableException ex, WebRequest request) {
+//    @ExceptionHandler(HttpMessageNotReadableException.class)
+//    public ResponseEntity<?> handleMissingRequestBody(HttpMessageNotReadableException ex, WebRequest request) {
+//        var error = ErrorMessage.builder()
+//                .statusCode(HttpStatus.BAD_REQUEST.value())
+//                .message("Nội dung không được bỏ trống!!")
+//                .timestamp(new Date())
+//                .description(request.getDescription(false))
+//                .build();
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+//    }
+
+
+//    @ExceptionHandler(value = {UnsupportedEncodingException.class, MessagingException.class})
+//    public ResponseEntity<?> handleUnsupportedEncodingException(Exception ex, WebRequest request){
+//        var error = ErrorMessage.builder()
+//                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+//                .message("Lỗi khi gửi mail")
+//                .description(request.getDescription(false))
+//                .timestamp(new Date())
+//                .build();
+//        logger.error("Error: {}", error.getDescription());
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+//    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<?> handleAuthenticationException(AuthenticationException ex, WebRequest request){
         var error = ErrorMessage.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
-                .message("Nội dung không được bỏ trống!!")
-                .timestamp(new Date())
+                .message(ex.getMessage())
                 .description(request.getDescription(false))
+                .timestamp(new Date())
                 .build();
+        logger.error("Error: {}", error.getDescription());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
@@ -84,6 +112,18 @@ public class ExceptionHandlerAdvice {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleNotFoundException(NotFoundException ex, WebRequest request){
         logger.error("NotFound error: {}", ex.getMessage());
+        var error = ErrorMessage.builder()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .description(request.getDescription(false))
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request){
+        logger.error("UsernameNotFound error: {}", ex.getMessage());
         var error = ErrorMessage.builder()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .message(ex.getMessage())

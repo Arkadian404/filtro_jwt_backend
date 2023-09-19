@@ -1,8 +1,8 @@
 package com.ark.security.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.ark.security.config.CustomResolver;
+import com.ark.security.models.product.Product;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table
+//@JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id", resolver = CustomResolver.class)
 public class Flavor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +24,7 @@ public class Flavor {
     private Boolean status;
 
     @OneToMany(mappedBy = "flavor", fetch = FetchType.LAZY)
-    @JsonBackReference(value = "flavor-product")
+    //@JsonManagedReference(value = "flavor-product")
     @JsonIgnore
     private List<Product> productList;
 }

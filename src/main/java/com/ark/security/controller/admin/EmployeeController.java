@@ -17,26 +17,27 @@ import java.util.List;
 @RestController
 @RequestMapping ("/api/v1/admin/employee")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+@PreAuthorize("hasRole('ADMIN')")
 public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping("/getList")
-    @PreAuthorize("hasAnyAuthority('employee:read', 'admin:read')")
+    @PreAuthorize("hasAuthority('admin:read')")
     public ResponseEntity<?> getList(){
         List<Employee> employees = employeeService.getAllEmployees();
         return ResponseEntity.ok(employees);
     }
 
+
     @GetMapping("/find/{id}")
-    @PreAuthorize("hasAnyAuthority('employee:read', 'admin:read')")
+    @PreAuthorize("hasAuthority('admin:read')")
     public ResponseEntity<?> find(@PathVariable int id){
         Employee emp = employeeService.getEmployeeById(id);
         return ResponseEntity.ok(emp);
     }
 
     @PostMapping("/create")
-    @PreAuthorize("hasAnyAuthority('employee:create', 'admin:create')")
+    @PreAuthorize("hasAuthority('admin:create')")
     public ResponseEntity<?> create(@RequestBody Employee employee){
         employeeService.saveEmployee(employee, employee.getUser());
         var success = SuccessMessage.builder()
@@ -48,7 +49,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasAnyAuthority('employee:update', 'admin:update')")
+    @PreAuthorize("hasAuthority('admin:update')")
     public ResponseEntity<?> update(@PathVariable int id,
                                     @RequestBody Employee employee){
         employeeService.updateEmployee(id, employee, employee.getUser());

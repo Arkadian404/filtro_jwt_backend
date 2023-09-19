@@ -18,6 +18,4 @@ public class RegisterRequest {
     private String email;
     private String password;
     private String confirmPassword;
-    @Builder.Default
-    private Role role = Role.USER;
 }

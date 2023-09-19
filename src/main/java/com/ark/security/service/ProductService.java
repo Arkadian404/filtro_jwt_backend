@@ -2,7 +2,8 @@ package com.ark.security.service;
 
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
-import com.ark.security.models.Product;
+import com.ark.security.models.Category;
+import com.ark.security.models.product.Product;
 import com.ark.security.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,6 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
-
     public Product getProductById(int id) {
         return productRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ id));
     }
@@ -28,6 +28,20 @@ public class ProductService {
         }
         return products;
     }
+
+    public Category getCategoryByProductId(int id){
+        return productRepository.findCategoryUsingId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ id));
+    }
+
+
+    public List<Product> getAllProductsByCategory(int id){
+        List<Product> products = productRepository.findAllByCategoryId(id);
+        if(products.isEmpty()){
+            throw new NotFoundException("Không có sản phẩm nào");
+        }
+        return products;
+    }
+
 
     public boolean isExistsProductByName(String name){
         return productRepository.existsProductByName(name);
@@ -52,11 +66,10 @@ public class ProductService {
             oldProduct.setCategory(product.getCategory());
             oldProduct.setQuantity(product.getQuantity());
             oldProduct.setDescription(product.getDescription());
-            oldProduct.setImage(product.getImage());
             oldProduct.setSold(product.getSold());
             oldProduct.setSale(product.getSale());
             oldProduct.setFlavor(product.getFlavor());
-            oldProduct.setCreatedAt(LocalDateTime.now());
+            oldProduct.setUpdatedAt(LocalDateTime.now());
             oldProduct.setStatus(product.getStatus());
             productRepository.save(oldProduct);
         }else {
