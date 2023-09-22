@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -60,7 +61,9 @@ public class AuthenticationService {
                             request.getPassword()
                     )
             );
-        } catch (AuthenticationException ex){
+        } catch (DisabledException ex){
+            throw new UsernameNotFoundException("Tài khoản đã bị khóa");
+        }   catch (AuthenticationException ex){
             throw new BadCredentialsException("Tài khoản hoặc mật khẩu không đúng");
         }
         var user = this.userService.getByUsername(request.getUsername());
@@ -141,21 +144,21 @@ public class AuthenticationService {
         if(authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             var role = jwtService.extractRole(jwt);
-            System.out.println(role);
+            //System.out.println(role);
             if(role!=null){
                 String roleStr = role.stream().filter(r -> r.equals("ROLE_EMPLOYEE") || r.equals("ROLE_ADMIN")).findFirst().map(
                         Object::toString
                 ).orElse(null);
-                System.out.println(roleStr);
+                //System.out.println(roleStr);
                 roleStr = roleStr.replace("ROLE_", "");
-                System.out.println(roleStr);
+                //System.out.println(roleStr);
                 if(roleStr.equals("EMPLOYEE")|| roleStr.equals("ADMIN")){
                     var username = jwtService.extractUsername(jwt);
-                    System.out.println(username);
+                   // System.out.println(username);
                     if(username!=null){
                         User user = userService.getByUsername(username);
                         Employee employee = employeeService.getEmployeeByUserId(user.getId());
-                        System.out.println(employee);
+                        //System.out.println(employee);
                         return employee;
                     }
                 }

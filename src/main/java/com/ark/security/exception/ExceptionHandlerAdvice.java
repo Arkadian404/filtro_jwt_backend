@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -108,6 +109,17 @@ public class ExceptionHandlerAdvice {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    @ExceptionHandler(UserStatusException.class)
+    public ResponseEntity<?> handleUserStatusException(UserStatusException ex, WebRequest request){
+        logger.error("UserStatus error: {}", ex.getMessage());
+        var error = ErrorMessage.builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .description(request.getDescription(false))
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleNotFoundException(NotFoundException ex, WebRequest request){
@@ -156,6 +168,19 @@ public class ExceptionHandlerAdvice {
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+
+//    @ExceptionHandler(DisabledException.class)
+//    public ResponseEntity<?> handleDisabledException(DisabledException ex, WebRequest request){
+//        logger.error("Disabled error: {}", ex.getMessage());
+//        var error = ErrorMessage.builder()
+//                .statusCode(HttpStatus.BAD_REQUEST.value())
+//                .message("Tài khoản của bạn đã bị khóa!")
+//                .description(request.getDescription(false))
+//                .timestamp(new Date())
+//                .build();
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+//    }
 
 
 //    @ExceptionHandler(Exception.class)

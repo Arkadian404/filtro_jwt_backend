@@ -37,6 +37,8 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
+
+
     @GetMapping("/getListByCategory/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getListByCategory(@PathVariable int id){

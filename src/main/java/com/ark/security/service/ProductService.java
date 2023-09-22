@@ -42,6 +42,30 @@ public class ProductService {
         return products;
     }
 
+    public List<Product> getProductsByName(String name){
+        List<Product> products = productRepository.findByName(name).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ name));
+        if(products.isEmpty()){
+            throw new NotFoundException("Không có sản phẩm nào");
+        }
+        return products;
+    }
+
+    public List<Product> getProductsByOrigin(String origin){
+        List<Product> products = productRepository.findByOrigin(origin).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ origin));
+        if(products.isEmpty()){
+            throw new NotFoundException("Không có sản phẩm nào");
+        }
+        return products;
+    }
+
+    public List<Product> getProductsByIsSpecial(Boolean isSpecial){
+        List<Product> products = productRepository.findByIsSpecial(isSpecial).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ isSpecial));
+        if(products.isEmpty()){
+            throw new NotFoundException("Không có sản phẩm nào");
+        }
+        return products;
+    }
+
 
     public boolean isExistsProductByName(String name){
         return productRepository.existsProductByName(name);
@@ -70,6 +94,8 @@ public class ProductService {
             oldProduct.setSale(product.getSale());
             oldProduct.setFlavor(product.getFlavor());
             oldProduct.setUpdatedAt(LocalDateTime.now());
+            oldProduct.setIsSpecial(product.getIsSpecial());
+            oldProduct.setOrigin(product.getOrigin());
             oldProduct.setStatus(product.getStatus());
             productRepository.save(oldProduct);
         }else {

@@ -43,6 +43,8 @@ public class Product {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
     private Boolean status;
+    private Boolean isSpecial;
+    private String origin;
 
     @ManyToOne
     @JoinColumn(name = "flavor_id")
