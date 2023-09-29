@@ -117,4 +117,16 @@ public class UserService implements UserDetailsService {
     public boolean matchPassword(String password, String confirmPassword){
         return password.equals(confirmPassword);
     }
+
+    public void changePassword(int id, String oldPassword, String newPassword){
+        User user = getUserById(id);
+        if(user == null){
+            throw new NotFoundException("Không tìm thấy người dùng: "+ id);
+        }
+        if(!new BCryptPasswordEncoder().matches(oldPassword, user.getPassword())){
+            throw new BadCredentialsException("Mật khẩu cũ không đúng");
+        }
+        user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
+        userRepository.save(user);
+    }
 }

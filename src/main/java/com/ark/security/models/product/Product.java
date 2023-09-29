@@ -1,9 +1,10 @@
 package com.ark.security.models.product;
 
-import com.ark.security.config.CustomResolver;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.ark.security.models.Category;
 import com.ark.security.models.Flavor;
 import com.ark.security.models.Sale;
+import com.ark.security.models.Vendor;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,16 +21,16 @@ import java.util.List;
 @Entity
 @Table
 //@JsonIdentityInfo(scope = Product.class,generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
-@JsonIgnoreProperties(ignoreUnknown = true, value ={"images"})
+@JsonIgnoreProperties(ignoreUnknown = true, value ={"images", "productDetails"})
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
-    private Integer quantity;
-    private Integer sold;
-    private Integer price;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductDetail> productDetails;
     private String description;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
@@ -44,21 +45,25 @@ public class Product {
     private LocalDateTime updatedAt;
     private Boolean status;
     private Boolean isSpecial;
-    private String origin;
 
     @ManyToOne
     @JoinColumn(name = "flavor_id")
-    //@JsonBackReference(value = "flavor-product")
     private Flavor flavor;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    //@JsonBackReference(value = "category-product")
     private Category category;
 
     @ManyToOne
     @JoinColumn(name = "sale_id")
-    //@JsonBackReference(value = "sale-product")
     private Sale sale;
+
+    @ManyToOne
+    @JoinColumn(name = "product_origin_id")
+    private ProductOrigin origin;
+
+    @ManyToOne
+    @JoinColumn(name = "vendor_id")
+    private Vendor vendor;
 
 }

@@ -36,16 +36,9 @@ public class ProductImageService {
     }
 
     public void saveProductImage(ProductImage productImage){
-//        if(productImage== null){
-//            throw new NullException("Không được để trống");
-//        }
-        ProductImage pi = new ProductImage();
-        pi.setImageName(productImage.getImageName());
-        pi.setUrl(productImage.getUrl());
-        pi.setCreatedAt(new Date());
-        pi.setProduct(productImage.getProduct());
-        pi.setStatus(true);
-        productImageRepository.save(pi);
+        productImage.setCreatedAt(new Date());
+        productImage.setStatus(true);
+        productImageRepository.save(productImage);
     }
 
     public void updateImage(int id, ProductImage productImage){
@@ -54,6 +47,7 @@ public class ProductImageService {
 //            throw new NullException("Không được để trống");
 //        }
         if(oldImage != null){
+            oldImage.setImageName(productImage.getImageName());
             oldImage.setUrl(productImage.getUrl());
             oldImage.setProduct(productImage.getProduct());
             oldImage.setUpdatedAt(new Date());

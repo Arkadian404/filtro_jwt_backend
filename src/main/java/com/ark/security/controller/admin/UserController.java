@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping ("/api/v1/admin/user")
@@ -66,6 +67,21 @@ public class UserController {
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Xóa tài khoản thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
+    }
+
+    @PostMapping("/change-password/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
+    public ResponseEntity<?> changePassword(
+            @PathVariable int id,
+            @RequestBody Map<String, String> body
+            ){
+        userService.changePassword(id, body.get("oldPassword"), body.get("newPassword"));
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Đổi mật khẩu thành công")
                 .timestamp(new Date())
                 .build();
         return ResponseEntity.ok(success);

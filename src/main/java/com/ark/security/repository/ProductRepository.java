@@ -18,20 +18,24 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Optional<List<Product>> findByName(String name);
 
-    Optional<List<Product>> findByOrigin(String origin);
+    Optional<List<Product>> findByOriginId(int id);
 
     Optional<List<Product>> findByIsSpecial(Boolean isSpecial);
 
     boolean existsProductByName(String name);
-
-    List<Product> findByCategoryId(int id);
 
     @Query("""
         select p from Product p join Category c on p.category.id = c.id where p.id =:id
 """)
     Optional<Category> findCategoryUsingId(@Param("id") int id);
 
-    List<Product> findAllByCategoryId(int id);
+    Optional<List<Product>> findAllByCategoryId(int id);
+
+    Optional<List<Product>> findAllByVendorId(int id);
+
+    Optional<List<Product>> findAllByFlavorId(int id);
+
+    Optional<List<Product>> findAllBySaleId(int id);
 
 
     @Modifying

@@ -42,9 +42,40 @@ public class ProductController {
     @GetMapping("/getListByCategory/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getListByCategory(@PathVariable int id){
-        List<Product> productList = productService.getAllProductsByCategory(id);
-        return ResponseEntity.ok(productList);
+        return ResponseEntity.ok(productService.getAllProductsByCategory(id));
     }
+
+    @GetMapping("/getListByOrigin/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getListByOrigin(@PathVariable int id){
+        return ResponseEntity.ok(productService.getProductsByOrigin(id));
+    }
+
+
+    @GetMapping("/getListByFlavor/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getListByFlavor(@PathVariable int id){
+        return ResponseEntity.ok(productService.getProductsByFlavor(id));
+    }
+
+    @GetMapping("/getListByIsSpecial")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getListByIsSpecial(){
+        return ResponseEntity.ok(productService.getProductsByIsSpecial(true));
+    }
+
+    @GetMapping("/getListByVendor/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getListByVendor(@PathVariable int id){
+        return ResponseEntity.ok(productService.getProductsByVendor(id));
+    }
+
+    @GetMapping("/getListBySale/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getListBySale(@PathVariable int id){
+        return ResponseEntity.ok(productService.getProductsBySale(id));
+    }
+
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")

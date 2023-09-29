@@ -61,6 +61,9 @@ public class CategoryService {
             throw new NullException("Không được để trống");
         }
         if (oldCategory != null) {
+            if(isDuplicateCategoryName(category.getName())){
+                throw new DuplicateException("Danh mục đã tồn tại");
+            }
             oldCategory.setName(category.getName());
             oldCategory.setStatus(category.getStatus());
             categoryRepository.save(oldCategory);

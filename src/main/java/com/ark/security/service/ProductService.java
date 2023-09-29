@@ -35,7 +35,7 @@ public class ProductService {
 
 
     public List<Product> getAllProductsByCategory(int id){
-        List<Product> products = productRepository.findAllByCategoryId(id);
+        List<Product> products =productRepository.findAllByCategoryId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ id));
         if(products.isEmpty()){
             throw new NotFoundException("Không có sản phẩm nào");
         }
@@ -50,8 +50,24 @@ public class ProductService {
         return products;
     }
 
-    public List<Product> getProductsByOrigin(String origin){
-        List<Product> products = productRepository.findByOrigin(origin).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ origin));
+    public List<Product> getProductsBySale(int id){
+        List<Product> products = productRepository.findAllBySaleId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ id));
+        if(products.isEmpty()){
+            throw new NotFoundException("Không có sản phẩm nào");
+        }
+        return products;
+    }
+
+    public List<Product> getProductsByOrigin(int id){
+        List<Product> products = productRepository.findByOriginId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ id));
+        if(products.isEmpty()){
+            throw new NotFoundException("Không có sản phẩm nào");
+        }
+        return products;
+    }
+
+    public List<Product> getProductsByFlavor(int id){
+        List<Product> products = productRepository.findAllByFlavorId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ id));
         if(products.isEmpty()){
             throw new NotFoundException("Không có sản phẩm nào");
         }
@@ -60,6 +76,14 @@ public class ProductService {
 
     public List<Product> getProductsByIsSpecial(Boolean isSpecial){
         List<Product> products = productRepository.findByIsSpecial(isSpecial).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ isSpecial));
+        if(products.isEmpty()){
+            throw new NotFoundException("Không có sản phẩm nào");
+        }
+        return products;
+    }
+
+    public List<Product> getProductsByVendor(int id){
+        List<Product> products = productRepository.findAllByVendorId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy sản phẩm: "+ id));
         if(products.isEmpty()){
             throw new NotFoundException("Không có sản phẩm nào");
         }
@@ -86,16 +110,14 @@ public class ProductService {
         }
         if (oldProduct != null) {
             oldProduct.setName(product.getName());
-            oldProduct.setPrice(product.getPrice());
             oldProduct.setCategory(product.getCategory());
-            oldProduct.setQuantity(product.getQuantity());
             oldProduct.setDescription(product.getDescription());
-            oldProduct.setSold(product.getSold());
             oldProduct.setSale(product.getSale());
             oldProduct.setFlavor(product.getFlavor());
             oldProduct.setUpdatedAt(LocalDateTime.now());
             oldProduct.setIsSpecial(product.getIsSpecial());
             oldProduct.setOrigin(product.getOrigin());
+            oldProduct.setVendor(product.getVendor());
             oldProduct.setStatus(product.getStatus());
             productRepository.save(oldProduct);
         }else {

@@ -1,8 +1,12 @@
 package com.ark.security.config;
 
 import com.ark.security.service.UserService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionConfig;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +43,11 @@ public class ApplicationConfig{
         ObjectMapper mapper = new ObjectMapper();
         mapper.setAnnotationIntrospector(new CustomJacksonAnnotation());
         mapper.findAndRegisterModules();
+        mapper.coercionConfigDefaults()
+                .setAcceptBlankAsEmpty(true)
+                .setCoercion(CoercionInputShape.EmptyObject, CoercionAction.AsNull)
+                .setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull);
+        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
         return mapper;
@@ -60,7 +69,6 @@ public class ApplicationConfig{
     @Bean
      public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
-
     }
 
 

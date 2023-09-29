@@ -24,7 +24,6 @@ public class Flavor {
     private Boolean status;
 
     @OneToMany(mappedBy = "flavor", fetch = FetchType.LAZY)
-    //@JsonManagedReference(value = "flavor-product")
     @JsonIgnore
     private List<Product> productList;
 }

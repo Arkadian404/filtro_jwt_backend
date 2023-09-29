@@ -24,7 +24,6 @@ public class Category {
     private Boolean status;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    //@JsonManagedReference(value = "category-product")
     @JsonIgnore
     private List<Product> productList;
 }
