@@ -1,6 +1,7 @@
 package com.ark.security.models.product;
 
 import com.ark.security.config.CustomResolver;
+import com.ark.security.dto.ProductImageDto;
 import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
@@ -18,7 +19,6 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table
-@JsonIdentityInfo(scope = ProductImage.class ,generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
 public class ProductImage {
 
     @Id
@@ -37,6 +37,15 @@ public class ProductImage {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    //@JsonManagedReference(value = "product-image")
+    @JsonManagedReference(value = "product-image")
     private Product product;
+
+
+    public ProductImageDto convertToDto(){
+        return ProductImageDto.builder()
+                .id(this.id)
+                .imageName(this.imageName)
+                .url(this.url)
+                .build();
+    }
 }

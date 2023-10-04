@@ -3,7 +3,6 @@ package com.ark.security.controller.admin;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.service.ProductDetailService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +33,7 @@ public class ProductDetailController {
     @GetMapping("/getListByProduct/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getListByProduct(@PathVariable int id){
-        return ResponseEntity.ok(productDetailService.getAllProductDetailByProductId(id));
+        return ResponseEntity.ok(productDetailService.getProductDetailsByProductId(id));
     }
 
     @PostMapping("/create")

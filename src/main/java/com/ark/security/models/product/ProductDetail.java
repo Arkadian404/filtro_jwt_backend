@@ -1,5 +1,7 @@
 package com.ark.security.models.product;
 
+import com.ark.security.dto.ProductDetailDto;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -15,7 +17,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table
-//@JsonIdentityInfo(scope = ProductDetail.class, generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class ProductDetail {
 
     @Id
@@ -24,12 +25,22 @@ public class ProductDetail {
 
     private Integer quantity;
     private Integer price;
-    private Integer sold;
     private Integer weight;
     private Boolean status;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonManagedReference(value = "product-detail")
     private Product product;
+
+
+    public ProductDetailDto convertToDto(){
+        return ProductDetailDto.builder()
+                .id(this.id)
+                .quantity(this.quantity)
+                .price(this.price)
+                .weight(this.weight)
+                .build();
+    }
 
 }

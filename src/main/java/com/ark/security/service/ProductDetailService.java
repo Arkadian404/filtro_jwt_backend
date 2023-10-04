@@ -27,7 +27,7 @@ public class ProductDetailService {
         return productDetailRepository.findAll();
     }
 
-    public List<ProductDetail> getAllProductDetailByProductId(int id){
+    public List<ProductDetail> getProductDetailsByProductId(int id){
         if(productDetailRepository.findAllByProductId(id).isEmpty())
             throw new NotFoundException("Không có chi tiết sản phẩm nào");
         return productDetailRepository.findAllByProductId(id).orElseThrow(()-> new NotFoundException("Không có sản phẩm nào"));

@@ -1,10 +1,5 @@
 package com.ark.security.models.product;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.ark.security.models.Category;
-import com.ark.security.models.Flavor;
-import com.ark.security.models.Sale;
-import com.ark.security.models.Vendor;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,21 +15,25 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table
-//@JsonIdentityInfo(scope = Product.class,generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
-@JsonIgnoreProperties(ignoreUnknown = true, value ={"images", "productDetails"})
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
+    @ManyToOne
+    @JoinColumn(name = "brand_id")
+    private Brand brand;
+    private Integer sold;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @JsonBackReference(value = "product-detail")
     private List<ProductDetail> productDetails;
+
     private String description;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    //@JsonManagedReference(value = "product-image")
+    @JsonBackReference(value = "product-image")
     private List<ProductImage> images;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -45,6 +44,7 @@ public class Product {
     private LocalDateTime updatedAt;
     private Boolean status;
     private Boolean isSpecial;
+    private Boolean isLimited;
 
     @ManyToOne
     @JoinColumn(name = "flavor_id")

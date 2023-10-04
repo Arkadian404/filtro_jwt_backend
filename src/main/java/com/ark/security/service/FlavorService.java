@@ -3,7 +3,7 @@ package com.ark.security.service;
 import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
-import com.ark.security.models.Flavor;
+import com.ark.security.models.product.Flavor;
 import lombok.RequiredArgsConstructor;
 import com.ark.security.repository.FlavorRepository;
 import org.springframework.stereotype.Service;

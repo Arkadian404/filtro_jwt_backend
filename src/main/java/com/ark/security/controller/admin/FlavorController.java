@@ -1,11 +1,9 @@
 package com.ark.security.controller.admin;
 
 import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.Employee;
-import com.ark.security.models.Flavor;
+import com.ark.security.models.product.Flavor;
 import com.ark.security.service.FlavorService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

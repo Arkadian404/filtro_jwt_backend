@@ -1,7 +1,7 @@
 package com.ark.security.service;
 
 import com.ark.security.exception.NotFoundException;
-import com.ark.security.models.Vendor;
+import com.ark.security.models.product.Vendor;
 import com.ark.security.repository.VendorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

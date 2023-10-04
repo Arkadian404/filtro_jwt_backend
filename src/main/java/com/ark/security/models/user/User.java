@@ -1,5 +1,6 @@
 package com.ark.security.models.user;
 
+import com.ark.security.models.Cart;
 import com.ark.security.models.Employee;
 import com.ark.security.models.token.Token;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -56,6 +57,11 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user")
     @JsonBackReference(value = "user-employee")
     private Employee employee;
+
+    @OneToMany
+    @JsonBackReference(value = "user-cart")
+    private List<Cart> carts;
+
 
     @JsonIgnore
     @Override

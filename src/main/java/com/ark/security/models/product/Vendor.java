@@ -1,6 +1,7 @@
 package com.ark.security.models.product;
 
-import com.ark.security.dto.ProductOriginDto;
+import com.ark.security.dto.VendorDto;
+import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,26 +17,28 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table
-public class ProductOrigin {
+public class Vendor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String name;
+    private String address;
+    private String phone;
+    private String email;
     private String description;
 
-    @OneToMany(mappedBy = "origin", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Product> products;
 
 
-    public ProductOriginDto convertToDto(){
-        return ProductOriginDto.builder()
+    public VendorDto convertToDto(){
+        return VendorDto.builder()
                 .id(this.id)
                 .name(this.name)
                 .build();
     }
+
 }
-
-

@@ -1,5 +1,6 @@
 package com.ark.security.controller.user;
 
+import com.ark.security.dto.ProductDto;
 import com.ark.security.models.product.Product;
 import com.ark.security.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class SearchController {
 
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam("query") String name){
-        List<Product> productList = productService.getProductsByName(name);
+        List<ProductDto> productList = productService.getProductDtoByName(name);
         return ResponseEntity.ok(productList);
     }
 

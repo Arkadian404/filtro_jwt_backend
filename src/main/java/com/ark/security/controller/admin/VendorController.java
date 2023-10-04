@@ -1,7 +1,7 @@
 package com.ark.security.controller.admin;
 
 import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.Vendor;
+import com.ark.security.models.product.Vendor;
 import com.ark.security.service.VendorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -2,7 +2,7 @@ package com.ark.security.service;
 
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
-import com.ark.security.models.Sale;
+import com.ark.security.models.product.Sale;
 import com.ark.security.repository.SaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

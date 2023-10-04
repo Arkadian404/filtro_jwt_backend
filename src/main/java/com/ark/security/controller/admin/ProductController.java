@@ -1,7 +1,6 @@
 package com.ark.security.controller.admin;
 
 import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.Category;
 import com.ark.security.models.product.Product;
 import com.ark.security.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +63,12 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByIsSpecial(true));
     }
 
+    @GetMapping("/getListByIsLimited")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getListByIsLimited(){
+        return ResponseEntity.ok(productService.getProductsByIsLimited(true));
+    }
+
     @GetMapping("/getListByVendor/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getListByVendor(@PathVariable int id){
@@ -74,6 +79,47 @@ public class ProductController {
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getListBySale(@PathVariable int id){
         return ResponseEntity.ok(productService.getProductsBySale(id));
+    }
+
+
+    @GetMapping("/getTop3LatestProducts")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getTop3Latest(){
+        return ResponseEntity.ok(productService.getTop3LatestProducts());
+    }
+
+    @GetMapping("/getTop3BestSellerProducts")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getTop3BestSeller(){
+        return ResponseEntity.ok(productService.getTop3BestSellerProducts());
+    }
+
+
+    @GetMapping("/getTop3SpecialProducts")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getTop3Special(){
+        return ResponseEntity.ok(productService.getTop3SpecialProducts());
+    }
+
+
+    @GetMapping("/getTop10ProductsInColombia")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getTop10ProductsInColombia(){
+        return ResponseEntity.ok(productService.getTop10ProductsInColombia());
+    }
+
+
+    @GetMapping("/getTop10ProductsByRoastedCoffeeBeans")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getTop10ProductsByRoastedCoffeeBeans(){
+        return ResponseEntity.ok(productService.getTop10ProductsByRoastedCoffeeBeans());
+    }
+
+
+    @GetMapping("/getTop10ProductsByBottledCoffee")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getTop10ProductsByBottledCoffee(){
+        return ResponseEntity.ok(productService.getTop10ProductsByBottledCoffee());
     }
 
 

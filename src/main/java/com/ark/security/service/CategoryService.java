@@ -3,11 +3,9 @@ package com.ark.security.service;
 import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
-import com.ark.security.models.Category;
+import com.ark.security.models.product.Category;
 import com.ark.security.repository.CategoryRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
