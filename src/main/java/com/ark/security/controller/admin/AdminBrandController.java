@@ -15,7 +15,7 @@ import java.util.Date;
 @RequestMapping("/api/v1/admin/brand")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-public class BrandController {
+public class AdminBrandController {
     private final BrandService brandService;
 
     @GetMapping("/getList")

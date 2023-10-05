@@ -42,7 +42,6 @@ public class SecurityConfiguration {
         corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200"));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
-        //corsConfiguration.setAllowCredentials(true);
         return corsConfiguration;
     }
 
@@ -54,7 +53,20 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> corsConfiguration()))
-                .authorizeHttpRequests(ahr-> ahr.requestMatchers("/api/v1/auth/**").permitAll()
+                .authorizeHttpRequests(ahr-> ahr.requestMatchers(
+                                "/api/v1/user/**",
+                        "/api/v1/auth/**",
+                        "/v2/api-docs",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "swagger-resources",
+                        "swagger-resources/**",
+                        "/configuration/ui",
+                        "/configuration/security",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/webjars/**"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sm-> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

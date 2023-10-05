@@ -1,8 +1,8 @@
 package com.ark.security.controller.admin;
 
 import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.product.Sale;
-import com.ark.security.service.SaleService;
+import com.ark.security.models.product.ProductImage;
+import com.ark.security.service.ProductImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,36 +10,40 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/admin/sale")
+@RequestMapping("/api/v1/admin/product-image")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-public class SaleController {
-    private final SaleService saleService;
+public class AdminProductImageController {
+    private final ProductImageService productImageService;
+
 
     @GetMapping("/getList")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getSaleList(){
-        List<Sale> sales = saleService.getAllSales();
-        return ResponseEntity.ok(sales);
+    @PreAuthorize("hasAnyAuthority('admin:read','employee:read')")
+    public ResponseEntity<?> getList(){
+        return ResponseEntity.ok(productImageService.getAllProductImages());
+    }
+
+    @GetMapping("/getListByProductId/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read','employee:read')")
+    public ResponseEntity<?> getListByProductId(@PathVariable int id){
+        return ResponseEntity.ok(productImageService.getProductImagesByProductId(id));
     }
 
     @GetMapping("/find/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getSaleById(@PathVariable int id){
-        Sale sale = saleService.getSaleById(id);
-        return ResponseEntity.ok(sale);
+    public ResponseEntity<?> find(@PathVariable int id){
+        return ResponseEntity.ok(productImageService.getProductImageById(id));
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody Sale sale){
-        saleService.saveSale(sale);
+    public ResponseEntity<?> create(@RequestBody ProductImage productImage){
+        productImageService.saveProductImage(productImage);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Tạo sự kiện thành công")
+                .message("Tạo ảnh thành công")
                 .timestamp(new Date())
                 .build();
         return ResponseEntity.ok(success);
@@ -47,11 +51,11 @@ public class SaleController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @RequestBody Sale sale){
-        saleService.updateSale(id, sale);
+    public ResponseEntity<?> update(@PathVariable int id, @RequestBody ProductImage productImage){
+        productImageService.updateImage(id, productImage);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Cập nhật sự kiện thành công")
+                .message("Cập nhật hình ảnh thành công")
                 .timestamp(new Date())
                 .build();
         return ResponseEntity.ok(success);
@@ -60,13 +64,12 @@ public class SaleController {
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
     public ResponseEntity<?> delete(@PathVariable int id){
-        saleService.deleteSale(id);
+        productImageService.deleteImage(id);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Xoá sự kiện thành công")
+                .message("Xóa ảnh thành công")
                 .timestamp(new Date())
                 .build();
         return ResponseEntity.ok(success);
     }
-
 }

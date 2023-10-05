@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/admin/flavor")
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
 @RequiredArgsConstructor
-public class FlavorController {
+public class AdminFlavorController {
 
     private final FlavorService flavorService;
 

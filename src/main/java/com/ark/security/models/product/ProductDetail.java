@@ -30,7 +30,7 @@ public class ProductDetail {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    @JsonManagedReference(value = "product-detail")
+    @JsonManagedReference
     private Product product;
 
 

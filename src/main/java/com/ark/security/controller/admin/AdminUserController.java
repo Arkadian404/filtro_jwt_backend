@@ -18,7 +18,7 @@ import java.util.Map;
 @RequestMapping ("/api/v1/admin/user")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-public class UserController {
+public class AdminUserController {
     private final UserService userService;
 
     @GetMapping("/getList")

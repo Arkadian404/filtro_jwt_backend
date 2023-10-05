@@ -27,13 +27,13 @@ public class Product {
     private Integer sold;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    @JsonBackReference(value = "product-detail")
+    @JsonIgnore
     private List<ProductDetail> productDetails;
 
     private String description;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    @JsonBackReference(value = "product-image")
+    @JsonIgnore
     private List<ProductImage> images;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")

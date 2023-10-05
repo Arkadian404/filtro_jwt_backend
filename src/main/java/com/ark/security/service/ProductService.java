@@ -215,6 +215,7 @@ public class ProductService {
         }
         if (oldProduct != null) {
             oldProduct.setName(product.getName());
+            oldProduct.setBrand(product.getBrand());
             oldProduct.setCategory(product.getCategory());
             oldProduct.setDescription(product.getDescription());
             oldProduct.setSale(product.getSale());

@@ -16,7 +16,7 @@ import java.util.Date;
 @RequestMapping("/api/v1/admin/vendor")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-public class VendorController {
+public class AdminVendorController {
     private final VendorService vendorService;
 
     @GetMapping("/getList")

@@ -2,6 +2,7 @@ package com.ark.security.controller.admin;
 
 import com.ark.security.models.user.User;
 import com.ark.security.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping ("/api/v1/admin")
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "BearerAuth")
 public class AdminController {
     private final UserService userService;
 
@@ -20,23 +22,5 @@ public class AdminController {
     public ResponseEntity<?> get(Authentication authentication){
         User user = userService.getByUsername(authentication.getName());
         return ResponseEntity.ok(user);
-    }
-
-    @PostMapping
-    @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public String post(){
-        return "POST:: ADMIN";
-    }
-
-    @PutMapping
-    @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public String put(){
-        return "PUT:: ADMIN";
-    }
-
-    @DeleteMapping
-    @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
-    public String delete(){
-        return "DELETE:: ADMIN";
     }
 }
