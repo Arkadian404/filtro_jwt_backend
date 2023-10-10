@@ -16,7 +16,7 @@ public class VendorController {
 
     @GetMapping("/getList")
     public ResponseEntity<?> getAllVendor(){
-        return ResponseEntity.ok(vendorService.getAllVendor());
+        return ResponseEntity.ok(vendorService.getAllVendorDto());
     }
 
     @GetMapping("/find/{id}")

@@ -1,5 +1,6 @@
 package com.ark.security.controller.user;
 
+import com.ark.security.dto.SaleDto;
 import com.ark.security.models.product.Sale;
 import com.ark.security.service.SaleService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class SaleController {
 
     @GetMapping("/getList")
     public ResponseEntity<?> getSaleList(){
-        List<Sale> sales = saleService.getAllSales();
+        List<SaleDto> sales = saleService.getAllSalesDto();
         return ResponseEntity.ok(sales);
     }
 

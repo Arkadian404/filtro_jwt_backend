@@ -1,5 +1,6 @@
 package com.ark.security.models.user;
 
+import com.ark.security.dto.UserDto;
 import com.ark.security.models.Cart;
 import com.ark.security.models.Employee;
 import com.ark.security.models.token.Token;
@@ -104,6 +105,22 @@ public class User implements UserDetails {
         }
 
         return true;
+    }
+
+    public UserDto convertToDto(){
+        return UserDto.builder()
+                .id(this.id)
+                .firstname(this.firstname)
+                .lastname(this.lastname)
+                .username(this.username)
+                .email(this.email)
+                .dob(this.dob)
+                .address(this.address)
+                .province(this.province)
+                .district(this.district)
+                .ward(this.ward)
+                .phone(this.phone)
+                .build();
     }
 
 }

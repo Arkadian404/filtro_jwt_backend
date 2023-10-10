@@ -22,18 +22,25 @@ public class EmployeeService {
     private final PasswordEncoder passwordEncoder;
     private final EmployeeRepository employeeRepository;
 
+    private final String NOT_FOUND = "Không tìm thấy nhân viên nào: ";
+    private final String EMPTY = "Không có nhân viên nào";
+    private final String DUPLICATE = "Nhân viên đã tồn tại";
+    private final String BLANK = "Không được để trống";
+    private final String USERNAME_DUPLICATE = "Username đã tồn tại";
+    private final String EMAIL_DUPLICATE = "Email đã tồn tại";
+
     public Employee getEmployeeById(Integer id){
-        return employeeRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy nhân viên: "+ id));
+        return employeeRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
     }
 
     public Employee getEmployeeByUserId(Integer id){
-        return employeeRepository.findByUserId(id).orElseThrow(()-> new NotFoundException("Không tìm thấy nhân viên: "+ id));
+        return employeeRepository.findByUserId(id).orElseThrow(()-> new NotFoundException(NOT_FOUND + id));
     }
 
     public List<Employee> getAllEmployees(){
         List<Employee> employees = employeeRepository.findAll();
         if(employees.isEmpty()){
-            throw new NotFoundException("Không có nhân viên nào");
+            throw new NotFoundException(EMPTY);
         }
         return employees;
     }
@@ -42,12 +49,12 @@ public class EmployeeService {
         user.setFirstname(newUser.getFirstname());
         user.setLastname(newUser.getLastname());
         if(userRepository.existsUserByUsername(newUser.getUsername())){
-            throw new DuplicateException("Username đã tồn tại");
+            throw new DuplicateException(USERNAME_DUPLICATE);
         }else{
             user.setUsername(newUser.getUsername());
         }
         if(userRepository.existsUserByEmail(newUser.getEmail())){
-            throw new DuplicateException("Email đã tồn tại");
+            throw new DuplicateException(EMAIL_DUPLICATE);
         }else{
             user.setEmail(newUser.getEmail());
         }
@@ -85,10 +92,10 @@ public class EmployeeService {
                 userRepository.save(user);
 
             }else{
-                throw new NullException("Thông tin tài khoản không được để trống");
+                throw new NullException(BLANK);
             }
         }else {
-            throw new NullException("Thông tin nhân viên không được để trống");
+            throw new NullException(BLANK);
         }
 
     }
@@ -109,14 +116,14 @@ public class EmployeeService {
                     employeeRepository.save(oldEmployee);
                     userRepository.save(oldUser);
                 }else {
-                    throw new NullException("Thông tin nhân viên không được để trống");
+                    throw new NullException(BLANK);
                 }
             }
             else{
-                throw new NullException("Thông tin tài khoản không được để trống");
+                throw new NullException(BLANK);
             }
         }else{
-            throw new NotFoundException("Không tìm thấy nhân viên: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
     }
 
@@ -130,7 +137,7 @@ public class EmployeeService {
                 userRepository.delete(user);
             }
         } else{
-            throw new NotFoundException("Không tìm thấy nhân viên: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
     }
 

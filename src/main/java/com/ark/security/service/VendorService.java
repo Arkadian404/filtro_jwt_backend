@@ -1,5 +1,6 @@
 package com.ark.security.service;
 
+import com.ark.security.dto.VendorDto;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.product.Vendor;
 import com.ark.security.repository.VendorRepository;
@@ -12,6 +13,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VendorService {
     private final VendorRepository vendorRepository;
+    private final String NOT_FOUND = "Không tìm thấy nhà cung cấp: ";
+    private final String EMPTY = "Không có nhà cung cấp nào";
 
     public void saveVendor(Vendor vendor){
         vendorRepository.save(vendor);
@@ -19,13 +22,24 @@ public class VendorService {
 
     public List<Vendor> getAllVendor(){
         if(vendorRepository.findAll().isEmpty()) {
-            throw new NotFoundException("Không có nhà cung cấp nào");
+            throw new NotFoundException(EMPTY);
         }
         return vendorRepository.findAll();
     }
 
+    public List<VendorDto> getAllVendorDto() {
+        List<VendorDto> vendors = vendorRepository.findAll()
+                .stream()
+                .map(Vendor::convertToDto)
+                .toList();
+        if(vendors.isEmpty()){
+            throw new NotFoundException(EMPTY);
+        }
+        return vendors;
+    }
+
     public Vendor getVendorById(int id){
-        return vendorRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy nhà cung cấp: "+ id));
+        return vendorRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
     }
 
     public void updateVendor(int id, Vendor vendor){
@@ -40,7 +54,7 @@ public class VendorService {
 
     public void deleteVendor(int id){
         if(!vendorRepository.existsById(id))
-            throw new NotFoundException("Không tìm thấy nhà cung cấp: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         vendorRepository.deleteById(id);
     }
 

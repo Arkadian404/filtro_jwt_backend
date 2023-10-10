@@ -1,5 +1,6 @@
 package com.ark.security.controller.user;
 
+import com.ark.security.dto.FlavorDto;
 import com.ark.security.models.product.Flavor;
 import com.ark.security.service.FlavorService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class FlavorController {
 
     @GetMapping("/getList")
     public ResponseEntity<?> getFlavorList(){
-        List<Flavor> flavors = flavorService.getAllFlavors();
+        List<FlavorDto> flavors = flavorService.getAllFlavorsDto();
         return ResponseEntity.ok(flavors);
 
     }

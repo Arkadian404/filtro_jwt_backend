@@ -3,6 +3,7 @@ package com.ark.security.controller.admin;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Category;
 import com.ark.security.service.CategoryService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/admin/category")
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "BearerAuth")
 public class AdminCategoryController {
 
     private final CategoryService categoryService;
@@ -24,9 +26,6 @@ public class AdminCategoryController {
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getCategoryList(){
         List<Category> categories = categoryService.getAllCategories();
-//        if(categories.isEmpty()){
-//            return ResponseEntity.badRequest().body("Không có danh mục nào");
-//        }
         return ResponseEntity.ok(categories);
     }
 

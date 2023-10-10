@@ -3,6 +3,7 @@ package com.ark.security.controller.admin;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Vendor;
 import com.ark.security.service.VendorService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.Date;
 @RequestMapping("/api/v1/admin/vendor")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+@SecurityRequirement(name = "BearerAuth")
 public class AdminVendorController {
     private final VendorService vendorService;
 

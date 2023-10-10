@@ -170,32 +170,32 @@ public class ExceptionHandlerAdvice {
     }
 
 
-//    @ExceptionHandler(DisabledException.class)
-//    public ResponseEntity<?> handleDisabledException(DisabledException ex, WebRequest request){
-//        logger.error("Disabled error: {}", ex.getMessage());
-//        var error = ErrorMessage.builder()
-//                .statusCode(HttpStatus.BAD_REQUEST.value())
-//                .message("Tài khoản của bạn đã bị khóa!")
-//                .description(request.getDescription(false))
-//                .timestamp(new Date())
-//                .build();
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-//    }
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<?> handleDisabledException(DisabledException ex, WebRequest request){
+        logger.error("Disabled error: {}", ex.getMessage());
+        var error = ErrorMessage.builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message("Tài khoản của bạn đã bị khóa!")
+                .description(request.getDescription(false))
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 
 
-//    @ExceptionHandler(Exception.class)
-//    //@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ResponseEntity<?> handleException(Exception ex, WebRequest request){
-//        var error = ErrorMessage.builder()
-//                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-//                .message(ex.getMessage())
-//                .description(request.getDescription(false))
-//                .timestamp(new Date())
-//                .build();
-//        log.error("Error: {}", error.getDescription());
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-//
-//    }
+    @ExceptionHandler(Exception.class)
+    //@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<?> handleException(Exception ex, WebRequest request){
+        var error = ErrorMessage.builder()
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(ex.getMessage())
+                .description(request.getDescription(false))
+                .timestamp(new Date())
+                .build();
+        log.error("Error: {}", error.getDescription());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+
+    }
 
 }
 

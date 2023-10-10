@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.user.Role;
 import com.ark.security.models.user.User;
 import com.ark.security.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Map;
 @RequestMapping ("/api/v1/admin/user")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+@SecurityRequirement(name = "BearerAuth")
 public class AdminUserController {
     private final UserService userService;
 

@@ -3,6 +3,7 @@ package com.ark.security.controller.admin;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Flavor;
 import com.ark.security.service.FlavorService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/admin/flavor")
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+@SecurityRequirement(name = "BearerAuth")
 @RequiredArgsConstructor
 public class AdminFlavorController {
 

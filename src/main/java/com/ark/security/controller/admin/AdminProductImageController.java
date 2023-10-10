@@ -3,6 +3,7 @@ package com.ark.security.controller.admin;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.ProductImage;
 import com.ark.security.service.ProductImageService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.Date;
 @RequestMapping("/api/v1/admin/product-image")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+@SecurityRequirement(name = "BearerAuth")
 public class AdminProductImageController {
     private final ProductImageService productImageService;
 

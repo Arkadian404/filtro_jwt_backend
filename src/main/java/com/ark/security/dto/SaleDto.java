@@ -1,17 +1,17 @@
 package com.ark.security.dto;
 
 import com.ark.security.models.product.Sale;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Value;
+import lombok.*;
 
 import java.io.Serializable;
 
 /**
  * DTO for {@link Sale}
  */
-@Value
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class SaleDto implements Serializable {
     Integer id;

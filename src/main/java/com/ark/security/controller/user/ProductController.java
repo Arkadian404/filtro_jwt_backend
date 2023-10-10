@@ -1,16 +1,14 @@
 package com.ark.security.controller.user;
 
+import com.ark.security.dto.ProductDto;
 import com.ark.security.models.product.Product;
 import com.ark.security.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/user/product")
@@ -21,9 +19,18 @@ public class ProductController {
 
 
     @GetMapping("/getList")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getProductList(){
-        List<Product> productList = productService.getAllProducts();
+        List<ProductDto> productList = productService.getAllProductsDto();
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getList(@RequestParam Optional<Integer> page,
+                                     @RequestParam Optional<String> sort){
+        Page<ProductDto> productList = productService.getAllProductsDtoPaging(
+                page.orElse(0),
+                sort.orElse(""));
+        System.out.println(sort);
         return ResponseEntity.ok(productList);
     }
 

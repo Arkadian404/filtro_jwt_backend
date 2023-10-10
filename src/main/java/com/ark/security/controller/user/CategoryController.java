@@ -1,5 +1,6 @@
 package com.ark.security.controller.user;
 
+import com.ark.security.dto.CategoryDto;
 import com.ark.security.models.product.Category;
 import com.ark.security.service.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class CategoryController {
 
     @GetMapping("/getList")
     public ResponseEntity<?> getCategoryList(){
-        List<Category> categories = categoryService.getAllCategories();
+        List<CategoryDto> categories = categoryService.getAllCategoriesDto();
         return ResponseEntity.ok(categories);
     }
 

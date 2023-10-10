@@ -1,5 +1,6 @@
 package com.ark.security.service;
 
+import com.ark.security.dto.CategoryDto;
 import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
@@ -9,17 +10,35 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
-
     private final CategoryRepository categoryRepository;
+    private final String NOT_FOUND = "Không tìm thấy danh mục nào: ";
+    private final String EMPTY = "Không có danh mục nào";
+    private final String DUPLICATE = "Danh mục đã tồn tại";
+    private final String NULL = "Không được để trống";
+
 
     public List<Category> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
         if(categories.isEmpty()){
-            throw new NotFoundException("Không có danh mục nào");
+            throw new NotFoundException(EMPTY);
+        }
+        return categories;
+    }
+
+    public List<CategoryDto> getAllCategoriesDto() {
+        List<CategoryDto> categories = categoryRepository.findAll()
+                .stream()
+                .map(Category::convertToDto)
+                .toList();
+        if(categories.isEmpty()){
+            throw new NotFoundException(EMPTY);
         }
         return categories;
     }
@@ -33,22 +52,22 @@ public class CategoryService {
     List<Category> get5Categories() {
         List<Category> categories = categoryRepository.find5Categories();
         if(categories.isEmpty()){
-            throw new NotFoundException("Không có danh mục nào");
+            throw new NotFoundException(EMPTY);
         }
         return categories;
     }
 
     public Category getCategoryById(int id) {
-        return categoryRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy danh mục: "+ id));
+        return categoryRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND + id));
     }
 
     Category getCategoryByName(String name) {
-        return categoryRepository.findCategoryByName(name).orElseThrow(()-> new NotFoundException("Không tìm thấy danh mục: "+ name));
+        return categoryRepository.findCategoryByName(name).orElseThrow(()-> new NotFoundException(NOT_FOUND + name));
     }
 
     public void saveCategory(Category category) {
         if(isDuplicateCategoryName(category.getName())){
-            throw new DuplicateException("Danh mục đã tồn tại");
+            throw new DuplicateException(DUPLICATE);
         }
         categoryRepository.save(category);
     }
@@ -56,17 +75,17 @@ public class CategoryService {
     public void updateCategory(int id, Category category) {
         Category oldCategory = getCategoryById(id);
         if(category == null){
-            throw new NullException("Không được để trống");
+            throw new NullException(NULL);
         }
         if (oldCategory != null) {
             if(isDuplicateCategoryName(category.getName())){
-                throw new DuplicateException("Danh mục đã tồn tại");
+                throw new DuplicateException(DUPLICATE);
             }
             oldCategory.setName(category.getName());
             oldCategory.setStatus(category.getStatus());
             categoryRepository.save(oldCategory);
         }else{
-            throw new NotFoundException("Không tìm thấy danh mục: "+ id);
+            throw new NotFoundException(NOT_FOUND + id);
         }
     }
 
@@ -74,7 +93,7 @@ public class CategoryService {
     public void deleteCategory(int id) {
         Category category = getCategoryById(id);
         if(category == null){
-            throw new NotFoundException("Không tìm thấy danh mục: "+ id);
+            throw new NotFoundException(NOT_FOUND + id);
         }
         categoryRepository.deleteById(id);
     }

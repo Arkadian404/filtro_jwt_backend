@@ -12,25 +12,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductDetailService {
     private final ProductDetailRepository productDetailRepository;
+    private final String NOT_FOUND = "Không tìm thấy chi tiết sản phẩm: ";
+    private final String EMPTY = "Không có chi tiết sản phẩm nào";
+
 
     public void saveProductDetail(ProductDetail productDetail){
            productDetailRepository.save(productDetail);
     }
 
     public ProductDetail getProductDetailById(int id){
-        return productDetailRepository.findById(id).orElseThrow(()-> new RuntimeException("Không tìm thấy chi tiết sản phẩm: "+ id));
+        return productDetailRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
     }
 
     public List<ProductDetail> getAllProductDetail(){
         if(productDetailRepository.findAll().isEmpty())
-            throw new RuntimeException("Không có chi tiết sản phẩm nào");
+            throw new NotFoundException(EMPTY);
         return productDetailRepository.findAll();
     }
 
     public List<ProductDetail> getProductDetailsByProductId(int id){
         if(productDetailRepository.findAllByProductId(id).isEmpty())
-            throw new NotFoundException("Không có chi tiết sản phẩm nào");
-        return productDetailRepository.findAllByProductId(id).orElseThrow(()-> new NotFoundException("Không có sản phẩm nào"));
+            throw new NotFoundException(EMPTY);
+        return productDetailRepository.findAllByProductId(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
     }
 
 
@@ -45,13 +48,13 @@ public class ProductDetailService {
             productDetailUpdate.setStatus(productDetail.getStatus());
             productDetailRepository.save(productDetailUpdate);
         }else{
-            throw new NotFoundException("Không tìm thấy sản phẩm: " + id);
+            throw new NotFoundException(NOT_FOUND + id);
         }
     }
 
     public void deleteProductDetail(int id){
         if(!productDetailRepository.existsById(id))
-            throw new NotFoundException("Không tìm thấy chi tiết sản phẩm: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         productDetailRepository.deleteById(id);
     }
 }

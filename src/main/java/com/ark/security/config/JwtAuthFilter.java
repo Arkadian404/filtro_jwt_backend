@@ -44,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }else{
             System.out.println("JWT Token does not begin with Bearer String");
         }
-        if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){ //
+        if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             var isTokenValid = tokenService.getByToken(jwt)
                     .map(t -> !t.isExpired() && !t.isRevoked())

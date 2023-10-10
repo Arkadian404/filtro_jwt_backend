@@ -1,6 +1,7 @@
 package com.ark.security.service;
 
 
+import com.ark.security.dto.BrandDto;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.product.Brand;
 import com.ark.security.repository.BrandRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +19,17 @@ public class BrandService {
 
     public List<Brand> getAllBrands(){
         List<Brand> brands = brandRepository.findAll();
+        if(brands.isEmpty()){
+            throw new NotFoundException("Không tìm thấy thương hiệu nào");
+        }
+        return brands;
+    }
+
+    public List<BrandDto> getAllBrandsDto(){
+        List<BrandDto> brands = brandRepository.findAll()
+                .stream()
+                .map(Brand::convertToDto)
+                .collect(Collectors.toList());
         if(brands.isEmpty()){
             throw new NotFoundException("Không tìm thấy thương hiệu nào");
         }

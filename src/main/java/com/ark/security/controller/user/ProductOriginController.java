@@ -17,7 +17,7 @@ public class ProductOriginController {
 
     @GetMapping("/getList")
     public ResponseEntity<?> getAllProductOrigin(){
-        return ResponseEntity.ok(productOriginService.getAllProductOrigin());
+        return ResponseEntity.ok(productOriginService.getAllProductOriginDto());
     }
 
     @GetMapping("/find/{id}")

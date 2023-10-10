@@ -1,5 +1,6 @@
 package com.ark.security.service;
 
+import com.ark.security.dto.FlavorDto;
 import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
@@ -15,15 +16,30 @@ import java.util.List;
 public class FlavorService {
 
     private final FlavorRepository flavorRepository;
+    private final String NOT_FOUND = "Không tìm thấy loại hương vị nào: ";
+    private final String EMPTY = "Không có loại hương vị nào";
+    private final String DUPLICATE = "Loại hương vị đã tồn tại";
+    private final String BLANK = "Không được để trống";
 
     public Flavor getFlavorById(int id) {
-        return flavorRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy loại hương vị: "+ id));
+        return flavorRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
     }
 
     public List<Flavor> getAllFlavors() {
         List<Flavor> flavors = flavorRepository.findAll();
         if(flavors.isEmpty()){
-            throw new NotFoundException("Không có loại hương vị nào");
+            throw new NotFoundException(EMPTY);
+        }
+        return flavors;
+    }
+
+    public List<FlavorDto> getAllFlavorsDto() {
+        List<FlavorDto> flavors = flavorRepository.findAll()
+                .stream()
+                .map(Flavor::convertToDto)
+                .toList();
+        if(flavors.isEmpty()){
+            throw new NotFoundException(EMPTY);
         }
         return flavors;
     }
@@ -34,7 +50,7 @@ public class FlavorService {
 
     public void saveFlavor(Flavor flavor) {
         if(existsFlavorByName(flavor.getName())) {
-            throw new DuplicateException("Loại hương vị đã tồn tại");
+            throw new DuplicateException(DUPLICATE);
         }
         flavorRepository.save(flavor);
     }
@@ -42,7 +58,7 @@ public class FlavorService {
     public void updateFlavor(int id, Flavor flavor){
         Flavor oldFlavor = getFlavorById(id);
         if(flavor == null){
-            throw new NullException("Không được để trống");
+            throw new NullException(BLANK);
         }
         if (oldFlavor != null) {
             oldFlavor.setName(flavor.getName());
@@ -50,14 +66,14 @@ public class FlavorService {
             oldFlavor.setStatus(flavor.getStatus());
             flavorRepository.save(oldFlavor);
         }else{
-            throw new NotFoundException("Không tìm thấy loại hương vị: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
     }
 
     public void deleteFlavor(int id) {
         Flavor flavor = getFlavorById(id);
         if(flavor == null){
-            throw new NotFoundException("Không tìm thấy loại hương vị: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
         flavorRepository.deleteById(id);
     }

@@ -1,5 +1,6 @@
 package com.ark.security.service;
 
+import com.ark.security.dto.SaleDto;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
 import com.ark.security.models.product.Sale;
@@ -13,6 +14,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SaleService {
     private final SaleRepository saleRepository;
+    private final String NOT_FOUND = "Không tìm thấy sự kiện: ";
+    private final String EMPTY = "Không có sự kiện nào";
+    private final String BLANK = "Không được để trống";
 
     public void saveSale(Sale sale){
         saleRepository.save(sale);
@@ -21,19 +25,30 @@ public class SaleService {
     public List<Sale> getAllSales(){
         List<Sale> sales = saleRepository.findAll();
         if(sales.isEmpty()){
-            throw new NotFoundException("Không có khuyến mãi nào");
+            throw new NotFoundException(EMPTY);
+        }
+        return sales;
+    }
+
+    public List<SaleDto> getAllSalesDto() {
+        List<SaleDto> sales = saleRepository.findAll()
+                .stream()
+                .map(Sale::convertToDto)
+                .toList();
+        if(sales.isEmpty()){
+            throw new NotFoundException(EMPTY);
         }
         return sales;
     }
 
     public Sale getSaleById(int id){
-        return saleRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy khuyến mãi: "+ id));
+        return saleRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
     }
 
     public void updateSale(int id, Sale sale){
         Sale oldSale = getSaleById(id);
         if(sale == null){
-            throw new NullException("Không được để trống");
+            throw new NullException(BLANK);
         }
         if(oldSale !=null){
             oldSale.setName(sale.getName());
@@ -44,14 +59,14 @@ public class SaleService {
             oldSale.setStatus(sale.getStatus());
             saleRepository.save(oldSale);
         }else{
-            throw new NotFoundException("Không tìm thấy khuyến mãi: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
     }
 
     public void deleteSale(int id){
         Sale sale = getSaleById(id);
         if(sale == null){
-            throw new NotFoundException("Không tìm thấy khuyến mãi: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
         saleRepository.deleteById(id);
     }

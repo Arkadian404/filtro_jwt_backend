@@ -11,12 +11,17 @@ import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.product.ProductImage;
 import com.ark.security.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +47,60 @@ public class ProductService {
             throw new NotFoundException(PRODUCT_EMPTY);
         }
         return products;
+    }
+
+    public Page<Product> getAllProductsPaging(Pageable pageable){
+        Page<Product> products = productRepository.findAll(pageable);
+        if(products.isEmpty()){
+            throw new NotFoundException(PRODUCT_EMPTY);
+        }
+        return products;
+    }
+
+    public List<ProductDto> getAllProductsDto(){
+        List<ProductDto> productDtos;
+        List<Product> products = productRepository.findAll();
+        if(products.isEmpty()){
+            throw new NotFoundException(PRODUCT_EMPTY);
+        }
+        productDtos = convertProductToDto(products);
+        return productDtos;
+    }
+
+
+    public Page<ProductDto> getAllProductsDtoPaging(int page, String sort){
+        Pageable pageable = PageRequest.of(page, 12);
+        List<Product> products = productRepository.findAll();
+        if(products.isEmpty()){
+            throw new NotFoundException(PRODUCT_EMPTY);
+        }
+        List<ProductDto> list = convertProductToDto(products);
+        switch (sort){
+            case "product_name_asc":
+                list.sort(Comparator.comparing(ProductDto::getName));
+                break;
+            case "product_name_desc":
+                list.sort(Comparator.comparing(ProductDto::getName).reversed());
+                break;
+            case "price_asc":
+                list.sort(Comparator.comparing(product -> product.getProductDetails().get(0).getPrice()));
+                break;
+            case "price_desc":
+                Comparator<ProductDto> comparator =  Comparator.comparing(product -> product.getProductDetails().get(0).getPrice());
+                list.sort(comparator.reversed());
+                break;
+            default:
+                list.sort(Comparator.comparing(ProductDto::getId));
+                break;
+        }
+
+//        System.out.println(sort.equals("product_name_asc"));
+//        System.out.println(sort.equals("product_name_desc"));
+//        System.out.println(sort.equals("price_asc"));
+//        System.out.println(sort.equals("price_desc"));
+//        System.out.println(sort.equals(""));
+        //1 find a product list, 2 convert product list to product dto list then convert that list to page product dto
+            return convertListToPage(list, pageable);
     }
 
     public Category getCategoryByProductId(int id){
@@ -268,6 +327,18 @@ public class ProductService {
     }
 
 
+    public Page<ProductDto> convertListToPage(List<ProductDto> products, Pageable pageable){
+        int totalPage = products.size() / pageable.getPageSize();
+        if(pageable.getPageNumber() < 0){
+            pageable = PageRequest.of(0, 12);
+        } else if(pageable.getPageNumber() >= totalPage) {
+            pageable = PageRequest.of(totalPage, 12);
+        }
+       int start = (int) pageable.getOffset(); //lay offset 0,12,24,36,...
+       int end = Math.min((start + pageable.getPageSize()), products.size()); //lay phan tu luon = 12
+       List<ProductDto> sublist = products.subList(start, end);//cat danh sach
+       return new PageImpl<>(sublist, pageable, products.size()); // cai lol nay khong cho sort ?? deo hieu!
+    }
 
 }
 

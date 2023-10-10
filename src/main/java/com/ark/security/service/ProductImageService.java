@@ -14,11 +14,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductImageService {
     private final ProductImageRepository productImageRepository;
-
+    private final String NOT_FOUND = "Không tìm thấy ảnh: ";
+    private final String EMPTY = "Không có ảnh nào";
     public List<ProductImage> getAllProductImages(){
         List<ProductImage> list =  productImageRepository.findAll();
         if(list.isEmpty()){
-            throw new NotFoundException("Không có ảnh nào");
+            throw new NotFoundException(EMPTY);
         }
         return list;
     }
@@ -26,13 +27,13 @@ public class ProductImageService {
     public List<ProductImage> getProductImagesByProductId(int id){
         List<ProductImage> list =  productImageRepository.findAllByProductId(id);
         if(list.isEmpty()){
-            throw new NotFoundException("Không có ảnh nào");
+            throw new NotFoundException(EMPTY);
         }
         return list;
     }
 
     public ProductImage getProductImageById(int id){
-        return productImageRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy ảnh: "+ id));
+        return productImageRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
     }
 
     public void saveProductImage(ProductImage productImage){
@@ -53,14 +54,14 @@ public class ProductImageService {
             oldImage.setUpdatedAt(new Date());
             productImageRepository.save(oldImage);
         }else{
-            throw new NotFoundException("Không tìm thấy ảnh: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
     }
 
     public void deleteImage(int id){
         ProductImage productImage = getProductImageById(id);
         if(productImage == null){
-            throw new NotFoundException("Không tìm thấy ảnh: "+ id);
+            throw new NotFoundException(NOT_FOUND+ id);
         }
         productImageRepository.deleteById(id);
     }

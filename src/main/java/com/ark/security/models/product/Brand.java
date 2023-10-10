@@ -1,5 +1,6 @@
 package com.ark.security.models.product;
 
+import com.ark.security.dto.BrandDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,6 @@ import java.util.List;
 @Entity
 @Table
 public class Brand {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -28,4 +28,11 @@ public class Brand {
     @OneToMany(mappedBy = "brand", fetch = FetchType.LAZY)
     @JsonIgnore
     List<Product> products;
+
+    public BrandDto convertToDto(){
+        return BrandDto.builder()
+                .id(this.id)
+                .name(this.name)
+                .build();
+    }
 }
