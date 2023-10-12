@@ -48,15 +48,6 @@ public class CategoryService {
     }
 
 
-
-    List<Category> get5Categories() {
-        List<Category> categories = categoryRepository.find5Categories();
-        if(categories.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return categories;
-    }
-
     public Category getCategoryById(int id) {
         return categoryRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND + id));
     }

@@ -17,6 +17,7 @@ import java.util.List;
 public class ProductDto implements Serializable {
     private Integer id;
     private String name;
+    private BrandDto brand;
     private List<ProductDetailDto> productDetails;
     private String description;
     private List<ProductImageDto> images;
@@ -25,9 +26,4 @@ public class ProductDto implements Serializable {
     private SaleDto sale;
     private ProductOriginDto origin;
     private VendorDto vendor;
-
-
-    public Comparator<ProductDto> byPrice(){
-        return Comparator.comparing(p -> p.productDetails.get(0).getPrice());
-    }
 }

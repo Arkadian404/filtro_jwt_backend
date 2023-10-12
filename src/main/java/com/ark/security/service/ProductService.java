@@ -17,10 +17,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,14 +47,6 @@ public class ProductService {
         return products;
     }
 
-    public Page<Product> getAllProductsPaging(Pageable pageable){
-        Page<Product> products = productRepository.findAll(pageable);
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
-
     public List<ProductDto> getAllProductsDto(){
         List<ProductDto> productDtos;
         List<Product> products = productRepository.findAll();
@@ -66,15 +56,28 @@ public class ProductService {
         productDtos = convertProductToDto(products);
         return productDtos;
     }
-
-
-    public Page<ProductDto> getAllProductsDtoPaging(int page, String sort){
+    Page<ProductDto> doPagination(List<ProductDto> list, int page, String sort, String flavor,
+                                  String category, String brand, String origin, String vendor){
         Pageable pageable = PageRequest.of(page, 12);
-        List<Product> products = productRepository.findAll();
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
+        if(!flavor.isEmpty() && !category.isEmpty() && !brand.isEmpty() && !origin.isEmpty() && !vendor.isEmpty()){
+            list = list.stream()
+                    .filter(product ->
+                            flavor.contains(product.getFlavor().getName())&&
+                                    category.contains(product.getCategory().getName())&&
+                                    brand.contains(product.getBrand().getName())&&
+                                    origin.contains(product.getOrigin().getName())&&
+                                    vendor.contains(product.getVendor().getName())
+                    ).collect(Collectors.toList());
+        }else if(!flavor.isEmpty() || !category.isEmpty() || !brand.isEmpty() || !origin.isEmpty() || !vendor.isEmpty()){
+            list = list.stream()
+                    .filter(product ->
+                            flavor.contains(product.getFlavor().getName())||
+                                    category.contains(product.getCategory().getName())||
+                                    brand.contains(product.getBrand().getName())||
+                                    origin.contains(product.getOrigin().getName())||
+                                    vendor.contains(product.getVendor().getName())
+                    ).collect(Collectors.toList());
         }
-        List<ProductDto> list = convertProductToDto(products);
         switch (sort){
             case "product_name_asc":
                 list.sort(Comparator.comparing(ProductDto::getName));
@@ -93,19 +96,62 @@ public class ProductService {
                 list.sort(Comparator.comparing(ProductDto::getId));
                 break;
         }
+        if(list.isEmpty()){
+            throw new NotFoundException(PRODUCT_EMPTY);
+        }
+        return convertListDtoToPage(list, pageable);
+    }
 
-//        System.out.println(sort.equals("product_name_asc"));
-//        System.out.println(sort.equals("product_name_desc"));
-//        System.out.println(sort.equals("price_asc"));
-//        System.out.println(sort.equals("price_desc"));
-//        System.out.println(sort.equals(""));
-        //1 find a product list, 2 convert product list to product dto list then convert that list to page product dto
-            return convertListToPage(list, pageable);
+    public Page<ProductDto> getAllProductsDtoPaging(int page, String sort, String flavor, String category,
+                                                    String brand, String origin, String vendor
+                                                    ){
+        List<Product> products = productRepository.findAll();
+        if(products.isEmpty()){
+            throw new NotFoundException(PRODUCT_EMPTY);
+        }
+        List<ProductDto> list = convertProductToDto(products);
+        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    }
+
+    public Page<ProductDto> getAllProductsDtoByCategoryPaging(int id, int page, String sort, String flavor, String category,
+                                                              String brand, String origin, String vendor){
+        List<Product> products = getAllProductsByCategory(id);
+        List<ProductDto> list = convertProductToDto(products);
+        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    }
+
+    public Page<ProductDto> getAllProductsDtoByOriginContinentPaging(String name,int page, String sort, String flavor, String category,
+                                                                     String brand, String origin, String vendor ){
+        List<Product> products = productRepository.findByOriginContinent(name).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
+        List<ProductDto> list = convertProductToDto(products);
+        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    }
+
+    public Page<ProductDto> getAllProductsDtoByIsSpecialPaging(Boolean isSpecial, int page, String sort, String flavor, String category,
+                                                               String brand, String origin, String vendor){
+        List<Product> products = productRepository.findByIsSpecial(isSpecial).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
+        List<ProductDto> list = convertProductToDto(products);
+        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    }
+
+    public Page<ProductDto> getAllProductsDtoByIsLimitedPaging(Boolean isLimited, int page, String sort, String flavor, String category,
+                                                               String brand, String origin, String vendor){
+        List<Product> products = productRepository.findByIsLimited(isLimited).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
+        List<ProductDto> list = convertProductToDto(products);
+        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    }
+
+    public Page<ProductDto> getAllProductsDtoByBestSellerPaging(int page, String sort, String flavor, String category,
+                                                                String brand, String origin, String vendor){
+        List<Product> products = productRepository.findBestSellerProducts().orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
+        List<ProductDto> list = convertProductToDto(products);
+        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
     }
 
     public Category getCategoryByProductId(int id){
         return productRepository.findCategoryUsingId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
     }
+
 
 
     public List<Product> getAllProductsByCategory(int id){
@@ -252,7 +298,16 @@ public class ProductService {
         return productDtos;
     }
 
-
+    public List<ProductDto> getProductsFromAmericas(){
+        List<ProductDto> productDtos;
+        List<Product> products = productRepository.findByOriginName(1)
+                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
+        if(products.isEmpty()){
+            throw new NotFoundException(PRODUCT_EMPTY);
+        }
+        productDtos = convertProductToDto(products);
+        return productDtos;
+    }
 
 
     public boolean isExistsProductByName(String name){
@@ -312,6 +367,7 @@ public class ProductService {
             ProductDto productDto = ProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
+                    .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
                     .description(product.getDescription())
                     .images(productImageDtos)
                     .productDetails(productDetailDtos)
@@ -327,7 +383,7 @@ public class ProductService {
     }
 
 
-    public Page<ProductDto> convertListToPage(List<ProductDto> products, Pageable pageable){
+    public Page<ProductDto> convertListDtoToPage(List<ProductDto> products, Pageable pageable){
         int totalPage = products.size() / pageable.getPageSize();
         if(pageable.getPageNumber() < 0){
             pageable = PageRequest.of(0, 12);

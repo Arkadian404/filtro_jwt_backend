@@ -20,6 +20,14 @@ public class ProductOriginController {
         return ResponseEntity.ok(productOriginService.getAllProductOriginDto());
     }
 
+    @GetMapping("/getListByContinent/{continent}")
+    public ResponseEntity<?> getProductOriginByContinent(@PathVariable String continent){
+        return ResponseEntity.ok(productOriginService.getProductOriginDtoByContinent(continent));
+    }
+
+
+
+
     @GetMapping("/find/{id}")
     public ResponseEntity<?> find(@PathVariable int id){
         return ResponseEntity.ok(productOriginService.getProductOriginById(id));

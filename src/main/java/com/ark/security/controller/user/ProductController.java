@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import utils.ProductFilter;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -24,13 +26,108 @@ public class ProductController {
         return ResponseEntity.ok(productList);
     }
 
-    @GetMapping("/list")
+    @GetMapping("/all")
     public ResponseEntity<?> getList(@RequestParam Optional<Integer> page,
-                                     @RequestParam Optional<String> sort){
-        Page<ProductDto> productList = productService.getAllProductsDtoPaging(
-                page.orElse(0),
-                sort.orElse(""));
-        System.out.println(sort);
+                                     @RequestParam Optional<String> sort,
+                                     @RequestParam Optional<String> flavor,
+                                     @RequestParam Optional<String> category,
+                                     @RequestParam Optional<String> brand,
+                                     @RequestParam Optional<String> origin,
+                                     @RequestParam Optional<String> vendor
+                                     ){
+        Page<ProductDto> productList = productService.getAllProductsDtoPaging(page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
+
+    @GetMapping("/byInstantCoffee")
+    public ResponseEntity<?> getInstantCoffee(@RequestParam Optional<Integer> page,
+                                     @RequestParam Optional<String> sort,
+                                     @RequestParam Optional<String> flavor,
+                                     @RequestParam Optional<String> category,
+                                     @RequestParam Optional<String> brand,
+                                     @RequestParam Optional<String> origin,
+                                     @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(1,
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/byRoastedBeanCoffee")
+    public ResponseEntity<?> getRoastedBeanCoffee(@RequestParam Optional<Integer> page,
+                                              @RequestParam Optional<String> sort,
+                                              @RequestParam Optional<String> flavor,
+                                              @RequestParam Optional<String> category,
+                                              @RequestParam Optional<String> brand,
+                                              @RequestParam Optional<String> origin,
+                                              @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(2,
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/byCoffeeBall")
+    public ResponseEntity<?> getCoffeeBall(@RequestParam Optional<Integer> page,
+                                              @RequestParam Optional<String> sort,
+                                              @RequestParam Optional<String> flavor,
+                                              @RequestParam Optional<String> category,
+                                              @RequestParam Optional<String> brand,
+                                              @RequestParam Optional<String> origin,
+                                              @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(3,
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/byBottledCoffee")
+    public ResponseEntity<?> getBottledCoffee(@RequestParam Optional<Integer> page,
+                                              @RequestParam Optional<String> sort,
+                                              @RequestParam Optional<String> flavor,
+                                              @RequestParam Optional<String> category,
+                                              @RequestParam Optional<String> brand,
+                                              @RequestParam Optional<String> origin,
+                                              @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(4,
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/byIsSpecial")
+    public ResponseEntity<?> getByIsSpecial(@RequestParam Optional<Integer> page,
+                                              @RequestParam Optional<String> sort,
+                                              @RequestParam Optional<String> flavor,
+                                              @RequestParam Optional<String> category,
+                                              @RequestParam Optional<String> brand,
+                                              @RequestParam Optional<String> origin,
+                                              @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByIsSpecialPaging(true,
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/byIsLimited")
+    public ResponseEntity<?> getByIsLimited(@RequestParam Optional<Integer> page,
+                                            @RequestParam Optional<String> sort,
+                                            @RequestParam Optional<String> flavor,
+                                            @RequestParam Optional<String> category,
+                                            @RequestParam Optional<String> brand,
+                                            @RequestParam Optional<String> origin,
+                                            @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByIsLimitedPaging(true,
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
         return ResponseEntity.ok(productList);
     }
 

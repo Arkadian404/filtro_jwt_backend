@@ -1,6 +1,5 @@
 package com.ark.security.models.product;
 
-import com.ark.security.dto.ProductDto;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -66,7 +65,5 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "vendor_id")
     private Vendor vendor;
-
-
 
 }

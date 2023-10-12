@@ -23,12 +23,23 @@ public class ProductOriginService {
 
     public List<ProductOrigin> getAllProductOrigin() {
         if(productOriginRepository.findAll().isEmpty())
-            throw new NotFoundException(EMPTY;
+            throw new NotFoundException(EMPTY);
         return productOriginRepository.findAll();
     }
 
     public List<ProductOriginDto> getAllProductOriginDto() {
         List<ProductOriginDto> productOrigins = productOriginRepository.findAll()
+                .stream()
+                .map(ProductOrigin::convertToDto)
+                .toList();
+        if(productOrigins.isEmpty()){
+            throw new NotFoundException(EMPTY);
+        }
+        return productOrigins;
+    }
+
+    public List<ProductOriginDto> getProductOriginDtoByContinent(String continent) {
+        List<ProductOriginDto> productOrigins = productOriginRepository.findByContinent(continent)
                 .stream()
                 .map(ProductOrigin::convertToDto)
                 .toList();
@@ -45,6 +56,7 @@ public class ProductOriginService {
     public void updateProductOrigin(int id, ProductOrigin productOrigin) {
         ProductOrigin productOriginUpdate = getProductOriginById(id);
         productOriginUpdate.setName(productOrigin.getName());
+        productOriginUpdate.setContinent(productOrigin.getContinent());
         productOriginUpdate.setDescription(productOrigin.getDescription());
         productOriginRepository.save(productOriginUpdate);
     }

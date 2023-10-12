@@ -23,6 +23,7 @@ public class ProductOrigin {
     private Integer id;
 
     private String name;
+    private String continent;
     private String description;
 
     @OneToMany(mappedBy = "origin", fetch = FetchType.LAZY)

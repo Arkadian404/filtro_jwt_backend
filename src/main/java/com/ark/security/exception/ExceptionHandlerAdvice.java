@@ -192,7 +192,7 @@ public class ExceptionHandlerAdvice {
                 .description(request.getDescription(false))
                 .timestamp(new Date())
                 .build();
-        log.error("Error: {}", error.getDescription());
+        log.error("Error: {}", error.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
 
     }

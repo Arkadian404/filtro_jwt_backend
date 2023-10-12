@@ -10,13 +10,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
-
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
 
 public interface ProductRepository extends JpaRepository<Product, Integer> {
-
 
     Optional<List<Product>> findByName(String name);
 
@@ -55,6 +54,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query(value = "select * from Product as p order by p.sold desc limit 3", nativeQuery = true)
     Optional<List<Product>> findTop3BestSellerProducts();
 
+    @Query(value = "select * from Product as p order by p.sold desc", nativeQuery = true)
+    Optional<List<Product>> findBestSellerProducts();
+
     //MYSQL QUERY
     @Query(value = "select * from Product as p where p.is_special = true limit 3", nativeQuery = true)
     Optional<List<Product>> findTop3SpecialProducts();
@@ -66,6 +68,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query(value = "select * from Product as p where p.category_id =:id  limit 10", nativeQuery = true)
     Optional<List<Product>> findTop10ProductsInSpecific(@Param("id") int id);
 
+//    @Query(value = "select * from Product as p where p.", nativeQuery = true)
+    Optional<List<Product>> findByOriginContinent(String continent);
 
     @Modifying
     @Query("""
