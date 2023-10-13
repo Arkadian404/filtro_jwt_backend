@@ -131,6 +131,37 @@ public class ProductController {
         return ResponseEntity.ok(productList);
     }
 
+    @GetMapping("/byContinent/{name}")
+    public ResponseEntity<?> getByContinent(@PathVariable String name,
+                                            @RequestParam Optional<Integer> page,
+                                            @RequestParam Optional<String> sort,
+                                            @RequestParam Optional<String> flavor,
+                                            @RequestParam Optional<String> category,
+                                            @RequestParam Optional<String> brand,
+                                            @RequestParam Optional<String> origin,
+                                            @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByOriginContinentPaging(name,
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/bestSeller")
+    public ResponseEntity<?> getBestSeller(@RequestParam Optional<Integer> page,
+                                            @RequestParam Optional<String> sort,
+                                            @RequestParam Optional<String> flavor,
+                                            @RequestParam Optional<String> category,
+                                            @RequestParam Optional<String> brand,
+                                            @RequestParam Optional<String> origin,
+                                            @RequestParam Optional<String> vendor
+    ){
+        Page<ProductDto> productList = productService.getAllProductsDtoByBestSellerPaging(
+                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
+                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
+        return ResponseEntity.ok(productList);
+    }
+
     @GetMapping("/find/{id}")
     public ResponseEntity<?> find(@PathVariable int id){
         Product product = productService.getProductById(id);

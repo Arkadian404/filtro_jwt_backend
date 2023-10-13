@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,9 +41,10 @@ public class ProductOriginService {
 
     public List<ProductOriginDto> getProductOriginDtoByContinent(String continent) {
         List<ProductOriginDto> productOrigins = productOriginRepository.findByContinent(continent)
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND + continent))
                 .stream()
                 .map(ProductOrigin::convertToDto)
-                .toList();
+                .collect(Collectors.toList());
         if(productOrigins.isEmpty()){
             throw new NotFoundException(EMPTY);
         }
