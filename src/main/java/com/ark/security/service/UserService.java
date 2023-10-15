@@ -85,9 +85,9 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new BadCredentialsException("Không tìm thấy người dùng: "+ username));
     }
 
-    public User getByUsername(String username){
-        return userRepository.findUserByUsername(username).orElseThrow(()-> new UsernameNotFoundException("Không tìm thấy người dùng: "+ username));
-    }
+        public User getByUsername(String username){
+            return userRepository.findUserByUsername(username).orElseThrow(()-> new UsernameNotFoundException("Không tìm thấy người dùng: "+ username));
+        }
 
     public List<User> getUsersByRole(Role role){
         List<User> user = userRepository.findUserByRole(role);

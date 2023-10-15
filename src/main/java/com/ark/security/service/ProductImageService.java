@@ -2,11 +2,13 @@ package com.ark.security.service;
 
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
+import com.ark.security.models.CartItem;
 import com.ark.security.models.product.ProductImage;
 import com.ark.security.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -65,4 +67,11 @@ public class ProductImageService {
         productImageRepository.deleteById(id);
     }
 
+    public List<ProductImage> getProductImagesFromListCartItem(List<CartItem> cartItems){
+        List<ProductImage> productImages = new ArrayList<>();
+        cartItems.forEach(item -> {
+            productImages.add(getProductImagesByProductId(item.getProductDetail().getProduct().getId()).get(0));
+        });
+        return productImages;
+    }
 }
