@@ -38,6 +38,7 @@ public class SecurityConfiguration {
 
     @Bean
     public CorsConfiguration corsConfiguration(){
+//        System.out.println("Truy cao vao corsConfiguration trong SecurityConfiguration");
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200"));
         corsConfiguration.addAllowedHeader("*");
@@ -50,12 +51,14 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+//        System.out.println("Truy cap vao securityFilterChain trong SecurityConfiguration");
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> corsConfiguration()))
                 .authorizeHttpRequests(ahr-> ahr.requestMatchers(
                                 "/api/v1/user/**",
                         "/api/v1/auth/**",
+//                        "/api/v1/admin/product-image/**",
                         "/v2/api-docs",
                         "/v3/api-docs",
                         "/v3/api-docs/**",

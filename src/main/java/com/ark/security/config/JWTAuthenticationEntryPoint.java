@@ -15,6 +15,24 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
         response.setContentType("application/json");
         response.getOutputStream().println("{ \"error\": \"" + authException.getMessage() + "\" }");
+        // Create a JSON response message
+//        String jsonResponse = "{\"message\":\"You have to log in to access this resource\"}";
+
+        // Write the JSON response message to the response output stream
+//        response.getWriter().write(jsonResponse);
+
+
+//        // Set the response status to 401 (Unauthorized)
+//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//
+//        // Set the response content type to JSON
+//        response.setContentType("application/json");
+//
+//        // Create a JSON response message
+//        String jsonResponse = "{\"message\":\"JWTAuthenticationEntryPoint: You have to log in to access this resource \"}";
+//
+//        // Write the JSON response message to the response output stream
+//        response.getWriter().write(jsonResponse);
     }
 
 

@@ -32,7 +32,7 @@ public class ExceptionHandlerAdvice {
                     .description(request.getDescription(false))
                     .timestamp(new Date())
                     .build();
-            logger.error("Error: {}", error.getDescription());
+            logger.error("Error: mat khau sai nhe baby{}", error.getDescription());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
@@ -44,7 +44,7 @@ public class ExceptionHandlerAdvice {
                     .description(request.getDescription(false))
                     .timestamp(new Date())
                     .build();
-            logger.error("Error: {}", error.getDescription());
+            logger.error("Error: thong tin dang nhap sai nha {}", error.getDescription());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 

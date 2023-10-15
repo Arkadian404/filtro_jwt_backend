@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +37,9 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    //AuthenticationManager is an interface in Spring Security that defines
+    //  a single method: authenticate(Authentication authentication).
+    //  This method is used to attempt to authenticate a user based on the provided Authentication object.
     private final EmployeeService employeeService;
 
     public void register(RegisterRequest request){
@@ -61,13 +65,20 @@ public class AuthenticationService {
                             request.getPassword()
                     )
             );
+//            Authentication authentication = authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(
+//                            request.getUsername(),
+//                            request.getPassword()
+//                    )
+//            );
+//            System.out.println("authentication trong authenticationservice: " +  authentication);
         } catch (DisabledException ex){
             throw new UsernameNotFoundException("Tài khoản đã bị khóa");
         }   catch (AuthenticationException ex){
             throw new BadCredentialsException("Tài khoản hoặc mật khẩu không đúng");
         }
         var user = this.userService.getByUsername(request.getUsername());
-        System.out.println(user.getRole().toString().equals("ADMIN"));
+//        System.out.println(user.getRole().toString().equals("ADMIN"));
         var token = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);

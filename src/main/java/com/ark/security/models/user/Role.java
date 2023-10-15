@@ -41,9 +41,15 @@ public enum Role {
     private final Set<Permission> permissions;
 
     public List<SimpleGrantedAuthority> getAuthorities(){
+        //a variable authorities to store the list of authorities.
+        //  SimpleGrantedAuthority object represents a granted authority or permission that a user
+        //          possesses within a Spring Security-enabled application.
+        // collect(Collectors.toList()) collects the SimpleGrantedAuthority objects into a list
         var authorities = getPermissions().stream()
                 .map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
                 .collect(Collectors.toList());
+
+        //This line adds an additional authority to the list
         authorities.add(new SimpleGrantedAuthority("ROLE_" + this.name()));
         return authorities;
     }

@@ -4,12 +4,12 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/filtro_jwt
     username: root
-    password: 123456
+    password: duc2112002
     driver-class-name: com.mysql.cj.jdbc.Driver
   mail:
     host: smtp.gmail.com
     port: 587
-    username: phutv1990@gmail.com
+    username: voduc0100@gmail.com
     properties:
       mail:
         smtp:
@@ -22,7 +22,7 @@ application:
   security:
     jwt:
       secret-key: f2f1035db6a255e7885838b020f370d702d4bb0f35a368f06ded1ce8e6684a27
-#      expiration: 84600000 # 1 day
+      #      expiration: 84600000 # 1 day
       expiration: 36000000 # 10 hours
       refresh-token:
         expiration:  604800000 # 7 days

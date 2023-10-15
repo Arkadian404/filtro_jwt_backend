@@ -55,6 +55,9 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails){
+        // muốn thêm role và username vào token
+        // .stream(): This converts the collection of authorities into a stream,
+        //      which allows you to perform operations on each element in the collection.
         return generateToken(Map.of("role", userDetails.getAuthorities()
                 .stream().map(Object::toString).collect(Collectors.toList()),
                 "username", userDetails.getUsername()), userDetails);

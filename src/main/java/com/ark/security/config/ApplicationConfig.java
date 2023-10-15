@@ -11,6 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 
+import org.hibernate.tool.schema.internal.StandardUserDefinedTypeExporter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,11 +36,13 @@ public class ApplicationConfig{
 
     @Bean
     public UserDetailsService userDetailsService(){
+//        System.out.println("Truy cap userDetailsService trong ApplicationConfig");
         return userService;
     }
 
     @Bean
     public ObjectMapper objectMapper(){
+//        System.out.println("Truy cap object Mapper trong ApplicationConfig");
         ObjectMapper mapper = new ObjectMapper();
         mapper.setAnnotationIntrospector(new CustomJacksonAnnotation());
         mapper.findAndRegisterModules();
@@ -55,6 +58,7 @@ public class ApplicationConfig{
 
     @Bean
     public AuthenticationProvider authenticationProvider(){
+//        System.out.println("Truy cap authenticationProvider trong ApplicationConfig");
         DaoAuthenticationProvider daoAuthProvider = new DaoAuthenticationProvider();
         daoAuthProvider.setUserDetailsService(userDetailsService());
         daoAuthProvider.setPasswordEncoder(passwordEncoder());
@@ -63,11 +67,13 @@ public class ApplicationConfig{
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+//        System.out.println("Truy cap authenticationManager trong ApplicationConfig");
         return config.getAuthenticationManager();
     }
 
     @Bean
      public PasswordEncoder passwordEncoder(){
+//        System.out.println("Truy cap passwordEncoder trong ApplicationConfig");
         return new BCryptPasswordEncoder();
     }
 
