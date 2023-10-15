@@ -2,6 +2,7 @@ package com.ark.security.config;
 
 import com.ark.security.auth.AuthenticationResponse;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -95,7 +96,7 @@ public class JwtService {
     }
 
 
-    private boolean isTokenExpired(String token){
+    public boolean isTokenExpired(String token) throws ExpiredJwtException{
         return extractExpiration(token).before(new Date());
     }
 
@@ -103,22 +104,22 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token){
+    private Claims extractAllClaims(String token) throws ExpiredJwtException{
         return Jwts
-                .parserBuilder()
-                .setSigningKey(getSigninKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            .parserBuilder()
+            .setSigningKey(getSigninKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
     }
 
-    private Claims extractAllClaimsByObject(AuthenticationResponse authResp){
+    private Claims extractAllClaimsByObject(AuthenticationResponse authResp) throws ExpiredJwtException{
         return Jwts
-                .parserBuilder()
-                .setSigningKey(getSigninKey())
-                .build()
-                .parseClaimsJws(authResp.getAccessToken())
-                .getBody();
+            .parserBuilder()
+            .setSigningKey(getSigninKey())
+            .build()
+            .parseClaimsJws(authResp.getAccessToken())
+            .getBody();
     }
 
     private Key getSigninKey(){

@@ -17,5 +17,4 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.getOutputStream().println("{ \"error\": \"" + authException.getMessage() + "\" }");
     }
 
-
 }

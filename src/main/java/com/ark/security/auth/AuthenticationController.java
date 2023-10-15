@@ -80,12 +80,4 @@ public class AuthenticationController {
        return ResponseEntity.ok(service.refreshToken(refreshToken.getRefreshToken()));
     }
 
-    @GetMapping("/logout")
-    public void logout(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws IOException {
-        service.logout(request, response);
-    }
-
 }
