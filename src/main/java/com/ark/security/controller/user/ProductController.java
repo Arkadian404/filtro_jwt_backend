@@ -3,11 +3,11 @@ package com.ark.security.controller.user;
 import com.ark.security.dto.ProductDto;
 import com.ark.security.models.product.Product;
 import com.ark.security.service.ProductService;
+import com.github.slugify.Slugify;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import utils.ProductFilter;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +23,12 @@ public class ProductController {
     public ResponseEntity<?> getProductList(){
         List<ProductDto> productList = productService.getAllProductsDto();
         return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/get/{slug}")
+    public ResponseEntity<?> getProductBySlug(@PathVariable String  slug){
+        ProductDto product = productService.getProductDtoBySlug(slug);
+        return ResponseEntity.ok(product);
     }
 
     @GetMapping("/all")

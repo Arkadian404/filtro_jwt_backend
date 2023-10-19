@@ -10,6 +10,7 @@ import com.ark.security.models.product.Product;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.product.ProductImage;
 import com.ark.security.repository.ProductRepository;
+import com.github.slugify.Slugify;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,15 @@ public class ProductService {
         return productRepository.findById(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
     }
 
+    public Product getProductBySlug(String slug){
+        return productRepository.findBySlug(slug).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ slug));
+    }
+
+    public ProductDto getProductDtoBySlug(String slug){
+        Product product = getProductBySlug(slug);
+        return convertProductToDto(product);
+    }
+
 
     public List<Product> getAllProducts(){
         List<Product> products = productRepository.findAll();
@@ -54,7 +64,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
     Page<ProductDto> doPagination(List<ProductDto> list, int page, String sort, String flavor,
@@ -138,44 +148,50 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        List<ProductDto> list = convertProductToDto(products);
+        List<ProductDto> list = convertProductListToDto(products);
         return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
     }
 
     public Page<ProductDto> getAllProductsDtoByCategoryPaging(int id, int page, String sort, String flavor, String category,
                                                               String brand, String origin, String vendor){
         List<Product> products = getAllProductsByCategory(id);
-        List<ProductDto> list = convertProductToDto(products);
+        List<ProductDto> list = convertProductListToDto(products);
         return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
     }
 
     public Page<ProductDto> getAllProductsDtoByOriginContinentPaging(String name,int page, String sort, String flavor, String category,
                                                                      String brand, String origin, String vendor ){
         List<Product> products = productRepository.findByOriginContinent(name).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductToDto(products);
+        List<ProductDto> list = convertProductListToDto(products);
         return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
     }
 
     public Page<ProductDto> getAllProductsDtoByIsSpecialPaging(Boolean isSpecial, int page, String sort, String flavor, String category,
                                                                String brand, String origin, String vendor){
         List<Product> products = productRepository.findByIsSpecial(isSpecial).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductToDto(products);
+        List<ProductDto> list = convertProductListToDto(products);
         return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
     }
 
     public Page<ProductDto> getAllProductsDtoByIsLimitedPaging(Boolean isLimited, int page, String sort, String flavor, String category,
                                                                String brand, String origin, String vendor){
         List<Product> products = productRepository.findByIsLimited(isLimited).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductToDto(products);
+        List<ProductDto> list = convertProductListToDto(products);
         return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
     }
 
     public Page<ProductDto> getAllProductsDtoByBestSellerPaging(int page, String sort, String flavor, String category,
                                                                 String brand, String origin, String vendor){
         List<Product> products = productRepository.findBestSellerProducts().orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductToDto(products);
+        List<ProductDto> list = convertProductListToDto(products);
         return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
     }
+
+    public ProductDto getProductDtoByName(String name){
+        Product product = productRepository.findByName(name).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ name));
+        return convertProductToDto(product);
+    }
+
 
     public Category getCategoryByProductId(int id){
         return productRepository.findCategoryUsingId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
@@ -191,22 +207,15 @@ public class ProductService {
         return products;
     }
 
-    public List<Product> getProductsByName(String name){
-        List<Product> products = productRepository.searchByName(name).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ name));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
 
-    public List<ProductDto> getProductDtoByName(String name){
+    public List<ProductDto> getProductsDtoByName(String name){
         List<ProductDto> productDtos;
         List<Product> products = productRepository.searchByName(name)
                 .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ name));
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
 
@@ -267,7 +276,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products); //convert product list to product dto list
+        productDtos = convertProductListToDto(products); //convert product list to product dto list
         return productDtos;//return product dto list
     }
 
@@ -278,7 +287,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
 
@@ -289,7 +298,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
 
@@ -300,7 +309,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
 
@@ -311,7 +320,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
 
@@ -323,7 +332,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
 
@@ -334,7 +343,7 @@ public class ProductService {
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
         }
-        productDtos = convertProductToDto(products);
+        productDtos = convertProductListToDto(products);
         return productDtos;
     }
 
@@ -347,17 +356,21 @@ public class ProductService {
         if(isExistsProductByName(product.getName())) {
             throw new NotFoundException(PRODUCT_NAME_EXISTS);
         }
+        Slugify slugify = Slugify.builder().transliterator(true).build();
+        product.setSlug(slugify.slugify(product.getName()));
         product.setCreatedAt(LocalDateTime.now());
         productRepository.save(product);
     }
 
     public void updateProduct(int id, Product product){
         Product oldProduct = getProductById(id);
+        Slugify slugify = Slugify.builder().transliterator(true).build();
         if(product == null){
             throw new NullException(NON_BLANK);
         }
         if (oldProduct != null) {
             oldProduct.setName(product.getName());
+            oldProduct.setSlug(slugify.slugify(product.getName()));
             oldProduct.setBrand(product.getBrand());
             oldProduct.setCategory(product.getCategory());
             oldProduct.setDescription(product.getDescription());
@@ -384,7 +397,7 @@ public class ProductService {
     }
 
 
-    public List<ProductDto> convertProductToDto(List<Product> products){
+    public List<ProductDto> convertProductListToDto(List<Product> products){
         List<ProductDto> productDtos = new ArrayList<>();
         products.forEach(product ->{
             List<ProductImageDto> productImageDtos = new ArrayList<>();
@@ -396,6 +409,7 @@ public class ProductService {
             ProductDto productDto = ProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
+                    .slug(product.getSlug())
                     .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
                     .description(product.getDescription())
                     .images(productImageDtos)
@@ -409,6 +423,28 @@ public class ProductService {
             productDtos.add(productDto);
         });
         return productDtos;
+    }
+
+    public ProductDto convertProductToDto(Product product) {
+        List<ProductImageDto> productImageDtos = new ArrayList<>();
+        List<ProductDetailDto> productDetailDtos = new ArrayList<>();
+        List<ProductImage> productImages = productImageService.getProductImagesByProductId(product.getId());
+        productImages.forEach(productImage -> productImageDtos.add(productImage.convertToDto()));
+        List<ProductDetail> productDetails = productDetailService.getProductDetailsByProductId(product.getId());
+        productDetails.forEach(productDetail -> productDetailDtos.add(productDetail.convertToDto()));
+        return ProductDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
+                .description(product.getDescription())
+                .images(productImageDtos)
+                .productDetails(productDetailDtos)
+                .category(product.getCategory() == null ? null : product.getCategory().convertToDto())
+                .flavor(product.getFlavor() == null ? null : product.getFlavor().convertToDto())
+                .sale(product.getSale() == null ? null : product.getSale().convertToDto())
+                .origin(product.getOrigin() == null ? null : product.getOrigin().convertToDto())
+                .vendor(product.getVendor() == null ? null : product.getVendor().convertToDto())
+                .build();
     }
 
 
