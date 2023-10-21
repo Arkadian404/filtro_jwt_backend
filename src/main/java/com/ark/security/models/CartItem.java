@@ -3,6 +3,7 @@ package com.ark.security.models;
 import com.ark.security.models.product.ProductDetail;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,6 +29,7 @@ public class CartItem {
 
     @ManyToOne
     @JoinColumn(name = "product_detail_id")
+    @JsonManagedReference
     private ProductDetail productDetail;
     private Integer quantity;
     private Integer price;

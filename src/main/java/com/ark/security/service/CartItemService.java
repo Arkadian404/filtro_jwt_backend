@@ -1,17 +1,20 @@
 package com.ark.security.service;
 
 import com.ark.security.dto.CartItemDto;
-import com.ark.security.dto.ProductDto;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
-import com.ark.security.models.product.Product;
+import com.ark.security.models.product.ProductDetail;
+import com.ark.security.models.request.RequestCartItemData;
 import com.ark.security.repository.CartItemRepository;
+import com.ark.security.repository.CartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +24,7 @@ public class CartItemService {
 
     private final ProductService productService;
 
-    private final CartService cartService;
+    private final CartRepository cartRepository;
 
     private final String CART_ITEM_NOT_FOUND = "Không tìm thấy item trong gio hang: ";
 
@@ -67,6 +70,20 @@ public class CartItemService {
         });
     }
 
+    public void saveListCartItem(List<Integer> quantities, List<Integer> productDetailIds, Cart cart){
+        for (int i = 0; i < productDetailIds.size(); i++) {
+            ProductDetail productDetail = productDetailService.getProductDetailById(productDetailIds.get(i));
+            CartItem newCartItem = new CartItem();
+//            newCartItem.setId(cartItems.get(i).getId());
+            newCartItem.setCart(cart);
+            newCartItem.setProductDetail(productDetail);
+            newCartItem.setQuantity(quantities.get(i));
+            newCartItem.setPrice(productDetail.getPrice());
+            newCartItem.setPurchaseDate(new Date());
+            cartItemRepository.save(newCartItem);
+        };
+    }
+
     public CartItem getCartItemById(int id){
         return cartItemRepository.findById(id).orElseThrow(()-> new NotFoundException(CART_ITEM_NOT_FOUND+ id));
     }
@@ -77,5 +94,17 @@ public class CartItemService {
             throw new NotFoundException(CART_ITEM_NOT_FOUND+ id);
         }
         cartItemRepository.deleteById(id);
+    }
+
+    public Cart getCartFromUserId(int userId){
+        return cartRepository.findByUserId(userId).orElseThrow(()-> new NotFoundException("CART_NOT_FOUND"+ userId));
+    }
+
+    public boolean checkCartItemExist(int productDetailId, int userId){
+        List<CartItem> cartItems= cartItemRepository.checkCartItemExist(productDetailId, userId);
+        if( cartItems!= null || !cartItems.isEmpty()){
+            return true;
+        }
+        return false;
     }
 }
