@@ -1,15 +1,15 @@
 package com.ark.security.models.product;
 
 import com.ark.security.dto.ProductDetailDto;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.ark.security.models.CartItem;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,6 +32,13 @@ public class ProductDetail {
     @JoinColumn(name = "product_id")
     @JsonManagedReference
     private Product product;
+
+
+
+    @OneToMany(mappedBy = "productDetail")
+    @JsonIgnore
+    private List<CartItem> cartItem;
+
 
 
     public ProductDetailDto convertToDto(){

@@ -33,4 +33,4 @@ public class ProductOriginController {
         return ResponseEntity.ok(productOriginService.getProductOriginById(id));
     }
 
-}
+}   
