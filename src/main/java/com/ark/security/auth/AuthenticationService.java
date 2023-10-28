@@ -96,7 +96,8 @@ public class AuthenticationService {
                 var token = jwtService.generateToken(user);
                 var refreshToken = jwtService.generateRefreshToken(user);
                 revokeAllUserTokens(user);
-                saveUserToken(user, token);return AuthenticationResponse.builder()
+                saveUserToken(user, token);
+                return AuthenticationResponse.builder()
                         .accessToken(token)
                         .refreshToken(refreshToken)
                         .build();
@@ -132,7 +133,7 @@ public class AuthenticationService {
             if(username!=null){
                 return userService.getByUsername(username);
             }else{
-                throw new UsernameNotFoundException("Không tìm thấy tài khoản");
+                throw new NotFoundException("Không tìm thấy tài khoản");
             }
         }
         return null;
@@ -163,7 +164,7 @@ public class AuthenticationService {
                     }
                 }
             }else{
-                throw new UsernameNotFoundException("Không tìm thấy tài khoản");
+                throw new NotFoundException("Không tìm thấy tài khoản");
             }
         }
         return null;
@@ -206,10 +207,11 @@ public class AuthenticationService {
     public AuthenticationResponse refreshToken(String refreshToken){
         final String username;
         username = jwtService.extractUsername(refreshToken);
+
         if(username!=null){
             var user = userService.getByUsername(username);
             if(jwtService.isValidToken(refreshToken, user)){
-                String accessToken = jwtService.generateToken(user);
+                String accessToken = jwtService.    generateToken(user);
                 revokeAllUserTokens(user);
                 saveUserToken(user, accessToken);
                 return AuthenticationResponse.builder()

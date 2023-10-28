@@ -47,22 +47,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }catch (IllegalArgumentException ex){
                 System.out.println("Unable to get JWT Token");
             }catch (ExpiredJwtException ex){
-                ErrorMessage error = ErrorMessage.builder()
-                        .statusCode(HttpStatus.UNAUTHORIZED.value())
-                        .message("JWT Token has expired")
-                        .build();
-                ObjectMapper mapper = new ObjectMapper();
-                String json = mapper.writeValueAsString(error);
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.getWriter().write(json);
-                logger.error(error.getMessage());
-                return;
+                System.out.println("JWT Token has expired");
             }
         }else{
-            filterChain.doFilter(request, response);
             System.out.println("JWT Token does not begin with Bearer String");
-            return;
         }
         if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);

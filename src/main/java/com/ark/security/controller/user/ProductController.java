@@ -246,4 +246,10 @@ public class ProductController {
         return ResponseEntity.ok(productService.getTop10ProductsByBottledCoffee());
     }
 
+
+    @GetMapping("/{id}/related/{flavorId}")
+    public ResponseEntity<?> getTop10RelatedProducts(@PathVariable int id, @PathVariable int flavorId){
+        return ResponseEntity.ok(productService.getTop10RelatedProductsByFlavor(id, flavorId));
+    }
+
 }

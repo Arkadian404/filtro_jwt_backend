@@ -69,6 +69,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query(value = "select * from Product as p where p.category_id =:id  limit 10", nativeQuery = true)
     Optional<List<Product>> findTop10ProductsInSpecific(@Param("id") int id);
 
+    @Query(value ="select * from Product  as p where p.id != :id and p.flavor_id = :flavorId   limit 10", nativeQuery = true)
+    Optional<List<Product>> findTop10RelatedProductsByFlavor(@Param("id") int id, @Param("flavorId") int flavorId);
+
+
 //    @Query(value = "select * from Product as p where p.", nativeQuery = true)
     Optional<List<Product>> findByOriginContinent(String continent);
 

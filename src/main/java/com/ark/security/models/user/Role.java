@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
-public enum Role {
+public enum     Role {
     USER(
             Set.of(
                     Permission.USER_READ,

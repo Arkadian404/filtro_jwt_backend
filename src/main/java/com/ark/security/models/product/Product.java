@@ -1,5 +1,9 @@
 package com.ark.security.models.product;
 
+import com.ark.security.dto.ProductDetailDto;
+import com.ark.security.dto.ProductDto;
+import com.ark.security.dto.ProductImageDto;
+import com.ark.security.models.Review;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -66,5 +70,29 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "vendor_id")
     private Vendor vendor;
+
+    @OneToMany(mappedBy = "product")
+    @JsonBackReference
+    private List<Review> reviews;
+
+
+    public ProductDto convertToDto(){
+        List<ProductDetailDto> productDetailDtos = this.productDetails.stream().map(ProductDetail::convertToDto).toList();
+        List<ProductImageDto> productImageDtos = this.images.stream().map(ProductImage::convertToDto).toList();
+        return ProductDto.builder()
+                .id(this.id)
+                .name(this.name)
+                .slug(this.slug)
+                .brand(this.brand.convertToDto())
+                .productDetails(productDetailDtos)
+                .description(this.description)
+                .images(productImageDtos)
+                .flavor(this.flavor.convertToDto())
+                .category(this.category.convertToDto())
+                .sale(this.sale.convertToDto())
+                .origin(this.origin.convertToDto())
+                .vendor(this.vendor.convertToDto())
+                .build();
+    }
 
 }

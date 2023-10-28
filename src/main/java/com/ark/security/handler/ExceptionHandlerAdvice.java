@@ -1,11 +1,11 @@
-package com.ark.security.exception;
+package com.ark.security.handler;
 
+import com.ark.security.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,7 +15,6 @@ import org.springframework.web.context.request.WebRequest;
 import javax.naming.AuthenticationException;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 @RestControllerAdvice
@@ -95,6 +94,8 @@ public class ExceptionHandlerAdvice {
         logger.error("Error: {}", error.getDescription());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) throws IOException {
@@ -181,18 +182,18 @@ public class ExceptionHandlerAdvice {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(Exception ex, WebRequest request){
-        var error = ErrorMessage.builder()
-                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message(ex.getMessage())
-                .description(request.getDescription(false))
-                .timestamp(new Date())
-                .build();
-        log.error("Error: {}", error.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<?> handleException(Exception ex, WebRequest request){
+//        var error = ErrorMessage.builder()
+//                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+//                .message(ex.getMessage())
+//                .description(request.getDescription(false))
+//                .timestamp(new Date())
+//                .build();
+//        log.error("Error: {}", error.getMessage());
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+//
+//    }
 
 }
 

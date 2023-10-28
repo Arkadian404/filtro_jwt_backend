@@ -336,9 +336,9 @@ public class ProductService {
         return productDtos;
     }
 
-    public List<ProductDto> getProductsFromAmericas(){
+    public List<ProductDto> getTop10RelatedProductsByFlavor(int id, int flavorId){
         List<ProductDto> productDtos;
-        List<Product> products = productRepository.findByOriginName(1)
+        List<Product> products = productRepository.findTop10RelatedProductsByFlavor(id, flavorId)
                 .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
         if(products.isEmpty()){
             throw new NotFoundException(PRODUCT_EMPTY);
