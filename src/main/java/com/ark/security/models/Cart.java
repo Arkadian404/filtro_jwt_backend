@@ -1,15 +1,13 @@
 package com.ark.security.models;
 
+import com.ark.security.dto.CartDto;
 import com.ark.security.models.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -21,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table
-@JsonIdentityInfo(scope = Cart.class, generator = ObjectIdGenerators.PropertyGenerator.class, property="id")
+@Builder
 public class Cart {
 
     @Id
@@ -32,18 +30,29 @@ public class Cart {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime createdAt;
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime updatedAt;
+
     private Integer total;
     private Boolean status;
 
-    @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "cart")
     @JsonIgnore
-    //@JsonManagedReference(value = "product-image")
     private List<CartItem> cartItems;
 
+
+    public CartDto convertToDto(){
+        return CartDto.builder()
+                .id(this.id)
+                .user(this.user.convertToDto())
+                .createdAt(this.createdAt)
+                .updatedAt(this.updatedAt)
+                .total(this.total)
+                .build();
+    }
 }

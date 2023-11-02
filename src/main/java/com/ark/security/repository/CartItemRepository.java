@@ -8,8 +8,4 @@ import java.util.List;
 public interface CartItemRepository extends JpaRepository<CartItem, Integer>{
     List<CartItem> findAllByCartId(int id);
 
-    @Query("""
-        select t from CartItem t where t.cart.user.id = :userId and t.productDetail.id = :productDetailId
-""")
-    List<CartItem> checkCartItemExist(int productDetailId, int userId);
 }

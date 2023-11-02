@@ -4,10 +4,7 @@ import com.ark.security.dto.ProductDetailDto;
 import com.ark.security.models.CartItem;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -17,13 +14,14 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table
+@Builder
 public class ProductDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer quantity;
+    private Integer stock;
     private Integer price;
     private Integer weight;
     private Boolean status;
@@ -44,7 +42,7 @@ public class ProductDetail {
     public ProductDetailDto convertToDto(){
         return ProductDetailDto.builder()
                 .id(this.id)
-                .quantity(this.quantity)
+                .stock(this.stock)
                 .price(this.price)
                 .weight(this.weight)
                 .build();

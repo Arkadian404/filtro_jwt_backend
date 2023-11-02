@@ -96,19 +96,6 @@ public class ExceptionHandlerAdvice {
     }
 
 
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) throws IOException {
-        logger.error("AccessDenied error: {}", ex.getMessage());
-        var error = ErrorMessage.builder()
-                .message("Bạn không có ủy quyền để thực hiện hành động này")
-                .statusCode(HttpStatus.FORBIDDEN.value())
-                .description(request.getDescription(false))
-                .timestamp(new Date())
-                .build();
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
-    }
-
     @ExceptionHandler(UserStatusException.class)
     public ResponseEntity<?> handleUserStatusException(UserStatusException ex, WebRequest request){
         logger.error("UserStatus error: {}", ex.getMessage());
@@ -181,6 +168,8 @@ public class ExceptionHandlerAdvice {
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+
 
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<?> handleException(Exception ex, WebRequest request){

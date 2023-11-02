@@ -1,5 +1,6 @@
 package com.ark.security.dto;
 
+import com.ark.security.models.user.User;
 import lombok.*;
 
 import java.io.Serializable;
@@ -25,4 +26,21 @@ public class UserDto implements Serializable {
     private String district;
     private String ward;
     private String phone;
+
+    public User convertToUser(){
+        return User.builder()
+                .id(this.id)
+                .firstname(this.firstname)
+                .lastname(this.lastname)
+                .username(this.username)
+                .email(this.email)
+                .dob(this.dob)
+                .address(this.address)
+                .province(this.province)
+                .district(this.district)
+                .ward(this.ward)
+                .phone(this.phone)
+                .build();
+    }
+
 }

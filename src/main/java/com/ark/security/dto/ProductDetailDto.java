@@ -1,5 +1,6 @@
 package com.ark.security.dto;
 
+import com.ark.security.models.product.ProductDetail;
 import lombok.*;
 
 import java.io.Serializable;
@@ -15,7 +16,17 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class ProductDetailDto implements Serializable {
     private Integer id;
-    private Integer quantity;
+    private Integer stock;
     private Integer price;
     private Integer weight;
+
+
+    public ProductDetail convertToEntity(){
+        return ProductDetail.builder()
+                .id(this.id)
+                .stock(this.stock)
+                .price(this.price)
+                .weight(this.weight)
+                .build();
+    }
 }

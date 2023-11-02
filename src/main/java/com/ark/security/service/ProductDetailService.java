@@ -43,7 +43,7 @@ public class ProductDetailService {
         if(productDetail.getProduct() != null){
             productDetailUpdate.setProduct(productDetail.getProduct());
             productDetailUpdate.setPrice(productDetail.getPrice());
-            productDetailUpdate.setQuantity(productDetail.getQuantity());
+            productDetailUpdate.setStock(productDetail.getStock());
             productDetailUpdate.setWeight(productDetail.getWeight());
             productDetailUpdate.setStatus(productDetail.getStatus());
             productDetailRepository.save(productDetailUpdate);

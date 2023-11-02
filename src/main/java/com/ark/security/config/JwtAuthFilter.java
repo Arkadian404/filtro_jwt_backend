@@ -4,6 +4,8 @@ import com.ark.security.exception.ErrorMessage;
 import com.ark.security.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +50,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 System.out.println("Unable to get JWT Token");
             }catch (ExpiredJwtException ex){
                 System.out.println("JWT Token has expired");
+            }catch(MalformedJwtException ex){
+                System.out.println("JWT Token has been tampered");
+            }catch(SignatureException ex){
+                System.out.println("JWT Signature does not match locally computed signature");
             }
         }else{
             System.out.println("JWT Token does not begin with Bearer String");
@@ -68,8 +74,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
-        }else{
-            System.out.println("JWT Token is not valid");
         }
         filterChain.doFilter(request, response);
     }
