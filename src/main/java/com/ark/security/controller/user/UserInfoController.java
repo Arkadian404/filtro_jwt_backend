@@ -3,7 +3,7 @@ package com.ark.security.controller.user;
 import com.ark.security.auth.AuthenticationService;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.user.User;
-import com.ark.security.service.UserService;
+import com.ark.security.service.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

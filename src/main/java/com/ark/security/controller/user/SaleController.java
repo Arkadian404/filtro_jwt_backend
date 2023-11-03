@@ -2,7 +2,7 @@ package com.ark.security.controller.user;
 
 import com.ark.security.dto.SaleDto;
 import com.ark.security.models.product.Sale;
-import com.ark.security.service.SaleService;
+import com.ark.security.service.product.SaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

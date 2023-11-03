@@ -1,7 +1,7 @@
 package com.ark.security.controller.admin;
 
 import com.ark.security.models.user.User;
-import com.ark.security.service.UserService;
+import com.ark.security.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

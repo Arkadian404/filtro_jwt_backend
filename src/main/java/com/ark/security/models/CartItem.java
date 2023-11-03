@@ -28,7 +28,7 @@ public class CartItem {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "cartId")
+    @JoinColumn(name = "cart_id")
     private Cart cart;
 
     @ManyToOne
@@ -45,11 +45,13 @@ public class CartItem {
     public CartItemDto convertToDto(){
         ProductImage productImage = this.productDetail.getProduct().getImages().get(0);
         String productName = this.productDetail.getProduct().getName();
+        String slug = this.productDetail.getProduct().getSlug();
         ProductImageDto productImageDto = productImage.convertToDto();
         return CartItemDto.builder()
                 .id(this.id)
                 .cart(this.cart.convertToDto())
                 .productName(productName)
+                .slug(slug)
                 .productImage(productImageDto)
                 .productDetail(this.productDetail.convertToDto())
                 .quantity(this.quantity)

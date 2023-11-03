@@ -6,6 +6,7 @@ import com.ark.security.models.CartItem;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.user.User;
 import com.ark.security.repository.CartItemRepository;
+import com.ark.security.service.product.ProductDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -62,12 +63,7 @@ public class CartItemService {
 
     public void addCartItemToCart(CartItemDto cartItemDto, User user){
        if(user!=null){
-           Cart cart;
-           try{
-               cart = cartService.getCartByUsername(user.getUsername());
-           }catch (NotFoundException ex){
-               cart = cartService.createCart(user);
-           }
+           Cart cart = cartService.getCartByUsername(user.getUsername());
            if(cart!=null){
               add(cartItemDto, cart);
            }else{

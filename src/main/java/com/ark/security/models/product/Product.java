@@ -3,7 +3,6 @@ package com.ark.security.models.product;
 import com.ark.security.dto.ProductDetailDto;
 import com.ark.security.dto.ProductDto;
 import com.ark.security.dto.ProductImageDto;
-import com.ark.security.models.Review;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;

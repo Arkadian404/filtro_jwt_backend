@@ -2,7 +2,7 @@ package com.ark.security.controller.user;
 
 import com.ark.security.dto.FlavorDto;
 import com.ark.security.models.product.Flavor;
-import com.ark.security.service.FlavorService;
+import com.ark.security.service.product.FlavorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

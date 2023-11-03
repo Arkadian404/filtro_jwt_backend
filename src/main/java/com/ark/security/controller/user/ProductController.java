@@ -2,8 +2,7 @@ package com.ark.security.controller.user;
 
 import com.ark.security.dto.ProductDto;
 import com.ark.security.models.product.Product;
-import com.ark.security.service.ProductService;
-import com.github.slugify.Slugify;
+import com.ark.security.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

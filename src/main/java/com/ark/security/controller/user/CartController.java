@@ -2,14 +2,13 @@ package com.ark.security.controller.user;
 
 import com.ark.security.auth.AuthenticationService;
 import com.ark.security.dto.CartItemDto;
-import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Cart;
 import com.ark.security.models.user.User;
 import com.ark.security.service.CartItemService;
 import com.ark.security.service.CartService;
-import com.ark.security.service.ProductImageService;
-import com.ark.security.service.UserService;
+import com.ark.security.service.product.ProductImageService;
+import com.ark.security.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

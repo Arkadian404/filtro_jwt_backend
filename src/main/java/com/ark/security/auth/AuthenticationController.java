@@ -5,19 +5,15 @@ import com.ark.security.config.JwtService;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Employee;
 import com.ark.security.models.user.User;
-import com.ark.security.service.UserService;
+import com.ark.security.service.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.Date;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/auth")

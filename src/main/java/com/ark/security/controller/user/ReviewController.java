@@ -1,8 +1,8 @@
 package com.ark.security.controller.user;
 
 import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.Review;
-import com.ark.security.service.ReviewService;
+import com.ark.security.models.product.Review;
+import com.ark.security.service.product.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -2,7 +2,7 @@ package com.ark.security.controller.admin;
 
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Employee;
-import com.ark.security.service.EmployeeService;
+import com.ark.security.service.user.EmployeeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

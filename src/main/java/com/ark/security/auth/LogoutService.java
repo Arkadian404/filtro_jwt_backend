@@ -1,6 +1,6 @@
 package com.ark.security.auth;
 
-import com.ark.security.service.TokenService;
+import com.ark.security.service.user.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

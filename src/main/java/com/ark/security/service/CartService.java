@@ -14,14 +14,6 @@ public class CartService {
     private final String CART_NOT_FOUND = "Không tìm thấy giỏ hàng: ";
     private final CartRepository cartRepository;
 
-    public Cart getCartById(int id){
-        return cartRepository.findById(id).orElseThrow(()-> new NotFoundException(CART_NOT_FOUND+ id));
-    }
-
-    public Cart getCartByUserId(int userId){
-        return cartRepository.findByUserId(userId).orElseThrow(()-> new NotFoundException(CART_NOT_FOUND+ userId));
-    }
-
     public Cart getCartByUsername(String username){
         return cartRepository.findByUserUsername(username).orElse(null);
     }
@@ -35,6 +27,7 @@ public class CartService {
         cart.setUser(user);
         cart.setCreatedAt(LocalDateTime.now());
         cart.setStatus(true);
+        cart.setTotal(0);
         cartRepository.save(cart);
         return cart;
     }

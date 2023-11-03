@@ -1,7 +1,7 @@
 package com.ark.security.controller.user;
 
 import com.ark.security.dto.ProductDto;
-import com.ark.security.service.ProductService;
+import com.ark.security.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,6 +1,6 @@
 package com.ark.security.controller.user;
 
-import com.ark.security.service.VendorService;
+import com.ark.security.service.product.VendorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
