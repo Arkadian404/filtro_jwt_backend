@@ -47,7 +47,7 @@ public class CartController {
         return ResponseEntity.ok(cart);
     }
 
-    @GetMapping("/getCartItems/{cartId}")
+    @GetMapping("/{cartId}/getCartItems")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
     public ResponseEntity<?> getCartItems(@PathVariable int cartId){
         return ResponseEntity.ok(cartItemService.getCartItemsByCartId(cartId));

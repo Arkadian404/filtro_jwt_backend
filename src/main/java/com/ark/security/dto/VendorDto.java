@@ -16,4 +16,11 @@ import java.io.Serializable;
 public class VendorDto implements Serializable {
     Integer id;
     String name;
+
+    public Vendor convertToEntity(){
+        return Vendor.builder()
+                .id(this.id)
+                .name(this.name)
+                .build();
+    }
 }

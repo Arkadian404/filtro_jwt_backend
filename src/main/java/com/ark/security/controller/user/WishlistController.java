@@ -1,6 +1,7 @@
 package com.ark.security.controller.user;
 
 import com.ark.security.auth.AuthenticationService;
+import com.ark.security.dto.WishlistItemDto;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Wishlist;
 import com.ark.security.models.WishlistItem;
@@ -50,11 +51,11 @@ public class WishlistController {
 
     @PostMapping("/saveWishlistItem")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create', 'user:create')")
-    public ResponseEntity<?> saveWishlistItem(@RequestBody WishlistItem wishlistItem,
+    public ResponseEntity<?> saveWishlistItem(@RequestBody WishlistItemDto wishlistItem,
                                               HttpServletRequest request,
                                               HttpServletResponse response){
         User user = service.getCurrentUser(request, response);
-        wishlistItemService.addItems(wishlistItem.convertToDto(), user);
+        wishlistItemService.addItems(wishlistItem, user);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Thêm sản phẩm vào danh sách ước thành công")

@@ -3,6 +3,7 @@ package com.ark.security.models.product;
 import com.ark.security.dto.ProductDetailDto;
 import com.ark.security.dto.ProductDto;
 import com.ark.security.dto.ProductImageDto;
+import com.ark.security.models.WishlistItem;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table
+@Builder
 public class Product {
 
     @Id
@@ -71,6 +73,10 @@ public class Product {
     private Vendor vendor;
 
     @OneToMany(mappedBy = "product")
+    @JsonIgnore
+    private List<WishlistItem> wishlistItems;
+
+    @OneToMany(mappedBy = "product")
     @JsonBackReference
     private List<Review> reviews;
 
@@ -88,7 +94,7 @@ public class Product {
                 .images(productImageDtos)
                 .flavor(this.flavor.convertToDto())
                 .category(this.category.convertToDto())
-                .sale(this.sale.convertToDto())
+                .sale(this.sale == null ? null : this.sale.convertToDto())
                 .origin(this.origin.convertToDto())
                 .vendor(this.vendor.convertToDto())
                 .build();

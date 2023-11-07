@@ -29,9 +29,9 @@ public class CartItemService {
         List<CartItem> list =  cartItemRepository.findAllByCartId(id);
         List<CartItemDto> listDto = new ArrayList<>();
         list.forEach(li-> listDto.add(li.convertToDto()));
-        if(list.isEmpty()){
-            throw new NotFoundException("Empty");
-        }
+//        if(list.isEmpty()){
+//            listDto = ;
+//        }
         return listDto;
     }
 
@@ -102,6 +102,7 @@ public class CartItemService {
         if (cartItem == null){
             throw new NotFoundException(CART_ITEM_NOT_FOUND+ id);
         }
+        cartItem.getCart().setTotal(cartItem.getCart().getTotal() - cartItem.getTotal());
         cartItemRepository.deleteById(id);
     }
 

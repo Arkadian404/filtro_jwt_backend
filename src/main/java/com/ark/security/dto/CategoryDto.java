@@ -17,4 +17,11 @@ import java.io.Serializable;
 public class CategoryDto implements Serializable {
     private Integer id;
     private String name;
+
+    public Category convertToEntity(){
+        return Category.builder()
+                .id(this.id)
+                .name(this.name)
+                .build();
+    }
 }

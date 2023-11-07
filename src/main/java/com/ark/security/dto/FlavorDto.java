@@ -16,4 +16,11 @@ import java.io.Serializable;
 public class FlavorDto implements Serializable {
     Integer id;
     String name;
+
+    public Flavor convertToEntity(){
+        return Flavor.builder()
+                .id(this.id)
+                .name(this.name)
+                .build();
+    }
 }

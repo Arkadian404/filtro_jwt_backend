@@ -14,11 +14,8 @@ import java.time.LocalDateTime;
 @Builder
 public class WishlistItemDto {
     private Integer id;
-    private String productName;
-    private String slug;
     private WishlistDto wishlist;
-    private ProductImageDto productImage;
-    private ProductDetailDto productDetail;
+    private ProductDto product;
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime addDate;
@@ -27,7 +24,7 @@ public class WishlistItemDto {
         return WishlistItem.builder()
                 .id(this.id)
                 .wishlist(this.wishlist.convertToEntity())
-                .productDetail(this.productDetail.convertToEntity())
+                .product(this.product.convertToEntity())
                 .addDate(this.addDate)
                 .build();
     }

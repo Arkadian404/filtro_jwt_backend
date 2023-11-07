@@ -5,10 +5,7 @@ import com.ark.security.dto.ProductImageDto;
 import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
@@ -19,6 +16,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table
+@Builder
 public class ProductImage {
 
     @Id

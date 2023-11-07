@@ -31,8 +31,6 @@ public class ProductDetail {
     @JsonManagedReference
     private Product product;
 
-
-
     @OneToMany(mappedBy = "productDetail")
     @JsonIgnore
     private List<CartItem> cartItem;

@@ -4,10 +4,7 @@ import com.ark.security.dto.VendorDto;
 import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -17,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table
+@Builder
 public class Vendor {
 
     @Id

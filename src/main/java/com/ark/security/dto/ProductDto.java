@@ -1,5 +1,8 @@
 package com.ark.security.dto;
 
+import com.ark.security.models.product.Product;
+import com.ark.security.models.product.ProductDetail;
+import com.ark.security.models.product.ProductImage;
 import lombok.*;
 
 import java.io.Serializable;
@@ -27,4 +30,23 @@ public class ProductDto implements Serializable {
     private SaleDto sale;
     private ProductOriginDto origin;
     private VendorDto vendor;
+
+    public Product convertToEntity(){
+        List<ProductDetail> productDetails = this.productDetails.stream().map(ProductDetailDto::convertToEntity).toList();
+        List<ProductImage> images = this.images.stream().map(ProductImageDto::convertToEntity).toList();
+        return Product.builder()
+                .id(this.id)
+                .name(this.name)
+                .slug(this.slug)
+                .brand(this.brand.convertToEntity())
+                .productDetails(productDetails)
+                .description(this.description)
+                .images(images)
+                .flavor(this.flavor.convertToEntity())
+                .category(this.category.convertToEntity())
+                .sale(this.sale == null ? null : this.sale.convertToEntity())
+                .origin(this.origin.convertToEntity())
+                .vendor(this.vendor.convertToEntity())
+                .build();
+    }
 }
