@@ -19,7 +19,7 @@ public class ProductDetailDto implements Serializable {
     private Integer stock;
     private Integer price;
     private Integer weight;
-
+    private Integer categoryId;
 
     public ProductDetail convertToEntity(){
         return ProductDetail.builder()

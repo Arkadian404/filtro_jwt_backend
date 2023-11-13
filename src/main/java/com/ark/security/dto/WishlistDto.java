@@ -27,7 +27,7 @@ public class WishlistDto {
     public Wishlist convertToEntity(){
         return Wishlist.builder()
                 .id(this.id)
-                .user(this.user.convertToUser())
+                .user(this.user.convertToEntity())
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .status(this.status)

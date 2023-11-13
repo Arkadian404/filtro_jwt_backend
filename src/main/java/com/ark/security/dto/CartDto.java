@@ -29,7 +29,7 @@ public class CartDto implements Serializable {
     public Cart convertToEntity(){
         return Cart.builder()
                 .id(this.id)
-                .user(this.user.convertToUser())
+                .user(this.user.convertToEntity())
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .total(this.total)

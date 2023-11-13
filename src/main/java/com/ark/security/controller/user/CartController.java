@@ -41,7 +41,7 @@ public class CartController {
         User user = userService.getByUsername(username);
         System.out.println(user.getUsername());
         cart = cartService.getCartByUsername(user.getUsername());
-        if(cart == null){
+        if(cart == null || !cartService.checkActiveCart(user.getId())){
             cart= cartService.createCart(user);
         }
         return ResponseEntity.ok(cart);

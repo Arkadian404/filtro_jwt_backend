@@ -2,6 +2,7 @@ package com.ark.security.models.product;
 
 import com.ark.security.dto.ProductDetailDto;
 import com.ark.security.models.CartItem;
+import com.ark.security.models.order.OrderDetail;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,14 +36,20 @@ public class ProductDetail {
     @JsonIgnore
     private List<CartItem> cartItem;
 
+    @OneToMany(mappedBy = "productDetail")
+    @JsonIgnore
+    private List<OrderDetail> orderDetail;
+
 
 
     public ProductDetailDto convertToDto(){
+        int categoryId = this.product.getCategory().getId();
         return ProductDetailDto.builder()
                 .id(this.id)
                 .stock(this.stock)
                 .price(this.price)
                 .weight(this.weight)
+                .categoryId(categoryId)
                 .build();
     }
 

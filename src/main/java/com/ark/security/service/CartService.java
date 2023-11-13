@@ -18,6 +18,12 @@ public class CartService {
         return cartRepository.findByUserUsername(username).orElse(null);
     }
 
+    public boolean checkActiveCart(int userId){
+        Cart cart = cartRepository.findByUserIdAndStatus(userId, true);
+        return cart != null;
+    }
+
+
     public void saveCart(Cart cart){
         cartRepository.save(cart);
     }

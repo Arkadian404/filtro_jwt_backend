@@ -29,9 +29,6 @@ public class CartItemService {
         List<CartItem> list =  cartItemRepository.findAllByCartId(id);
         List<CartItemDto> listDto = new ArrayList<>();
         list.forEach(li-> listDto.add(li.convertToDto()));
-//        if(list.isEmpty()){
-//            listDto = ;
-//        }
         return listDto;
     }
 
@@ -64,7 +61,7 @@ public class CartItemService {
     public void addCartItemToCart(CartItemDto cartItemDto, User user){
        if(user!=null){
            Cart cart = cartService.getCartByUsername(user.getUsername());
-           if(cart!=null){
+           if(cart!=null && cartService.checkActiveCart(user.getId())){
               add(cartItemDto, cart);
            }else{
                cart = cartService.createCart(user);

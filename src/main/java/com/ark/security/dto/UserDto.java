@@ -27,7 +27,7 @@ public class UserDto implements Serializable {
     private String ward;
     private String phone;
 
-    public User convertToUser(){
+    public User convertToEntity(){
         return User.builder()
                 .id(this.id)
                 .firstname(this.firstname)

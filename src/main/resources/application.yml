@@ -27,3 +27,7 @@ application:
 #      expiration: 30000 # 30 seconds
       refresh-token:
         expiration:  604800000 # 7 days
+    momo:
+      access-key: mTCKt9W3eU1m39TW
+      partner-code: MOMOLRJZ20181206
+      secret-key: SetA5RDnLHvt51AULf51DyauxUo3kDU6

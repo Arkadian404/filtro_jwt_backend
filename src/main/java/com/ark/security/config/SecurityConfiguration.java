@@ -37,7 +37,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfiguration corsConfiguration(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "https://test-payment.momo.vn"));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
         return corsConfiguration;
@@ -54,6 +54,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(ahr-> ahr.requestMatchers(
                                 "/api/v1/user/**",
                         "/api/v1/auth/**",
+                        "/api/v1/momo/**",
                         "/v2/api-docs",
                         "/v3/api-docs",
                         "/v3/api-docs/**",

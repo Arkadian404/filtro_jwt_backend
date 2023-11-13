@@ -4,6 +4,7 @@ import com.ark.security.dto.UserDto;
 import com.ark.security.models.Cart;
 import com.ark.security.models.Employee;
 import com.ark.security.models.Wishlist;
+import com.ark.security.models.order.Order;
 import com.ark.security.models.product.Review;
 import com.ark.security.models.token.Token;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -68,6 +69,10 @@ public class User implements UserDetails {
     @OneToMany
     @JsonBackReference(value = "user-wishlist")
     private List<Wishlist> wishlists;
+
+    @OneToMany
+    @JsonBackReference(value = "user-order")
+    private List<Order> orders;
 
     @OneToMany(mappedBy = "user")
     @JsonBackReference(value = "user-review")
