@@ -31,3 +31,6 @@ application:
       access-key: mTCKt9W3eU1m39TW
       partner-code: MOMOLRJZ20181206
       secret-key: SetA5RDnLHvt51AULf51DyauxUo3kDU6
+    vnpay:
+      vnp_TmnCode: ZF769ZRJ
+      vnp_HashSecret: DEFBUBPEMBQFYDQGIIUJAXKRCUKMOOYU

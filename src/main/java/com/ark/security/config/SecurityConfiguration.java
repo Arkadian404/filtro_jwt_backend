@@ -55,6 +55,7 @@ public class SecurityConfiguration {
                                 "/api/v1/user/**",
                         "/api/v1/auth/**",
                         "/api/v1/momo/**",
+                        "/api/v1/vnpay/**",
                         "/v2/api-docs",
                         "/v3/api-docs",
                         "/v3/api-docs/**",

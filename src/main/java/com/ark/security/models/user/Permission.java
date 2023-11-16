@@ -20,6 +20,5 @@ public enum Permission {
     EMPLOYEE_READ("employee:read"),
     EMPLOYEE_DELETE("employee:delete");
 
-
     private final String permission;
 }

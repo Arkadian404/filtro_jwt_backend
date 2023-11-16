@@ -1,7 +1,8 @@
-package com.ark.security.models.payment;
+package com.ark.security.models.payment.momo;
 
 
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 
 @Getter
 @Setter
@@ -9,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class MomoIPN {
+    private String accessKey;
     private String partnerCode;
     private String orderId;
     private String requestId;

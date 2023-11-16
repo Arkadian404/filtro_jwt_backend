@@ -1,4 +1,4 @@
-package com.ark.security.models.payment;
+package com.ark.security.models.payment.momo;
 
 import lombok.*;
 

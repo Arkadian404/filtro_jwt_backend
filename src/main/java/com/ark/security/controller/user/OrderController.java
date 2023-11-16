@@ -3,9 +3,12 @@ package com.ark.security.controller.user;
 import com.ark.security.auth.AuthenticationService;
 import com.ark.security.dto.OrderDto;
 import com.ark.security.models.order.Order;
-import com.ark.security.models.payment.MomoResponse;
+import com.ark.security.models.payment.momo.MomoResponse;
+import com.ark.security.models.payment.vnpay.VNPResponse;
 import com.ark.security.models.user.User;
+import com.ark.security.service.MomoService;
 import com.ark.security.service.OrderService;
+import com.ark.security.service.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,8 @@ import org.springframework.web.client.RestTemplate;
 public class OrderController {
     private final OrderService orderService;
     private final AuthenticationService authenticationService;
-    private final RestTemplate restTemplate;
+    private final MomoService momoService;
+    private final VNPayService vnpayService;
 
 
 
@@ -44,7 +48,14 @@ public class OrderController {
     @PostMapping("/placeMomoOrder")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create', 'user:create')")
     public ResponseEntity<MomoResponse> placeMomoOrder(@RequestBody OrderDto order){
-        return ResponseEntity.ok(orderService.createMomoOrder(order));
+        return ResponseEntity.ok(momoService.createMomoOrder(order));
+    }
+
+
+    @PostMapping("/placeVNPayOrder")
+    @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create', 'user:create')")
+    public ResponseEntity<VNPResponse> placeMomoOrder(@RequestBody OrderDto orderDto, HttpServletRequest request){
+        return ResponseEntity.ok(vnpayService.createVNPayOrder(orderDto, request));
     }
 
 }
