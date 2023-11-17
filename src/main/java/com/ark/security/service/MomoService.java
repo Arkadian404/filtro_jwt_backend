@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -35,7 +36,8 @@ import java.util.UUID;
 @Slf4j
 public class MomoService {
     private final String MOMO_API = "https://test-payment.momo.vn/v2/gateway/api";
-    private final String IPN_API = "https://559fa469f8d5c69086adcac8acf6274b.serveo.net";
+    private final String RETURN_URL = "http://localhost:4200/payment/momo";
+    private final String IPN_API = "https://3b39e5059dbbcd709d90a69c556e1de4.serveo.net";
     private final Environment env;
     private final OrderDetailService orderDetailService;
     private final OrderService orderService;
@@ -158,14 +160,14 @@ public class MomoService {
                 .partnerName("TEST")
                 .storeName("FILTRO-COFEE")
                 .requestType("captureWallet")
-                .redirectUrl("http://localhost:4200/invoice")
+                .redirectUrl(RETURN_URL)
                 .ipnUrl(IPN_API + "/api/v1/momo/webhook/ipn")
                 .requestId(UUID.randomUUID().toString())
                 .amount(Long.valueOf(order.getTotal()))
                 .lang("vi")
                 .orderId(order.getOrderCode())
                 .orderInfo("Thanh toán đơn hàng bằng MOMO")
-                .extraData(order.getEmail())
+                .extraData(Base64.encodeBase64String(order.getFullName().getBytes()))
                 .build();
 
         String rawSignature = "accessKey=" + env.getProperty("application.security.momo.access-key")
@@ -200,7 +202,7 @@ public class MomoService {
 
         MomoDeliveryInfo momoDeliveryInfo = MomoDeliveryInfo.builder()
                 .deliveryAddress(order.getAddress() + ", " + order.getWard() + ", " + order.getDistrict() + ", " + order.getProvince())
-                .deliveryFee(String.valueOf(order.getShippingFee()))
+                .deliveryFee(String.valueOf(order.getShippingMethod().getFee()))
                 .quantity(String.valueOf(momoRequest.getItems().size()))
                 .build();
         momoRequest.setDeliveryInfo(momoDeliveryInfo);

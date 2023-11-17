@@ -37,6 +37,7 @@ public class VNPayService {
     private final RestTemplate restTemplate;
     private final Environment env;
     private final OrderService orderService;
+    private final String RETURN_URL = "http://localhost:4200/payment/vnpay";
     private final String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
     public VNPResponse createVNPayOrder(OrderDto orderDto, HttpServletRequest req){
@@ -166,7 +167,7 @@ public class VNPayService {
                 .vnp_OrderType("other")
                 .vnp_OrderInfo("Thanh toán bằng VNPay")
                 .vnp_Locale("vn")
-                .vnp_ReturnUrl("http://localhost:4200/invoice")
+                .vnp_ReturnUrl(RETURN_URL)
                 .vnp_CreateDate(vnp_CreateDate)
                 .vnp_ExpireDate(vnp_ExpireDate)
                 .build();

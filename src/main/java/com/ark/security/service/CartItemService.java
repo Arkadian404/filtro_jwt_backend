@@ -81,7 +81,11 @@ public class CartItemService {
             ci.setQuantity(ci.getQuantity() + amount);
             ci.setTotal(ci.getQuantity() * ci.getPrice());
             cartItemRepository.save(ci);
-            cart.setTotal(cart.getTotal() + ci.getTotal());
+            if(amount < 0){
+                cart.setTotal(cart.getTotal() - ci.getPrice());
+            }else{
+                cart.setTotal(cart.getTotal() + ci.getPrice());
+            }
             cartService.saveCart(cart);
         }else{
             throw new NotFoundException(CART_ITEM_NOT_FOUND + cartItem.getId());

@@ -46,7 +46,11 @@ public class Order {
     private String notes;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
-    private Integer shippingFee;
+
+    @ManyToOne
+    @JoinColumn(name = "shipping_method_id")
+    private ShippingMethod shippingMethod;
+
     private Integer total;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
@@ -64,7 +68,7 @@ public class Order {
                 .ward(this.ward)
                 .notes(this.notes)
                 .paymentMethod(this.paymentMethod)
-                .shippingFee(this.shippingFee)
+                .shippingMethod(this.shippingMethod.convertToDto())
                 .total(this.total)
                 .orderDate(this.orderDate)
                 .status(this.status)

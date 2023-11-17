@@ -30,7 +30,7 @@ public class OrderDto {
     private String notes;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
-    private Integer shippingFee;
+    private ShippingMethodDto shippingMethod;
     private Integer total;
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -52,7 +52,7 @@ public class OrderDto {
                 .ward(this.ward)
                 .notes(this.notes)
                 .paymentMethod(this.paymentMethod)
-                .shippingFee(this.shippingFee)
+                .shippingMethod(this.shippingMethod.convertToEntity())
                 .total(this.total)
                 .orderDate(this.orderDate)
                 .status(this.status)
