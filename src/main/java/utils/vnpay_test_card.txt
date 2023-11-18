@@ -103,3 +103,9 @@
 	Tên chủ thẻ:NGUYEN VAN A
 	Ngày hết hạn:10/26
 	Thành công
+
+
+	https://sandbox.vnpayment.vn/merchantv2/Users/Login.html
+	=> phutv1990@gmail.com
+	=> Ays123456
+	=> Thông tin tài khoản => Tìm ZF769ZRJ => Đổi IPN lại rồi lưu
