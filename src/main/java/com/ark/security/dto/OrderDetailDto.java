@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class OrderDetailDto {
-
         private Integer id;
         private OrderDto order;
         private String productName;

@@ -7,10 +7,7 @@ import com.ark.security.models.order.ShippingMethod;
 import com.ark.security.models.payment.momo.MomoResponse;
 import com.ark.security.models.payment.vnpay.VNPResponse;
 import com.ark.security.models.user.User;
-import com.ark.security.service.MomoService;
-import com.ark.security.service.OrderService;
-import com.ark.security.service.ShippingMethodService;
-import com.ark.security.service.VNPayService;
+import com.ark.security.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'EMPLOYEE')")
 public class OrderController {
     private final OrderService orderService;
+    private final OrderDetailService orderDetailService;
     private final ShippingMethodService shippingMethodService;
     private final AuthenticationService authenticationService;
     private final MomoService momoService;
@@ -35,13 +33,20 @@ public class OrderController {
     @GetMapping("/get/{userId}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
     public ResponseEntity<?> getOrdersByUserId(@PathVariable int userId){
-        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
+        return ResponseEntity.ok(orderService.getOrdersDtoByUserId(userId));
     }
+
 
     @GetMapping("/get/orderCode/{orderCode}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
     public ResponseEntity<?> getOrderByOrderCode(@PathVariable String orderCode){
         return ResponseEntity.ok(orderService.getOrderByOrderCode(orderCode));
+    }
+
+    @GetMapping("/get/orderDetail/{orderId}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
+    public ResponseEntity<?> getOrderDetailByOrderId(@PathVariable int orderId){
+        return ResponseEntity.ok(orderDetailService.getOrderDetailDtoByOrderId(orderId));
     }
 
     @GetMapping("/get/shippingMethods")
