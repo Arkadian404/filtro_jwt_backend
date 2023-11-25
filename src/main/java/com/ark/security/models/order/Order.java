@@ -1,5 +1,6 @@
 package com.ark.security.models.order;
 
+import com.ark.security.dto.OrderDetailDto;
 import com.ark.security.dto.OrderDto;
 import com.ark.security.models.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -9,6 +10,7 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -59,6 +61,7 @@ public class Order {
         return OrderDto.builder()
                 .id(this.id)
                 .user(this.user.convertToDto())
+                .orderCode(this.orderCode)
                 .fullName(this.fullName)
                 .email(this.email)
                 .phone(this.phone)
@@ -68,7 +71,7 @@ public class Order {
                 .ward(this.ward)
                 .notes(this.notes)
                 .paymentMethod(this.paymentMethod)
-                .shippingMethod(this.shippingMethod.convertToDto())
+                .shippingMethod(this.shippingMethod == null ? null :this.shippingMethod.convertToDto())
                 .total(this.total)
                 .orderDate(this.orderDate)
                 .status(this.status)

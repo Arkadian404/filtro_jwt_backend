@@ -1,5 +1,6 @@
 package com.ark.security.service;
 
+import com.ark.security.dto.OrderDto;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
@@ -10,10 +11,12 @@ import com.ark.security.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -29,8 +32,16 @@ public class OrderService {
         return orderRepository.existsByOrderCode(orderCode).orElse(false);
     }
 
+    public List<Order> getAllOrdersByOrderDate(){
+        return orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate"));
+    }
+
     public Order getOrderByOrderCode(String orderCode){
         return orderRepository.findByOrderCode(orderCode).orElse(null);
+    }
+
+    public List<Order> getAllOrders(){
+        return orderRepository.findAll();
     }
 
     public Order getOrderById(Integer id){
@@ -43,6 +54,16 @@ public class OrderService {
 
     public List<Order> getOrdersByUserId(int id){
         return orderRepository.findAllByUserId(id).orElse(null);
+    }
+
+    public List<OrderDto> getOrdersDtoByUserId(int id){
+        List<Order> orders = orderRepository.findAllByUserId(id).orElse(null);
+        List<OrderDto> orderDtos = new ArrayList<>();
+        if(orders!=null){
+            orders.forEach(order -> orderDtos.add(order.convertToDto()));
+            return orderDtos;
+        }
+        return Collections.emptyList();
     }
 
     public Order createOrder(User user, Order order){
@@ -71,6 +92,21 @@ public class OrderService {
         cart.setStatus(false);
         cartService.saveCart(cart);
         return order;
+    }
+
+    public void updateOrder(int id, Order order){
+        Order oldOrder = orderRepository.findById(id).orElse(null);
+        if(oldOrder!=null){
+            oldOrder.setStatus(order.getStatus());
+            orderRepository.save(oldOrder);
+        }
+    }
+
+    public void deleteOrder(int id){
+        Order order = orderRepository.findById(id).orElse(null);
+        if(order!=null){
+            orderRepository.delete(order);
+        }
     }
 
 
