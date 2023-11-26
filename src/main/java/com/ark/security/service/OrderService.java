@@ -33,6 +33,7 @@ public class OrderService {
     }
 
     public List<Order> getAllOrdersByOrderDate(){
+        // Sort by orderDate DESC
         return orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate"));
     }
 
