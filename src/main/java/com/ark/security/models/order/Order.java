@@ -52,6 +52,7 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "shipping_method_id")
     private ShippingMethod shippingMethod;
+    private Integer shippingFee;
 
     private Integer total;
     @Enumerated(EnumType.STRING)
@@ -72,6 +73,7 @@ public class Order {
                 .notes(this.notes)
                 .paymentMethod(this.paymentMethod)
                 .shippingMethod(this.shippingMethod == null ? null :this.shippingMethod.convertToDto())
+                .shippingFee(this.shippingFee)
                 .total(this.total)
                 .orderDate(this.orderDate)
                 .status(this.status)

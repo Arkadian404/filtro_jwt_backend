@@ -103,7 +103,7 @@ public class MomoService {
             if(momoIPN.getResultCode().toString().equals("0")){
                 order.setStatus(OrderStatus.PAID_MOMO);
             }else if(momoIPN.getResultCode().toString().equals("1006")){
-                order.setStatus(OrderStatus.CANCELLED);
+                order.setStatus(OrderStatus.CANCELED);
             }else{
                 order.setStatus(OrderStatus.FAILED);
             }
@@ -202,7 +202,7 @@ public class MomoService {
 
         MomoDeliveryInfo momoDeliveryInfo = MomoDeliveryInfo.builder()
                 .deliveryAddress(order.getAddress() + ", " + order.getWard() + ", " + order.getDistrict() + ", " + order.getProvince())
-                .deliveryFee(String.valueOf(order.getShippingMethod().getFee()))
+                .deliveryFee(String.valueOf(order.getShippingFee()))
                 .quantity(String.valueOf(momoRequest.getItems().size()))
                 .build();
         momoRequest.setDeliveryInfo(momoDeliveryInfo);

@@ -140,7 +140,7 @@ public class VNPayService {
             if(vnpipn.getVnp_ResponseCode().equals("00")){
                 order.setStatus(OrderStatus.PAID_VNPAY);
             }else if (vnpipn.getVnp_ResponseCode().equals("24")){
-                order.setStatus(OrderStatus.CANCELLED);
+                order.setStatus(OrderStatus.CANCELED);
             }else{
                 order.setStatus(OrderStatus.FAILED);
             }

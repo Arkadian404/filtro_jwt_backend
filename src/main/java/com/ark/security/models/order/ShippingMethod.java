@@ -21,7 +21,7 @@ public class ShippingMethod {
     private Integer id;
 
     private String name;
-    private Integer fee;
+    private Integer surcharge;
     private String duration;
 
     @OneToMany(mappedBy = "shippingMethod")
@@ -32,7 +32,7 @@ public class ShippingMethod {
         return ShippingMethodDto.builder()
                 .id(this.id)
                 .name(this.name)
-                .fee(this.fee)
+                .surcharge(this.surcharge)
                 .duration(this.duration)
                 .build();
     }

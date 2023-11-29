@@ -11,14 +11,14 @@ import lombok.*;
 public class ShippingMethodDto {
     private Integer id;
     private String name;
-    private Integer fee;
+    private Integer surcharge;
     private String duration;
 
     public ShippingMethod convertToEntity(){
         return ShippingMethod.builder()
                 .id(this.id)
                 .name(this.name)
-                .fee(this.fee)
+                .surcharge(this.surcharge)
                 .duration(this.duration)
                 .build();
     }

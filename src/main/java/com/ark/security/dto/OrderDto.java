@@ -32,6 +32,7 @@ public class OrderDto {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
     private ShippingMethodDto shippingMethod;
+    private Integer shippingFee;
     private Integer total;
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -54,6 +55,7 @@ public class OrderDto {
                 .notes(this.notes)
                 .paymentMethod(this.paymentMethod)
                 .shippingMethod(this.shippingMethod.convertToEntity())
+                .shippingFee(this.shippingFee)
                 .total(this.total)
                 .orderDate(this.orderDate)
                 .status(this.status)
