@@ -13,6 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
+    private final ProductService productService;
     private final String REVIEW_NOT_FOUND = "Review not found";
     private final String REVIEW_EMPTY = "Review is empty";
 
@@ -39,6 +40,14 @@ public class ReviewService {
     public void create(Review review){
         review.setCreatedAt(LocalDateTime.now());
         reviewRepository.save(review);
+
+        int productId = review.getProduct().getId();
+        Double avgRating = getAvgRatingByProductId(productId);
+        productService.updateProductRating(productId, avgRating);
+    }
+
+    public Double getAvgRatingByProductId(Integer id){
+        return reviewRepository.avgRatingByProductId(id);
     }
 
     public void update(int id, Review review){

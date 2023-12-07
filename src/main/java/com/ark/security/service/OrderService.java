@@ -110,6 +110,11 @@ public class OrderService {
         }
     }
 
+    public void cancelOrder(int id){
+        Order order = getOrderById(id);
+        order.setStatus(OrderStatus.CANCELED);
+        orderRepository.save(order);
+    }
 
 
 }

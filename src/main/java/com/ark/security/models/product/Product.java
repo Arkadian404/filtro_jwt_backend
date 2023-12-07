@@ -31,6 +31,7 @@ public class Product {
     @JoinColumn(name = "brand_id")
     private Brand brand;
     private Integer sold;
+    private Double rating;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @JsonIgnore
@@ -89,6 +90,7 @@ public class Product {
                 .name(this.name)
                 .slug(this.slug)
                 .brand(this.brand.convertToDto())
+                .rating(this.rating)
                 .productDetails(productDetailDtos)
                 .description(this.description)
                 .images(productImageDtos)

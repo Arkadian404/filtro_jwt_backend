@@ -2,6 +2,7 @@ package com.ark.security.controller.user;
 
 import com.ark.security.auth.AuthenticationService;
 import com.ark.security.dto.OrderDto;
+import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.order.Order;
 import com.ark.security.models.order.ShippingMethod;
 import com.ark.security.models.payment.momo.MomoResponse;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Date;
 
 @RestController
 @RequestMapping("/api/v1/user/order")
@@ -53,6 +56,18 @@ public class OrderController {
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
     public ResponseEntity<?> getShippingMethods(){
         return ResponseEntity.ok(shippingMethodService.getAllShippingMethods());
+    }
+
+    @PostMapping("/cancelOrder/{id}")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
+    public ResponseEntity<?> cancelOrder(@PathVariable int id){
+        orderService.cancelOrder(id);
+        SuccessMessage successMessage = SuccessMessage.builder()
+                .statusCode(200)
+                .message("Hủy đơn hàng thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(successMessage);
     }
 
     @PostMapping("/placeOrder")

@@ -388,6 +388,16 @@ public class ProductService {
         }
     }
 
+    public void updateProductRating(int id, Double rating){
+        Product oldProduct = getProductById(id);
+        if (oldProduct != null) {
+            oldProduct.setRating(rating);
+            productRepository.save(oldProduct);
+        }else {
+            throw new NotFoundException(PRODUCT_NOT_FOUND+ id);
+        }
+    }
+
     public void deleteProduct(int id) {
         Product product = getProductById(id);
         if(product == null){
@@ -411,6 +421,7 @@ public class ProductService {
                     .name(product.getName())
                     .slug(product.getSlug())
                     .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
+                    .rating(product.getRating())
                     .description(product.getDescription())
                     .images(productImageDtos)
                     .productDetails(productDetailDtos)

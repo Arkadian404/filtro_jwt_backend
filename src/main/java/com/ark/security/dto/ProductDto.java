@@ -22,6 +22,7 @@ public class ProductDto implements Serializable {
     private String name;
     private String slug;
     private BrandDto brand;
+    private Double rating;
     private List<ProductDetailDto> productDetails;
     private String description;
     private List<ProductImageDto> images;
@@ -39,6 +40,7 @@ public class ProductDto implements Serializable {
                 .name(this.name)
                 .slug(this.slug)
                 .brand(this.brand.convertToEntity())
+                .rating(this.rating)
                 .productDetails(productDetails)
                 .description(this.description)
                 .images(images)
