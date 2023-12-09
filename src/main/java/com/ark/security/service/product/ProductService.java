@@ -447,6 +447,7 @@ public class ProductService {
                 .id(product.getId())
                 .name(product.getName())
                 .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
+                .rating(product.getRating())
                 .description(product.getDescription())
                 .images(productImageDtos)
                 .productDetails(productDetailDtos)

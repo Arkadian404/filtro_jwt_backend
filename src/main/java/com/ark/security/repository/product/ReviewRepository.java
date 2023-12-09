@@ -14,4 +14,10 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
     @Query(value = "select avg(rating) from Review where product_id =:id and parent_id is null group by product_id", nativeQuery = true)
     Double avgRatingByProductId(int id);
+
+    @Query(value = "select count(user_id) from Review where product_id =:id and parent_id is null group by product_id", nativeQuery = true)
+    Integer countReviewByProductId(int id);
+
+
+
 }

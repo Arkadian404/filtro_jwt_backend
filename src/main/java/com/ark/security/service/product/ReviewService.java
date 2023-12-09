@@ -50,6 +50,11 @@ public class ReviewService {
         return reviewRepository.avgRatingByProductId(id);
     }
 
+    public Integer countReviewByProductId(Integer id){
+        System.out.println(reviewRepository.countReviewByProductId(id));
+        return reviewRepository.countReviewByProductId(id);
+    }
+
     public void update(int id, Review review){
         Review oldReview = getReviewById(id);
         review.setCreatedAt(LocalDateTime.now());

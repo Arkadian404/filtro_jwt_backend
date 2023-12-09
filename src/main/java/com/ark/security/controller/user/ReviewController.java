@@ -2,6 +2,7 @@ package com.ark.security.controller.user;
 
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Review;
+import com.ark.security.service.StatisticService;
 import com.ark.security.service.product.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
+    private final StatisticService statisticService;
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllReview(){
@@ -35,6 +37,16 @@ public class ReviewController {
     @GetMapping("/product/{id}")
     public ResponseEntity<?> getReviewByProductId(@PathVariable int id){
         return ResponseEntity.ok(reviewService.getReviewByProductId(id));
+    }
+
+    @GetMapping("/get/countReviewProduct/{id}")
+    public ResponseEntity<?> getCountReviewProductId(@PathVariable int id){
+        return ResponseEntity.ok(reviewService.countReviewByProductId(id));
+    }
+
+    @GetMapping("/get/productReviewRating/{id}")
+    public ResponseEntity<?> getReviewRating(@PathVariable Integer id){
+        return ResponseEntity.ok(statisticService.getReviewRating(id));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'EMPLOYEE', 'ADMIN')")
