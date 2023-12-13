@@ -25,10 +25,58 @@ public class AdminStatisticController {
         return ResponseEntity.ok(statisticService.getRevenue(month, year));
     }
 
+    @GetMapping("/get/revenue/date")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getRevenueByDate(@RequestParam Integer day, @RequestParam Integer month, @RequestParam Integer year){
+        return ResponseEntity.ok(statisticService.getRevenueByDate(day, month, year));
+    }
+
+    @GetMapping("/get/revenue/currentMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getRevenueCurrentMonth(){
+        return ResponseEntity.ok(statisticService.getRevenueByCurrentMonth());
+    }
+
+    @GetMapping("/get/revenue/lastMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getRevenueLastMonth(){
+        return ResponseEntity.ok(statisticService.getRevenueByLastMonth());
+    }
+
     @GetMapping("/get/order")
 //    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getOrderStatistic(@RequestParam Integer month, @RequestParam Integer year){
         return ResponseEntity.ok(statisticService.getOrderStatistic(month, year));
+    }
+
+    @GetMapping("/get/order/date")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getOrderStatisticByDate(@RequestParam Integer day, @RequestParam Integer month, @RequestParam Integer year){
+        return ResponseEntity.ok(statisticService.getOrderStatisticByDate(day, month, year));
+    }
+
+    @GetMapping("/get/order/currentMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getOrderStatisticCurrentMonth(){
+        return ResponseEntity.ok(statisticService.getOrderStatisticByCurrentMonth());
+    }
+
+    @GetMapping("/get/order/lastMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getOrderStatisticLastMonth(){
+        return ResponseEntity.ok(statisticService.getOrderStatisticByLastMonth());
+    }
+
+    @GetMapping("/get/order/failed/currentMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getFailedOrderStatisticCurrentMonth(){
+        return ResponseEntity.ok(statisticService.getFailedOrderStatisticByCurrentMonth());
+    }
+
+    @GetMapping("/get/order/failed/lastMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getFailedOrderStatisticLastMonth(){
+        return ResponseEntity.ok(statisticService.getFailedOrderStatisticByLastMonth());
     }
 
     @GetMapping("/get/user")

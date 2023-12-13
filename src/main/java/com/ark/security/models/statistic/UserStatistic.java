@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserStatistic {
+    private Integer day;
     private Integer month;
     private Integer year;
     private Long count;

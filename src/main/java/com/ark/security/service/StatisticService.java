@@ -14,6 +14,7 @@ import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -54,8 +55,112 @@ public class StatisticService implements StatisticRepository {
                 .groupBy(cb.function("MONTH", Integer.class, root.get("orderDate")),
                         cb.function("YEAR", Integer.class, root.get("orderDate")));
         TypedQuery<Revenue> query = entityManager.createQuery(cq);
-        return query.getResultStream().findFirst().orElse(new Revenue(month, year, 0L));
+        return query.getResultStream().findFirst().orElse(new Revenue(null,month, year, 0L));
     }
+
+    @Override
+    public Revenue getRevenueByDate(Integer day, Integer month, Integer year) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Revenue>  cq = cb.createQuery(Revenue.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                Revenue.class,
+                cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.sum(root.get("total")).alias("revenue")
+
+        ))
+                .where(cb.and(
+                        cb.equal(cb.function("DAY", Integer.class, root.get("orderDate")), day),
+                        cb.equal(cb.function("MONTH", Integer.class, root.get("orderDate")), month),
+                        cb.equal(cb.function("YEAR", Integer.class, root.get("orderDate")), year),
+                        cb.equal(root.get("status"), OrderStatus.CONFIRMED)))
+                .groupBy(cb.function("DAY", Integer.class, root.get("orderDate")),
+                        cb.function("MONTH", Integer.class, root.get("orderDate")),
+                        cb.function("YEAR", Integer.class, root.get("orderDate")));
+        TypedQuery<Revenue> query = entityManager.createQuery(cq);
+        return query.getResultStream().findFirst().orElse(new Revenue(day,month, year, 0L));
+    }
+
+
+    private LocalDateTime firstDayOfMonth(){
+        LocalDateTime now = LocalDateTime.now();
+        return now.withDayOfMonth(1);
+    }
+
+    private LocalDateTime firstDayOfLastMonth(){
+        LocalDateTime now = LocalDateTime.now();
+        return now.minusMonths(1).withDayOfMonth(1);
+    }
+
+    private LocalDateTime lastDayOfPreviousMonth(){
+        LocalDateTime now = LocalDateTime.now();
+        return now.withDayOfMonth(1).minusDays(1);
+    }
+
+    @Override
+    public List<Revenue> getRevenueByCurrentMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Revenue> cq = cb.createQuery(Revenue.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                Revenue.class,
+                cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.sum(root.get("total")).alias("revenue")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfMonth()
+                        ),
+                        cb.equal(root.get("status"), OrderStatus.CONFIRMED)
+                )
+
+        ).groupBy(
+                cb.function("DAY", Integer.class, root.get("orderDate")),
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+        ));
+        TypedQuery<Revenue> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<Revenue> getRevenueByLastMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Revenue> cq = cb.createQuery(Revenue.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                Revenue.class,
+                cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.sum(root.get("total")).alias("revenue")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                            root.get("orderDate"),
+                            firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                            root.get("orderDate"),
+                            lastDayOfPreviousMonth()
+                        ),
+                        cb.equal(root.get("status"), OrderStatus.CONFIRMED)
+                )
+
+        ).groupBy(
+                cb.function("DAY", Integer.class, root.get("orderDate")),
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<Revenue> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
 
     @Override
     public OrderStatistic getOrderStatistic(Integer month, Integer year) {
@@ -74,7 +179,148 @@ public class StatisticService implements StatisticRepository {
                 .groupBy(cb.function("MONTH", Integer.class, root.get("orderDate")),
                         cb.function("YEAR", Integer.class, root.get("orderDate")));
         TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
-        return query.getResultStream().findFirst().orElse(new OrderStatistic(month, year, 0L));
+        return query.getResultStream().findFirst().orElse(new OrderStatistic(null,month, year, 0L));
+    }
+
+    @Override
+    public OrderStatistic getOrderStatisticByDate(Integer day, Integer month, Integer year) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic>  cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+
+        ))
+                .where(cb.and(
+                        cb.equal(cb.function("DAY", Integer.class, root.get("orderDate")), day),
+                        cb.equal(cb.function("MONTH", Integer.class, root.get("orderDate")), month),
+                        cb.equal(cb.function("YEAR", Integer.class, root.get("orderDate")), year)))
+                .groupBy(cb.function("DAY", Integer.class, root.get("orderDate")),
+                        cb.function("MONTH", Integer.class, root.get("orderDate")),
+                        cb.function("YEAR", Integer.class, root.get("orderDate")));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultStream().findFirst().orElse(new OrderStatistic(day,month, year, 0L));
+    }
+
+    @Override
+    public OrderStatistic getOrderStatisticByCurrentMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.greaterThanOrEqualTo(
+                        root.get("orderDate"),
+                        firstDayOfMonth()
+                )
+        ).groupBy(
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultStream().findFirst().orElse(new OrderStatistic(null,null, null, 0L));
+    }
+
+    @Override
+    public OrderStatistic getOrderStatisticByLastMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultStream().findFirst().orElse(new OrderStatistic(null,null, null, 0L));
+    }
+
+    @Override
+    public OrderStatistic getFailedOrderStatisticByCurrentMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfMonth()
+                        ),
+                        cb.or(
+                                cb.equal(root.get("status"), OrderStatus.CANCELED),
+                                cb.equal(root.get("status"), OrderStatus.FAILED)
+                        )
+                )
+
+        ).groupBy(
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultStream().findFirst().orElse(new OrderStatistic(null,null, null, 0L));
+    }
+
+    @Override
+    public OrderStatistic getFailedOrderStatisticByLastMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        ),
+                        cb.or(
+                                cb.equal(root.get("status"), OrderStatus.CANCELED),
+                                cb.equal(root.get("status"), OrderStatus.FAILED)
+                        )
+                )
+
+        ).groupBy(
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultStream().findFirst().orElse(new OrderStatistic(null,null, null, 0L));
     }
 
     @Override
@@ -94,7 +340,7 @@ public class StatisticService implements StatisticRepository {
                 .groupBy(cb.function("MONTH", Integer.class, root.get("createdDate")),
                         cb.function("YEAR", Integer.class, root.get("createdDate")));
         TypedQuery<UserStatistic> query = entityManager.createQuery(cq);
-        return query.getResultStream().findFirst().orElse(new UserStatistic(month, year, 0L));
+        return query.getResultStream().findFirst().orElse(new UserStatistic(null,month, year, 0L));
     }
 
     @Override
@@ -114,7 +360,7 @@ public class StatisticService implements StatisticRepository {
                 .groupBy(cb.function("MONTH", Integer.class, root.get("createdAt")),
                         cb.function("YEAR", Integer.class, root.get("createdAt")));
         TypedQuery<ProductStatistic> query = entityManager.createQuery(cq);
-        return query.getResultStream().findFirst().orElse(new ProductStatistic(month, year, 0L));
+        return query.getResultStream().findFirst().orElse(new ProductStatistic(null,month, year, 0L));
     }
 
 }
