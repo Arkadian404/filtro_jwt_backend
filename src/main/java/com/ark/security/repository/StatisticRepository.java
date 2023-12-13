@@ -16,6 +16,18 @@ public interface StatisticRepository {
     OrderStatistic getOrderStatisticByLastMonth();
     OrderStatistic getFailedOrderStatisticByCurrentMonth();
     OrderStatistic getFailedOrderStatisticByLastMonth();
+    List<OrderLocationStatistic> getOrderLocationStatisticByCurrentMonth();
+    List<OrderLocationStatistic> getOrderLocationStatisticByLastMonth();
     UserStatistic getUserStatistic(Integer month, Integer year);
     ProductStatistic getProductStatistic(Integer month, Integer year);
+
+    List<CategoryStatistic> getCategoryStatisticByCurrentMonth();
+    List<CategoryStatistic> getCategoryStatisticByLastMonth();
+
+    List<BrandStatistic> getBrandStatisticByCurrentMonth();
+    List<BrandStatistic> getBrandStatisticByLastMonth();
+
+    List<OriginStatistic> getOriginStatisticByCurrentMonth();
+    List<OriginStatistic> getOriginStatisticByLastMonth();
+
 }

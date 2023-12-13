@@ -1,8 +1,11 @@
 package com.ark.security.service;
 
 import com.ark.security.models.order.Order;
+import com.ark.security.models.order.OrderDetail;
 import com.ark.security.models.order.OrderStatus;
+import com.ark.security.models.product.Category;
 import com.ark.security.models.product.Product;
+import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.product.Review;
 import com.ark.security.models.statistic.*;
 import com.ark.security.models.user.User;
@@ -10,8 +13,10 @@ import com.ark.security.repository.StatisticRepository;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -324,6 +329,55 @@ public class StatisticService implements StatisticRepository {
     }
 
     @Override
+    public List<OrderLocationStatistic> getOrderLocationStatisticByCurrentMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderLocationStatistic> cq = cb.createQuery(OrderLocationStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderLocationStatistic.class,
+                root.get("province").alias("province"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.greaterThanOrEqualTo(
+                        root.get("orderDate"),
+                        firstDayOfMonth()
+                )
+        ).groupBy(
+                root.get("province")
+        );
+        TypedQuery<OrderLocationStatistic> query = entityManager.createQuery(cq).setMaxResults(6);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<OrderLocationStatistic> getOrderLocationStatisticByLastMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderLocationStatistic> cq = cb.createQuery(OrderLocationStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderLocationStatistic.class,
+                root.get("province").alias("province"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                root.get("province")
+        );
+        TypedQuery<OrderLocationStatistic> query = entityManager.createQuery(cq).setMaxResults(6);
+        return query.getResultList();
+    }
+
+    @Override
     public UserStatistic getUserStatistic(Integer month, Integer year) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<UserStatistic>  cq = cb.createQuery(UserStatistic.class);
@@ -361,6 +415,81 @@ public class StatisticService implements StatisticRepository {
                         cb.function("YEAR", Integer.class, root.get("createdAt")));
         TypedQuery<ProductStatistic> query = entityManager.createQuery(cq);
         return query.getResultStream().findFirst().orElse(new ProductStatistic(null,month, year, 0L));
+    }
+
+    @Override
+    public List<CategoryStatistic> getCategoryStatisticByCurrentMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<CategoryStatistic> cq = cb.createQuery(CategoryStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Category> c = p.join("category");
+        cq.select(cb.construct(
+                CategoryStatistic.class,
+                c.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.greaterThanOrEqualTo(
+                        root.get("orderDate"),
+                        firstDayOfMonth()
+                )
+        ).groupBy(
+                c.get("name")
+        );
+        TypedQuery<CategoryStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<CategoryStatistic> getCategoryStatisticByLastMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<CategoryStatistic> cq = cb.createQuery(CategoryStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Category> c = p.join("category");
+        cq.select(cb.construct(
+                CategoryStatistic.class,
+                c.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                c.get("name")
+        );
+        TypedQuery<CategoryStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<BrandStatistic> getBrandStatisticByCurrentMonth() {
+        return null;
+    }
+
+    @Override
+    public List<BrandStatistic> getBrandStatisticByLastMonth() {
+        return null;
+    }
+
+    @Override
+    public List<OriginStatistic> getOriginStatisticByCurrentMonth() {
+        return null;
+    }
+
+    @Override
+    public List<OriginStatistic> getOriginStatisticByLastMonth() {
+        return null;
     }
 
 }

@@ -79,6 +79,18 @@ public class AdminStatisticController {
         return ResponseEntity.ok(statisticService.getFailedOrderStatisticByLastMonth());
     }
 
+    @GetMapping("/get/order/location/currentMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getOrderLocationStatisticCurrentMonth(){
+        return ResponseEntity.ok(statisticService.getOrderLocationStatisticByCurrentMonth());
+    }
+
+    @GetMapping("/get/order/location/lastMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getOrderLocationStatisticLastMonth(){
+        return ResponseEntity.ok(statisticService.getOrderLocationStatisticByLastMonth());
+    }
+
     @GetMapping("/get/user")
 //    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getUserStatistic(@RequestParam Integer month, @RequestParam Integer year){
@@ -90,5 +102,19 @@ public class AdminStatisticController {
     public ResponseEntity<?> getProductStatistic(@RequestParam Integer month, @RequestParam Integer year){
         return ResponseEntity.ok(statisticService.getProductStatistic(month, year));
     }
+
+    @GetMapping("/get/category/currentMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getCategoryStatisticCurrentMonth(){
+        return ResponseEntity.ok(statisticService.getCategoryStatisticByCurrentMonth());
+    }
+
+
+    @GetMapping("/get/category/lastMonth")
+//    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
+    public ResponseEntity<?> getCategoryStatisticLastMonth(){
+        return ResponseEntity.ok(statisticService.getCategoryStatisticByLastMonth());
+    }
+
 
 }
