@@ -1,5 +1,4 @@
 package com.ark.security.repository;
-
 import com.ark.security.models.statistic.*;
 
 import java.util.List;
@@ -23,6 +22,9 @@ public interface StatisticRepository {
 
     List<CategoryStatistic> getCategoryStatisticByCurrentMonth();
     List<CategoryStatistic> getCategoryStatisticByLastMonth();
+
+    List<FlavorStatistic> getFlavorStatisticByCurrentMonth();
+    List<FlavorStatistic> getFlavorStatisticByLastMonth();
 
     List<BrandStatistic> getBrandStatisticByCurrentMonth();
     List<BrandStatistic> getBrandStatisticByLastMonth();

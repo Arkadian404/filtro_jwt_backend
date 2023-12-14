@@ -3,10 +3,7 @@ package com.ark.security.service;
 import com.ark.security.models.order.Order;
 import com.ark.security.models.order.OrderDetail;
 import com.ark.security.models.order.OrderStatus;
-import com.ark.security.models.product.Category;
-import com.ark.security.models.product.Product;
-import com.ark.security.models.product.ProductDetail;
-import com.ark.security.models.product.Review;
+import com.ark.security.models.product.*;
 import com.ark.security.models.statistic.*;
 import com.ark.security.models.user.User;
 import com.ark.security.repository.StatisticRepository;
@@ -16,7 +13,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -473,23 +469,172 @@ public class StatisticService implements StatisticRepository {
     }
 
     @Override
+    public List<FlavorStatistic> getFlavorStatisticByCurrentMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<FlavorStatistic> cq = cb.createQuery(FlavorStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Flavor> f = p.join("flavor");
+        cq.select(cb.construct(
+                FlavorStatistic.class,
+                f.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.greaterThanOrEqualTo(
+                        root.get("orderDate"),
+                        firstDayOfMonth()
+                )
+        ).groupBy(
+                f.get("name")
+        );
+        TypedQuery<FlavorStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<FlavorStatistic> getFlavorStatisticByLastMonth() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<FlavorStatistic> cq = cb.createQuery(FlavorStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Flavor> f = p.join("flavor");
+        cq.select(cb.construct(
+                FlavorStatistic.class,
+                f.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                f.get("name")
+        );
+        TypedQuery<FlavorStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
     public List<BrandStatistic> getBrandStatisticByCurrentMonth() {
-        return null;
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BrandStatistic> cq = cb.createQuery(BrandStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Brand> b = p.join("brand");
+        cq.select(cb.construct(
+                BrandStatistic.class,
+                b.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.greaterThanOrEqualTo(
+                        root.get("orderDate"),
+                        firstDayOfMonth()
+                )
+        ).groupBy(
+                b.get("name")
+        );
+        TypedQuery<BrandStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
     }
 
     @Override
     public List<BrandStatistic> getBrandStatisticByLastMonth() {
-        return null;
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BrandStatistic> cq = cb.createQuery(BrandStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Brand> b = p.join("brand");
+        cq.select(cb.construct(
+                BrandStatistic.class,
+                b.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                b.get("name")
+        );
+        TypedQuery<BrandStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
     }
 
     @Override
     public List<OriginStatistic> getOriginStatisticByCurrentMonth() {
-        return null;
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OriginStatistic> cq = cb.createQuery(OriginStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, ProductOrigin> po = p.join("origin");
+        cq.select(cb.construct(
+                OriginStatistic.class,
+                po.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.greaterThanOrEqualTo(
+                        root.get("orderDate"),
+                        firstDayOfMonth()
+                )
+        ).groupBy(
+                po.get("name")
+        ).orderBy(
+                cb.desc(cb.count(root.get("id")))
+        );
+        TypedQuery<OriginStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
     }
 
     @Override
     public List<OriginStatistic> getOriginStatisticByLastMonth() {
-        return null;
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OriginStatistic> cq = cb.createQuery(OriginStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, ProductOrigin> po = p.join("origin");
+        cq.select(cb.construct(
+                OriginStatistic.class,
+                po.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                po.get("name")
+        ).orderBy(
+                cb.desc(cb.count(root.get("id")))
+        );
+        TypedQuery<OriginStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
     }
 
 }
