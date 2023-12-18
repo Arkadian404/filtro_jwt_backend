@@ -66,7 +66,12 @@ public class ReviewService {
         if(!reviewRepository.existsById(id)){
             throw new NotFoundException(REVIEW_NOT_FOUND);
         }
+
+        Review review = getReviewById(id);
+        int productId = review.getProduct().getId();
         reviewRepository.deleteById(id);
+        Double avgRating = getAvgRatingByProductId(productId);
+        productService.updateProductRating(productId, avgRating);
     }
 
 }

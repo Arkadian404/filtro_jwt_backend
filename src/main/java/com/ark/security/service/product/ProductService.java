@@ -40,6 +40,11 @@ public class ProductService {
         return productRepository.findById(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
     }
 
+    public ProductDto getProductDtoById(int id){
+        Product product = getProductById(id);
+        return  product.convertToDto();
+    }
+
     public Product getProductBySlug(String slug){
         return productRepository.findBySlug(slug).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ slug));
     }

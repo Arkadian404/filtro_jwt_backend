@@ -23,6 +23,7 @@ public class ProductOrigin {
     private String name;
     private String continent;
     private String description;
+    private Boolean status;
 
     @OneToMany(mappedBy = "origin", fetch = FetchType.LAZY)
     @JsonIgnore

@@ -26,6 +26,7 @@ public class Vendor {
     private String phone;
     private String email;
     private String description;
+    private Boolean status;
 
     @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
     @JsonIgnore

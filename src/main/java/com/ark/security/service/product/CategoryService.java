@@ -66,9 +66,6 @@ public class CategoryService {
             throw new NullException(NULL);
         }
         if (oldCategory != null) {
-            if(isDuplicateCategoryName(category.getName())){
-                throw new DuplicateException(DUPLICATE);
-            }
             oldCategory.setName(category.getName());
             oldCategory.setStatus(category.getStatus());
             categoryRepository.save(oldCategory);

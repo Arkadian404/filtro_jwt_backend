@@ -49,6 +49,7 @@ public class VendorService {
         vendorUpdate.setPhone(vendor.getPhone());
         vendorUpdate.setEmail(vendor.getEmail());
         vendorUpdate.setDescription(vendor.getDescription());
+        vendorUpdate.setStatus(vendor.getStatus());
         vendorRepository.save(vendorUpdate);
     }
 

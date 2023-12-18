@@ -172,7 +172,11 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-
+    @GetMapping("/find/dto/{id}")
+    public ResponseEntity<?> findDto(@PathVariable int id){
+        ProductDto product = productService.getProductDtoById(id);
+        return ResponseEntity.ok(product);
+    }
 
     @GetMapping("/getListByCategory/{id}")
     public ResponseEntity<?> getListByCategory(@PathVariable int id){

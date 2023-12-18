@@ -60,6 +60,7 @@ public class ProductOriginService {
         productOriginUpdate.setName(productOrigin.getName());
         productOriginUpdate.setContinent(productOrigin.getContinent());
         productOriginUpdate.setDescription(productOrigin.getDescription());
+        productOriginUpdate.setStatus(productOrigin.getStatus());
         productOriginRepository.save(productOriginUpdate);
     }
 
