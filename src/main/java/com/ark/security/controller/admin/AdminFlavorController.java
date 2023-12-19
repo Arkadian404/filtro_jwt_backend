@@ -40,9 +40,6 @@ public class AdminFlavorController {
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
     public ResponseEntity<?> create(@RequestBody Flavor flavor){
-//        if(flavor == null){
-//            return ResponseEntity.badRequest().body("Hương vị không được trống");
-//        }
         flavorService.saveFlavor(flavor);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

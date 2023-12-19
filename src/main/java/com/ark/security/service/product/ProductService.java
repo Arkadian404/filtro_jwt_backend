@@ -3,6 +3,7 @@ package com.ark.security.service.product;
 import com.ark.security.dto.ProductDetailDto;
 import com.ark.security.dto.ProductDto;
 import com.ark.security.dto.ProductImageDto;
+import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
 import com.ark.security.models.product.Category;
@@ -359,7 +360,7 @@ public class ProductService {
 
     public void saveProduct(Product product) {
         if(isExistsProductByName(product.getName())) {
-            throw new NotFoundException(PRODUCT_NAME_EXISTS);
+            throw new DuplicateException(PRODUCT_NAME_EXISTS);
         }
         Slugify slugify = Slugify.builder().transliterator(true).build();
         product.setSlug(slugify.slugify(product.getName()));

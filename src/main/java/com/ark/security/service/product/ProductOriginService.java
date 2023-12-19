@@ -1,6 +1,7 @@
 package com.ark.security.service.product;
 
 import com.ark.security.dto.ProductOriginDto;
+import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.product.ProductOrigin;
 import com.ark.security.repository.product.ProductOriginRepository;
@@ -18,6 +19,8 @@ public class ProductOriginService {
     private final String EMPTY = "Không có nguồn gốc sản phẩm nào";
 
     public void saveProductOrigin(ProductOrigin productOrigin) {
+        if(productOriginRepository.existsProductOriginByName(productOrigin.getName()))
+            throw new DuplicateException("Nguồn gốc sản phẩm đã tồn tại");
         productOriginRepository.save(productOrigin);
     }
 

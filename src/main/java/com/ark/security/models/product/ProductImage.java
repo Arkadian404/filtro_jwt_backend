@@ -35,7 +35,7 @@ public class ProductImage {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    @JsonManagedReference(value = "product-image")
+//    @JsonManagedReference(value = "product-image")
     private Product product;
 
 

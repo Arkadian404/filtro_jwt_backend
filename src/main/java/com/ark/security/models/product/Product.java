@@ -20,6 +20,7 @@ import java.util.List;
 @Entity
 @Table
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true, value ={"images"})
 public class Product {
 
     @Id
@@ -40,7 +41,8 @@ public class Product {
     private String description;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    @JsonIgnore
+//    @JsonBackReference(value = "product-image")
+//    @JsonIgnore
     private List<ProductImage> images;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")

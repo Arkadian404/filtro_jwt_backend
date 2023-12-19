@@ -1,6 +1,7 @@
 package com.ark.security.service.product;
 
 import com.ark.security.dto.VendorDto;
+import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.product.Vendor;
 import com.ark.security.repository.product.VendorRepository;
@@ -17,6 +18,8 @@ public class VendorService {
     private final String EMPTY = "Không có nhà cung cấp nào";
 
     public void saveVendor(Vendor vendor){
+        if (vendorRepository.existsVendorByName(vendor.getName()))
+            throw new DuplicateException("Nhà cung cấp đã tồn tại");
         vendorRepository.save(vendor);
     }
 

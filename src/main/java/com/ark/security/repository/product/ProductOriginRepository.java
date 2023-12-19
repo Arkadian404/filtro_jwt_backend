@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface ProductOriginRepository extends JpaRepository<ProductOrigin, Integer> {
-
+    boolean existsProductOriginByName(String name);
     Optional<List<ProductOrigin>> findByContinent(String continent);
 }

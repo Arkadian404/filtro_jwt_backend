@@ -2,6 +2,7 @@ package com.ark.security.service.product;
 
 
 import com.ark.security.dto.BrandDto;
+import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.product.Brand;
 import com.ark.security.repository.product.BrandRepository;
@@ -42,6 +43,10 @@ public class BrandService {
 
 
     public void saveBrand(Brand brand){
+        //check if duplicate
+        if(brandRepository.existsBrandByName(brand.getName())){
+            throw new DuplicateException("Thương hiệu đã tồn tại");
+        }
         brandRepository.save(brand);
     }
 
