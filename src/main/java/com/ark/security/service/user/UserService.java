@@ -73,6 +73,7 @@ public class UserService implements UserDetailsService {
             throw new NotFoundException(NOT_FOUND+ id);
         }
         oldUser.setPassword(new BCryptPasswordEncoder().encode(password));
+        oldUser.setEnabled(true);
         userRepository.save(oldUser);
     }
 
@@ -133,6 +134,7 @@ public class UserService implements UserDetailsService {
             throw new BadCredentialsException(OLD_PASSWORD_NOT_MATCH);
         }
         user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
+        user.setEnabled(true);
         userRepository.save(user);
     }
 }
