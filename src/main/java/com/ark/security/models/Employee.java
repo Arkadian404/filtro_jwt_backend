@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -25,7 +26,7 @@ public class Employee  {
     private Integer id;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date startOn;
+    private LocalDate startOn;
 
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id")

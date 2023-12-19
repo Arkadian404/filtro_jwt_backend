@@ -4,6 +4,7 @@ import com.ark.security.models.user.User;
 import lombok.*;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -20,7 +21,7 @@ public class UserDto implements Serializable {
     private String lastname;
     private String username;
     private String email;
-    private Date dob;
+    private LocalDate dob;
     private String address;
     private String province;
     private String district;

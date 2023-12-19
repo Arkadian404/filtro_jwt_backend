@@ -2,15 +2,12 @@ package com.ark.security.repository.product;
 
 import com.ark.security.models.product.Category;
 import com.ark.security.models.product.Product;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,63 +63,63 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     Optional<List<Product>> findAllBySaleId(int id);
 
     //MYSQL QUERY
-    @Query(value = "select * from Product as p where p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
-            "and p.category_id in (select c.id from Category as c where c.status = true) " +
-            "and p.vendor_id in (select v.id from  Vendor as v where v.status = true) " +
+    @Query(value = "select * from product as p where p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
+            "and p.category_id in (select c.id from category as c where c.status = true) " +
+            "and p.vendor_id in (select v.id from  vendor as v where v.status = true) " +
             "and p.product_origin_id in (select o.id from product_origin as o where o.status = true) " +
-            "and p.brand_id in (select b.id from Brand as b where b.status = true) " +
+            "and p.brand_id in (select b.id from brand as b where b.status = true) " +
             "order by p.created_at desc limit 3", nativeQuery = true)
     Optional<List<Product>> findTop3LatestProducts();
 
     //MYSQL QUERY
-    @Query(value = "select * from Product as p where p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
-            "and p.category_id in (select c.id from Category as c where c.status = true) " +
-            "and p.vendor_id in (select v.id from  Vendor as v where v.status = true) " +
+    @Query(value = "select * from product as p where p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
+            "and p.category_id in (select c.id from category as c where c.status = true) " +
+            "and p.vendor_id in (select v.id from  vendor as v where v.status = true) " +
             "and p.product_origin_id in (select o.id from product_origin as o where o.status = true) " +
-            "and p.brand_id in (select b.id from Brand as b where b.status = true) " +
+            "and p.brand_id in (select b.id from brand as b where b.status = true) " +
             "order by p.sold desc limit 3", nativeQuery = true)
     Optional<List<Product>> findTop3BestSellerProducts();
 
-    @Query(value = "select * from Product as p where p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
-            "and p.category_id in (select c.id from Category as c where c.status = true) " +
-            "and p.vendor_id in (select v.id from  Vendor as v where v.status = true) " +
+    @Query(value = "select * from product as p where p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
+            "and p.category_id in (select c.id from category as c where c.status = true) " +
+            "and p.vendor_id in (select v.id from  vendor as v where v.status = true) " +
             "and p.product_origin_id in (select o.id from product_origin as o where o.status = true) " +
-            "and p.brand_id in (select b.id from Brand as b where b.status = true) " +
+            "and p.brand_id in (select b.id from brand as b where b.status = true) " +
             "order by p.sold desc", nativeQuery = true)
     Optional<List<Product>> findBestSellerProducts();
 
     //MYSQL QUERY
-    @Query(value = "select * from Product as p where p.is_special = true " +
+    @Query(value = "select * from product as p where p.is_special = true " +
             "and p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
-            "and p.category_id in (select c.id from Category as c where c.status = true) " +
-            "and p.vendor_id in (select v.id from  Vendor as v where v.status = true) " +
+            "and p.category_id in (select c.id from category as c where c.status = true) " +
+            "and p.vendor_id in (select v.id from  vendor as v where v.status = true) " +
             "and p.product_origin_id in (select o.id from product_origin as o where o.status = true) " +
-            "and p.brand_id in (select b.id from Brand as b where b.status = true) limit 3", nativeQuery = true)
+            "and p.brand_id in (select b.id from brand as b where b.status = true) limit 3", nativeQuery = true)
     Optional<List<Product>> findTop3SpecialProducts();
 
-    @Query(value="select * from Product as p where p.product_origin_id =:id " +
+    @Query(value="select * from product as p where p.product_origin_id =:id " +
             "and p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
-            "and p.category_id in (select c.id from Category as c where c.status = true) " +
-            "and p.vendor_id in (select v.id from  Vendor as v where v.status = true) " +
+            "and p.category_id in (select c.id from category as c where c.status = true) " +
+            "and p.vendor_id in (select v.id from  vendor as v where v.status = true) " +
             "and p.product_origin_id in (select o.id from product_origin as o where o.status = true) " +
-            "and p.brand_id in (select b.id from Brand as b where b.status = true) limit 10", nativeQuery = true)
+            "and p.brand_id in (select b.id from brand as b where b.status = true) limit 10", nativeQuery = true)
     Optional<List<Product>> findByOriginName(@Param("id") int id);
 
 
-    @Query(value = "select * from Product as p where p.category_id =:id " +
+    @Query(value = "select * from product as p where p.category_id =:id " +
             "and p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
-            "and p.category_id in (select c.id from Category as c where c.status = true) " +
-            "and p.vendor_id in (select v.id from  Vendor as v where v.status = true) " +
+            "and p.category_id in (select c.id from category as c where c.status = true) " +
+            "and p.vendor_id in (select v.id from  vendor as v where v.status = true) " +
             "and p.product_origin_id in (select o.id from product_origin as o where o.status = true) " +
-            "and p.brand_id in (select b.id from Brand as b where b.status = true) limit 10", nativeQuery = true)
+            "and p.brand_id in (select b.id from brand as b where b.status = true) limit 10", nativeQuery = true)
     Optional<List<Product>> findTop10ProductsInSpecific(@Param("id") int id);
 
-    @Query(value ="select * from Product as p where p.id != :id and p.flavor_id =:flavorId " +
+    @Query(value ="select * from product as p where p.id != :id and p.flavor_id =:flavorId " +
             "and p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
-            "and p.category_id in (select c.id from Category as c where c.status = true) " +
-            "and p.vendor_id in (select v.id from  Vendor as v where v.status = true) " +
+            "and p.category_id in (select c.id from category as c where c.status = true) " +
+            "and p.vendor_id in (select v.id from  vendor as v where v.status = true) " +
             "and p.product_origin_id in (select o.id from product_origin as o where o.status = true) " +
-            "and p.brand_id in (select b.id from Brand as b where b.status = true) limit 10", nativeQuery = true)
+            "and p.brand_id in (select b.id from brand as b where b.status = true) limit 10", nativeQuery = true)
     Optional<List<Product>> findTop10RelatedProductsByFlavor(@Param("id") int id, @Param("flavorId") int flavorId);
 
 

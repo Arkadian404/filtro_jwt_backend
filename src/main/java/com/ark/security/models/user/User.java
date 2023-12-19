@@ -19,7 +19,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -42,7 +45,7 @@ public class User implements UserDetails {
     private String password;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date dob;
+    private LocalDate dob;
     private String address;
     private String province;
     private String district;

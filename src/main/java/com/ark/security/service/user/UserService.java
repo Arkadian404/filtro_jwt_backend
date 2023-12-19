@@ -55,6 +55,7 @@ public class UserService implements UserDetailsService {
             oldUser.setFirstname(user.getFirstname());
             oldUser.setLastname(user.getLastname());
             oldUser.setDob(user.getDob());
+            oldUser.setEmail(user.getEmail());
             oldUser.setAddress(user.getAddress());
             oldUser.setProvince(user.getProvince());
             oldUser.setDistrict(user.getDistrict());
