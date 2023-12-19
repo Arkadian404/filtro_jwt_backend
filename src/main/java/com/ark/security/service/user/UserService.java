@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -59,7 +60,8 @@ public class UserService implements UserDetailsService {
             oldUser.setDistrict(user.getDistrict());
             oldUser.setWard(user.getWard());
             oldUser.setPhone(user.getPhone());
-            oldUser.setEnabled(user.getEnabled());
+            oldUser.setCreatedDate(LocalDateTime.now());
+            oldUser.setEnabled(true);
             userRepository.save(oldUser);
         }
         else{
