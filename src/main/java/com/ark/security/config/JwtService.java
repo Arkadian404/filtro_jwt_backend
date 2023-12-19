@@ -32,6 +32,10 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractSubject(String token){
+        return extractClaim(token, Claims::getSubject);
+    }
+
     public ArrayList<?> extractRole(String token){
         return extractClaim(token, claims -> claims.get("role", ArrayList.class));
     }
@@ -46,10 +50,11 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generatePasswordResetToken(){
+    public String generatePasswordResetToken(String email){
         long expiration = System.currentTimeMillis() + 1000 * 60 * 60;
         Date expirationDate = new Date(expiration);
         return Jwts.builder()
+                .setSubject(email)
                 .setExpiration(expirationDate)
                 .signWith(getSigninKey(), SignatureAlgorithm.HS256)
                 .compact();

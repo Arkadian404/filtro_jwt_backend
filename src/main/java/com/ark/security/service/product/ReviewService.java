@@ -58,6 +58,7 @@ public class ReviewService {
     public void update(int id, Review review){
         Review oldReview = getReviewById(id);
         review.setCreatedAt(LocalDateTime.now());
+        oldReview.setRating(review.getRating());
         oldReview.setComment(review.getComment());
         reviewRepository.save(oldReview);
     }

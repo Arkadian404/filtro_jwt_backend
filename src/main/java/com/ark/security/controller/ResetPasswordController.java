@@ -30,8 +30,8 @@ public class ResetPasswordController {
     @PostMapping("/send-mail")
     public ResponseEntity<?> processForgotPassword(@RequestParam("email") String email, HttpServletRequest request){
         try{
-            String token = jwtService.generatePasswordResetToken();
-            String resetPasswordLink = Utility.CLIENT_SITE_URL + "/reset-password?email="+email+"&token=" + token;
+            String token = jwtService.generatePasswordResetToken(email);
+            String resetPasswordLink = Utility.CLIENT_SITE_URL + "/reset-password"+"?token=" + token;
             emailDetailsService.sendMail(email, resetPasswordLink);
         } catch (UnsupportedEncodingException | MessagingException ex){
             System.out.println(ex.getMessage());
@@ -50,10 +50,10 @@ public class ResetPasswordController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam(value ="token") String token,
-                                           @RequestParam(value = "email") String email,
                                            @RequestBody String newPassword){
         try{
             if(jwtService.isValidPasswordResetToken(token)){
+                String email = jwtService.extractSubject(token);
                 User user = userService.getByEmail(email);
                 userService.updateUserPassword(user.getId(), newPassword);
             }
