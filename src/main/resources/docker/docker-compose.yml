@@ -16,7 +16,5 @@ services:
     image: zafuog/springboot_filtro:latest
     ports:
       - "8081:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://docker-mysql:3306/filtro_jwt?useSSL=false&allowPublicKeyRetrieval=true
     depends_on:
         - docker-mysql
