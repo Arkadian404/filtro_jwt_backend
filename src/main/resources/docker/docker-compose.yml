@@ -9,6 +9,8 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
     ports:
       - "3307:3306"
+    volumes:
+      - /var/lib/mysql
 
   app:
     image: zafuog/springboot_filtro:latest
