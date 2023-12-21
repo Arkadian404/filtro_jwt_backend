@@ -76,35 +76,6 @@ public class ProductService {
     Page<ProductDto> doPagination(List<ProductDto> list, int page, String sort, String flavor,
                                   String category, String brand, String origin, String vendor){
         Pageable pageable = PageRequest.of(page, 12);
-//        if(
-//                (!flavor.isEmpty() && !category.isEmpty())||
-//                (!category.isEmpty() && !brand.isEmpty())||
-//                (!brand.isEmpty() && !origin.isEmpty())||
-//                (!origin.isEmpty() && !vendor.isEmpty())
-//        ){
-//            list = list.stream()
-//                    .filter(product ->
-//                            (flavor.contains(product.getFlavor().getName()) && category.contains(product.getCategory().getName()))||
-//                            (category.contains(product.getCategory().getName()) && brand.contains(product.getBrand().getName()))||
-//                            (brand.contains(product.getBrand().getName()) && origin.contains(product.getOrigin().getName()))||
-//                            (origin.contains(product.getOrigin().getName()) && vendor.contains(product.getVendor().getName()))||
-//                            (flavor.contains(product.getFlavor().getName()) && category.contains(product.getCategory().getName()) && brand.contains(product.getBrand().getName()))||
-//                            (category.contains(product.getCategory().getName()) && brand.contains(product.getBrand().getName()) && origin.contains(product.getOrigin().getName()))||
-//                            (brand.contains(product.getBrand().getName()) && origin.contains(product.getOrigin().getName()) && vendor.contains(product.getVendor().getName()))||
-//                            (flavor.contains(product.getFlavor().getName()) && category.contains(product.getCategory().getName()) && brand.contains(product.getBrand().getName()) && origin.contains(product.getOrigin().getName())) ||
-//                            (category.contains(product.getCategory().getName()) && brand.contains(product.getBrand().getName()) && origin.contains(product.getOrigin().getName()) && vendor.contains(product.getVendor().getName()))||
-//                            (flavor.contains(product.getFlavor().getName() )&& category.contains(product.getCategory().getName()) && brand.contains(product.getBrand().getName()) && origin.contains(product.getOrigin().getName()) && vendor.contains(product.getVendor().getName()))
-//                    ).collect(Collectors.toList());
-//        }else if(!flavor.isEmpty() || !category.isEmpty() || !brand.isEmpty() || !origin.isEmpty() || !vendor.isEmpty()){
-//            list = list.stream()
-//                    .filter(product ->
-//                            flavor.contains(product.getFlavor().getName())||
-//                                    category.contains(product.getCategory().getName())||
-//                                    brand.contains(product.getBrand().getName())||
-//                                    origin.contains(product.getOrigin().getName())||
-//                                    vendor.contains(product.getVendor().getName())
-//                    ).collect(Collectors.toList());
-//        }
         List<Predicate<ProductDto>> filters = new ArrayList<>();
         if(!flavor.isEmpty()){
             filters.add(product -> flavor.contains(product.getFlavor().getName()));

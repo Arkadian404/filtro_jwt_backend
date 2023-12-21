@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionConfig;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -76,7 +79,6 @@ public class ApplicationConfig{
     @Bean
     public ObjectMapper objectMapper(){
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new CustomJacksonAnnotation());
         mapper.findAndRegisterModules();
         mapper.coercionConfigDefaults()
                 .setAcceptBlankAsEmpty(true)
