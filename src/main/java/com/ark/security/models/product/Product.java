@@ -6,6 +6,9 @@ import com.ark.security.dto.ProductImageDto;
 import com.ark.security.models.WishlistItem;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -26,12 +29,15 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @NotNull
+    @NotBlank(message = "Tên sản phẩm không được để trống")
     private String name;
     private String slug;
     @ManyToOne
     @JoinColumn(name = "brand_id")
     private Brand brand;
     private Integer sold;
+    @Max(value = 5, message = "Đánh giá tối đa là 5 sao")
     private Double rating;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)

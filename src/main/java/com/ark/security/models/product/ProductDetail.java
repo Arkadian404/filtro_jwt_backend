@@ -5,6 +5,8 @@ import com.ark.security.models.CartItem;
 import com.ark.security.models.order.OrderDetail;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -21,9 +23,14 @@ public class ProductDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    @NotNull
+    @NotBlank(message = "Số lượng không được để trống")
     private Integer stock;
+    @NotNull
+    @NotBlank(message = "Giá không được để trống")
     private Integer price;
+    @NotNull
+    @NotBlank(message = "Cân nặng không được để trống")
     private Integer weight;
     private Boolean status;
 

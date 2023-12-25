@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Vendor;
 import com.ark.security.service.product.VendorService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class AdminVendorController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody Vendor vendor){
+    public ResponseEntity<?> create(@Valid @RequestBody Vendor vendor){
         vendorService.saveVendor(vendor);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -47,7 +48,7 @@ public class AdminVendorController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @RequestBody Vendor vendor){
+    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody Vendor vendor){
         vendorService.updateVendor(id, vendor);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

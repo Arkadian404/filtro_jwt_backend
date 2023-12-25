@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Product;
 import com.ark.security.service.product.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -127,7 +128,7 @@ public class AdminProductController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody Product product){
+    public ResponseEntity<?> create(@Valid @RequestBody Product product){
         productService.saveProduct(product);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -139,7 +140,7 @@ public class AdminProductController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @Validated @RequestBody Product product){
+    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody Product product){
         productService.updateProduct(id, product);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

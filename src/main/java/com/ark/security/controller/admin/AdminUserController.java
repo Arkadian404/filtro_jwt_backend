@@ -5,6 +5,7 @@ import com.ark.security.models.user.Role;
 import com.ark.security.models.user.User;
 import com.ark.security.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,7 @@ public class AdminUserController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody User user){
+    public ResponseEntity<?> create(@Valid @RequestBody User user){
         userService.saveUser(user);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -52,7 +53,7 @@ public class AdminUserController {
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
     public ResponseEntity<?> update(@PathVariable int id,
-                                    @RequestBody User user){
+                                    @Valid @RequestBody User user){
         userService.updateUser(id, user);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -78,7 +79,7 @@ public class AdminUserController {
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
     public ResponseEntity<?> changePassword(
             @PathVariable int id,
-            @RequestBody Map<String, String> body
+            @Valid @RequestBody Map<String, String> body
             ){
         userService.changePassword(id, body.get("oldPassword"), body.get("newPassword"));
         var success = SuccessMessage.builder()

@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Brand;
 import com.ark.security.service.product.BrandService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class AdminBrandController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createBrand(@RequestBody Brand brand){
+    public ResponseEntity<?> createBrand(@Valid @RequestBody Brand brand){
         brandService.saveBrand(brand);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -42,7 +43,7 @@ public class AdminBrandController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateBrand(@PathVariable int id, @RequestBody Brand brand){
+    public ResponseEntity<?> updateBrand(@PathVariable int id, @Valid @RequestBody Brand brand){
         brandService.updateBrand(id, brand);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

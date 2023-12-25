@@ -11,6 +11,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,9 +41,18 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @NotNull
+    @NotBlank(message = "Họ không được để trống")
     private String firstname;
+    @NotNull
+    @NotBlank(message = "Tên không được để trống")
     private String lastname;
+    @NotNull
+    @NotBlank(message = "Tên đăng nhập không được để trống")
     private String username;
+    @NotNull
+    @Email(message = "Email không đúng định dạng")
+    @NotBlank(message = "Email không được để trống")
     private String email;
     private String password;
     @DateTimeFormat(pattern = "dd/MM/yyyy")

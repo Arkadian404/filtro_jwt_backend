@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Category;
 import com.ark.security.service.product.CategoryService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class AdminCategoryController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody Category category){
+    public ResponseEntity<?> create(@Valid @RequestBody Category category){
         categoryService.saveCategory(category);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -51,7 +52,7 @@ public class AdminCategoryController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @RequestBody Category category){
+    public ResponseEntity<?> update(@PathVariable int id,@Valid @RequestBody Category category){
         categoryService.updateCategory(id, category);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

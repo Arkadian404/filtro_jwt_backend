@@ -6,6 +6,7 @@ import com.ark.security.models.user.User;
 import com.ark.security.service.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class UserInfoController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update', 'user:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @RequestBody User user){
+    public ResponseEntity<?> update(@PathVariable int id,@Valid @RequestBody User user){
         userService.updateUser(id, user);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -45,7 +46,7 @@ public class UserInfoController {
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update', 'user:update')")
     public ResponseEntity<?> changePassword(
             @PathVariable int id,
-            @RequestBody Map<String, String> body
+            @Valid  @RequestBody Map<String, String> body
     ){
         userService.changePassword(id, body.get("oldPassword"), body.get("newPassword"));
         var success = SuccessMessage.builder()

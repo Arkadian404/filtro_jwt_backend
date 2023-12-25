@@ -3,6 +3,8 @@ package com.ark.security.models.product;
 import com.ark.security.dto.BrandDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public class Brand {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotNull
+    @NotBlank(message = "Tên thương hiệu không được để trống")
     private String name;
     private String description;
     private Boolean status;

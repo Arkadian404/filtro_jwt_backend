@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Review;
 import com.ark.security.service.StatisticService;
 import com.ark.security.service.product.ReviewService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,7 @@ public class ReviewController {
 
     @PreAuthorize("hasAnyRole('USER', 'EMPLOYEE', 'ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<?> createReview(@RequestBody Review review){
+    public ResponseEntity<?> createReview(@Valid @RequestBody Review review){
         reviewService.create(review);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -63,7 +64,7 @@ public class ReviewController {
 
     @PreAuthorize("hasAnyRole('USER', 'EMPLOYEE', 'ADMIN')")
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateReview(@PathVariable int id, @RequestBody Review review){
+    public ResponseEntity<?> updateReview(@PathVariable int id, @Valid @RequestBody Review review){
         reviewService.update(id, review);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.ProductImage;
 import com.ark.security.service.product.ProductImageService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class AdminProductImageController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody ProductImage productImage){
+    public ResponseEntity<?> create(@Valid @RequestBody ProductImage productImage){
         productImageService.saveProductImage(productImage);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -53,7 +54,7 @@ public class AdminProductImageController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @RequestBody ProductImage productImage){
+    public ResponseEntity<?> update(@PathVariable int id,@Valid @RequestBody ProductImage productImage){
         productImageService.updateImage(id, productImage);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

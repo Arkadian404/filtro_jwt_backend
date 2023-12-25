@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.ProductOrigin;
 import com.ark.security.service.product.ProductOriginService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class AdminProductOriginController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody ProductOrigin productOrigin){
+    public ResponseEntity<?> create(@Valid @RequestBody ProductOrigin productOrigin){
         productOriginService.saveProductOrigin(productOrigin);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -46,7 +47,7 @@ public class AdminProductOriginController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @RequestBody ProductOrigin productOrigin){
+    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody ProductOrigin productOrigin){
         productOriginService.updateProductOrigin(id, productOrigin);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

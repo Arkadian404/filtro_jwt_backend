@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.Flavor;
 import com.ark.security.service.product.FlavorService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,7 @@ public class AdminFlavorController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@RequestBody Flavor flavor){
+    public ResponseEntity<?> create(@Valid @RequestBody Flavor flavor){
         flavorService.saveFlavor(flavor);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -51,14 +52,7 @@ public class AdminFlavorController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @RequestBody Flavor flavor){
-//        Flavor oldFlavor = flavorService.getFlavorById(id);
-//        if(oldFlavor == null){
-//            return ResponseEntity.badRequest().body("Hương vị không được trống");
-//        }
-//        if(flavor == null){
-//            return ResponseEntity.badRequest().body("Không tìm thấy hương vị: "+ id);
-//        }
+    public ResponseEntity<?> update(@PathVariable int id,@Valid @RequestBody Flavor flavor){
         flavorService.updateFlavor(id, flavor);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -71,10 +65,6 @@ public class AdminFlavorController {
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
     public ResponseEntity<?> delete(@PathVariable int id){
-//        Flavor flavor = flavorService.getFlavorById(id);
-//        if(flavor == null){
-//            return ResponseEntity.badRequest().body("Không tìm thấy hương vị: "+id);
-//        }
         flavorService.deleteFlavor(id);
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

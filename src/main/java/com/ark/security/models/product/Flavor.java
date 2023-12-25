@@ -5,6 +5,8 @@ import com.ark.security.dto.FlavorDto;
 import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -21,6 +23,9 @@ public class Flavor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @NotNull
+    @NotBlank(message = "Tên hương vị không được để trống")
     private String name;
     private String description;
     private Boolean status;

@@ -4,6 +4,7 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Employee;
 import com.ark.security.service.user.EmployeeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class AdminEmployeeController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('admin:create')")
-    public ResponseEntity<?> create(@RequestBody Employee employee){
+    public ResponseEntity<?> create(@Valid @RequestBody Employee employee){
         employeeService.saveEmployee(employee, employee.getUser());
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())
@@ -51,7 +52,7 @@ public class AdminEmployeeController {
     @PutMapping("/update/{id}")
     @PreAuthorize("hasAuthority('admin:update')")
     public ResponseEntity<?> update(@PathVariable int id,
-                                    @RequestBody Employee employee){
+                                    @Valid @RequestBody Employee employee){
         employeeService.updateEmployee(id, employee, employee.getUser());
         var success = SuccessMessage.builder()
                 .statusCode(HttpStatus.OK.value())

@@ -12,6 +12,7 @@ import com.ark.security.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +56,7 @@ public class CartController {
 
     @PostMapping("/saveCartItem")
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create', 'user:create')")
-    public ResponseEntity<?> saveCartItem(@RequestBody CartItemDto cartItemDto,
+    public ResponseEntity<?> saveCartItem(@Valid @RequestBody CartItemDto cartItemDto,
                                             HttpServletRequest request,
                                             HttpServletResponse response){
         User user = authenticationService.getCurrentUser(request, response);
