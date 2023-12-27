@@ -57,10 +57,14 @@ public class ReviewService {
 
     public void update(int id, Review review){
         Review oldReview = getReviewById(id);
+        int productId = oldReview.getProduct().getId();
         review.setCreatedAt(LocalDateTime.now());
         oldReview.setRating(review.getRating());
         oldReview.setComment(review.getComment());
         reviewRepository.save(oldReview);
+
+        Double avgRating = getAvgRatingByProductId(productId);
+        productService.updateProductRating(productId, avgRating);
     }
 
     public void delete(int id){

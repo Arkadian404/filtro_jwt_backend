@@ -84,15 +84,15 @@ public class User implements UserDetails {
     @JsonBackReference(value = "user-employee")
     private Employee employee;
 
-    @OneToMany
-    @JsonBackReference(value = "user-cart")
+    @OneToMany(mappedBy = "user")
+    @JsonBackReference(value = "cart-user")
     private List<Cart> carts;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     @JsonBackReference(value = "user-wishlist")
     private List<Wishlist> wishlists;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     @JsonBackReference(value = "user-order")
     private List<Order> orders;
 

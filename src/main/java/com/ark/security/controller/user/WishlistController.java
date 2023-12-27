@@ -4,9 +4,9 @@ import com.ark.security.auth.AuthenticationService;
 import com.ark.security.dto.WishlistItemDto;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Wishlist;
-import com.ark.security.models.WishlistItem;
 import com.ark.security.models.user.User;
 import com.ark.security.service.WishlistItemService;
+
 import com.ark.security.service.WishlistService;
 import com.ark.security.service.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,8 +24,8 @@ import java.util.Date;
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN, USER, EMPLOYEE')")
 public class WishlistController {
-    private final WishlistService wishlistService;
     private final WishlistItemService wishlistItemService;
+    private final WishlistService wishlistService;
     private final UserService userService;
     private final AuthenticationService service;
 

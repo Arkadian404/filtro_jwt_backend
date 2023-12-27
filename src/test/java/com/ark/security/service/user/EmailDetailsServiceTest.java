@@ -1,9 +1,10 @@
-package com.ark.security.service;
+package com.ark.security.service.user;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ark.security.service.EmailDetailsService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
