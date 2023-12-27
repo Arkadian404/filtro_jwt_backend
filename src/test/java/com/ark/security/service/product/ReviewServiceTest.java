@@ -91,6 +91,9 @@ class ReviewServiceTest {
     void testUpdate() {
         Review review = new Review();
         review.setId(1);
+        Product product = new Product();
+        product.setId(1);
+        review.setProduct(product);
         when(reviewRepository.findById(anyInt())).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
 
