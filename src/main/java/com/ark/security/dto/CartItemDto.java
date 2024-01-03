@@ -1,16 +1,16 @@
 package com.ark.security.dto;
 
-import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
-import com.ark.security.models.product.ProductDetail;
-import com.ark.security.models.product.ProductImage;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
+
 
 @Getter
 @Setter
@@ -24,6 +24,8 @@ public class CartItemDto implements Serializable {
     private String slug;
     private ProductImageDto productImage;
     private ProductDetailDto productDetail;
+    @NotNull(message = "Số lượng không được để trống")
+    @Positive(message = "Số lượng phải lớn hơn 0")
     private Integer  quantity;
     private Integer price;
     private Integer total;

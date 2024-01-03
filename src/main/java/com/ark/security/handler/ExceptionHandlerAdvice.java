@@ -1,6 +1,8 @@
 package com.ark.security.handler;
 
 import com.ark.security.exception.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,6 +181,22 @@ public class ExceptionHandlerAdvice {
                 .findFirst()
                 .orElse("Lỗi không xác định");
         logger.error("MethodArgumentNotValid error: {}", errorMessage);
+        var error = ErrorMessage.builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(errorMessage)
+                .description(request.getDescription(false))
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request){
+        String errorMessage = ex.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse("Lỗi không xác định");
+        logger.error("ConstraintViolation error: {}", errorMessage);
         var error = ErrorMessage.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .message(errorMessage)

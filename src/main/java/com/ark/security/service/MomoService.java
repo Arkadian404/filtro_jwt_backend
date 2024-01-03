@@ -37,7 +37,7 @@ import java.util.UUID;
 public class MomoService {
     private final String MOMO_API = "https://test-payment.momo.vn/v2/gateway/api";
     private final String RETURN_URL = "http://localhost:4200/payment/momo";
-    private final String IPN_API = "https://052b2b645379c93c5b0cc06cae97a95e.serveo.net";
+    private final String IPN_API = "https://61ad1be2af9fa8b56c26000c08751f63.serveo.net";
     private final Environment env;
     private final OrderDetailService orderDetailService;
     private final OrderService orderService;
