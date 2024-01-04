@@ -61,7 +61,9 @@ public class OrderService {
         List<Order> orders = orderRepository.findAllByUserId(id).orElse(null);
         List<OrderDto> orderDtos = new ArrayList<>();
         if(orders!=null){
-            orders.forEach(order -> orderDtos.add(order.convertToDto()));
+            orders.stream()
+                    .sorted((o1, o2)-> o2.getOrderDate().compareTo(o1.getOrderDate()))
+                    .forEach(order -> orderDtos.add(order.convertToDto()));
             return orderDtos;
         }
         return Collections.emptyList();
