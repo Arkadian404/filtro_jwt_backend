@@ -42,6 +42,9 @@ public class CartItemService {
             existingItems.get().setQuantity(existingItems.get().getQuantity() + cartItemDto.getQuantity());
             existingItems.get().setTotal(existingItems.get().getTotal() + cartItemDto.getQuantity() * existingItems.get().getPrice());
             cartItemRepository.save(existingItems.get());
+            cart.setTotal(cart.getTotal() + cartItemDto.getQuantity() * existingItems.get().getPrice());
+            cart.setUpdatedAt(LocalDateTime.now());
+            cartService.saveCart(cart);
         }
         else {
             CartItem cartItem  = cartItemDto.convertToEntity();

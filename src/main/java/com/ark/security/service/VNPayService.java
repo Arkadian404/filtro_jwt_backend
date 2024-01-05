@@ -2,11 +2,16 @@ package com.ark.security.service;
 
 import com.ark.security.dto.OrderDto;
 import com.ark.security.models.order.Order;
+import com.ark.security.models.order.OrderDetail;
 import com.ark.security.models.order.OrderStatus;
 import com.ark.security.models.payment.vnpay.VNPIPN;
 import com.ark.security.models.payment.vnpay.VNPIPNResponse;
 import com.ark.security.models.payment.vnpay.VNPRequest;
 import com.ark.security.models.payment.vnpay.VNPResponse;
+import com.ark.security.models.product.Product;
+import com.ark.security.models.product.ProductDetail;
+import com.ark.security.service.product.ProductDetailService;
+import com.ark.security.service.product.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +42,8 @@ public class VNPayService {
     private final RestTemplate restTemplate;
     private final Environment env;
     private final OrderService orderService;
+    private final ProductService productService;
+    private final ProductDetailService productDetailService;
     private final String RETURN_URL = "http://localhost:4200/payment/vnpay";
     private final String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
@@ -136,15 +143,32 @@ public class VNPayService {
 
     private void updateOrderStatus(VNPIPN vnpipn){
         Order order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
-        if(order != null){
-            if(vnpipn.getVnp_ResponseCode().equals("00")){
-                order.setStatus(OrderStatus.PAID_VNPAY);
-            }else if (vnpipn.getVnp_ResponseCode().equals("24")){
-                order.setStatus(OrderStatus.CANCELED);
-            }else{
-                order.setStatus(OrderStatus.FAILED);
+        if(order != null) {
+            switch (vnpipn.getVnp_ResponseCode()) {
+                case "00":
+                    updateProductStockAndSold(order);
+                    order.setStatus(OrderStatus.PAID_VNPAY);
+                    break;
+                case "24":
+                    order.setStatus(OrderStatus.CANCELED);
+                    break;
+                default:
+                    order.setStatus(OrderStatus.FAILED);
+                    break;
             }
             orderService.saveOrder(order);
+        }
+    }
+
+    private void updateProductStockAndSold(Order order){
+        List<OrderDetail> orderDetails = order.getOrderDetails();
+        for(OrderDetail orderDetail: orderDetails){
+            ProductDetail pd = orderDetail.getProductDetail();
+            pd.setStock(pd.getStock() - orderDetail.getQuantity());
+            productDetailService.saveProductDetail(pd);
+            Product product = orderDetail.getProductDetail().getProduct();
+            product.setSold(product.getSold() + orderDetail.getQuantity());
+            productService.save(product);
         }
     }
 

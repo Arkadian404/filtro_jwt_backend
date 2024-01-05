@@ -5,6 +5,7 @@ import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.product.ProductImage;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -32,7 +33,7 @@ public class OrderDetail {
     @JoinColumn(name = "product_detail_id")
     private ProductDetail productDetail;
 
-
+    @Positive(message = "Số lượng phải lớn hơn 0")
     private Integer quantity;
     private Integer price;
     private Integer total;

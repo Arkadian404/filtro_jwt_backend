@@ -1,6 +1,7 @@
 package com.ark.security.service;
 
 import com.ark.security.dto.OrderDto;
+import com.ark.security.exception.QuantityShortageException;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
@@ -69,9 +70,17 @@ public class OrderService {
         return Collections.emptyList();
     }
 
+
     public Order createOrder(User user, Order order){
         Cart cart = cartService.getCartByUsername(user.getUsername());
         List<CartItem> cartItems = cart.getCartItems();
+        // check item quantity in stock
+        cartItems.stream()
+                .filter(cartItem -> cartItem.getProductDetail().getStock() < cartItem.getQuantity())
+                .findFirst()
+                .ifPresent(cartItem -> {
+                        throw new QuantityShortageException("Sản phẩm " + cartItem.getProductDetail().getProduct().getName() + " không đủ số lượng trong kho");
+                });
         order.setOrderCode(RandomStringUtils.random(10, true, true));
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());

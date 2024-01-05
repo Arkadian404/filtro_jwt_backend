@@ -339,6 +339,10 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    public void save(Product product){
+        productRepository.save(product);
+    }
+
     public void updateProduct(int id, Product product){
         Product oldProduct = getProductById(id);
         Slugify slugify = Slugify.builder().transliterator(true).build();
