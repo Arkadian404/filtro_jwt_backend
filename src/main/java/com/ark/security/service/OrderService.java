@@ -7,13 +7,18 @@ import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
 import com.ark.security.models.order.OrderDetail;
 import com.ark.security.models.order.OrderStatus;
+import com.ark.security.models.product.Product;
+import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.user.User;
 import com.ark.security.repository.OrderRepository;
+import com.ark.security.service.product.ProductDetailService;
+import com.ark.security.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,6 +31,8 @@ import java.util.List;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderDetailService orderDetailService;
+    private final ProductDetailService productDetailService;
+    private final ProductService productService;
     private final CartService cartService;
 
 
@@ -70,17 +77,14 @@ public class OrderService {
         return Collections.emptyList();
     }
 
-
+    @Transactional
     public Order createOrder(User user, Order order){
         Cart cart = cartService.getCartByUsername(user.getUsername());
         List<CartItem> cartItems = cart.getCartItems();
         // check item quantity in stock
-        cartItems.stream()
-                .filter(cartItem -> cartItem.getProductDetail().getStock() < cartItem.getQuantity())
-                .findFirst()
-                .ifPresent(cartItem -> {
-                        throw new QuantityShortageException("Sản phẩm " + cartItem.getProductDetail().getProduct().getName() + " không đủ số lượng trong kho");
-                });
+        checkCartItemQuantity(cartItems);
+        // update product stock and sold
+        updateProductStockAndSold(cartItems);
         order.setOrderCode(RandomStringUtils.random(10, true, true));
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
@@ -101,14 +105,50 @@ public class OrderService {
         }
         order.setOrderDetails(orderDetails);
         orderRepository.save(order);
-        cart.setStatus(false);
-        cartService.saveCart(cart);
         return order;
+
+    }
+
+
+    private void checkCartItemQuantity(List<CartItem> cartItems){
+        cartItems.stream()
+                .filter(cartItem -> cartItem.getProductDetail().getStock() < cartItem.getQuantity())
+                .findFirst()
+                .ifPresent(cartItem -> {
+                    throw new QuantityShortageException("Sản phẩm " + cartItem.getProductDetail().getProduct().getName() + " không đủ số lượng trong kho");
+                });
+    }
+
+    private void updateProductStockAndSold(List<CartItem> cartItems){
+        cartItems.forEach(ci -> {
+            ProductDetail productDetail = ci.getProductDetail();
+            productDetail.setStock(productDetail.getStock() - ci.getQuantity());
+            productDetailService.saveProductDetail(productDetail);
+            Product product = productDetail.getProduct();
+            product.setSold(product.getSold() + ci.getQuantity());
+            productService.save(product);
+        });
+    }
+
+    public void rollbackProductStockAndSold(List<CartItem> cartItems){
+        cartItems.forEach(ci -> {
+            ProductDetail productDetail = ci.getProductDetail();
+            productDetail.setStock(productDetail.getStock() + ci.getQuantity());
+            productDetailService.saveProductDetail(productDetail);
+            Product product = productDetail.getProduct();
+            product.setSold(product.getSold() - ci.getQuantity());
+            productService.save(product);
+        });
     }
 
     public void updateOrder(int id, Order order){
         Order oldOrder = orderRepository.findById(id).orElse(null);
         if(oldOrder!=null){
+            Cart cart = cartService.getCartByUsername(oldOrder.getUser().getUsername());
+            List<CartItem> cartItems = cart.getCartItems();
+            if(order.getStatus().equals(OrderStatus.CANCELED) || order.getStatus().equals(OrderStatus.FAILED)){
+                rollbackProductStockAndSold(cartItems);
+            }
             oldOrder.setStatus(order.getStatus());
             orderRepository.save(oldOrder);
         }

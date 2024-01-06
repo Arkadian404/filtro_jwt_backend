@@ -1,6 +1,8 @@
 package com.ark.security.service;
 
 import com.ark.security.dto.OrderDto;
+import com.ark.security.models.Cart;
+import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
 import com.ark.security.models.order.OrderDetail;
 import com.ark.security.models.order.OrderStatus;
@@ -42,6 +44,7 @@ public class VNPayService {
     private final RestTemplate restTemplate;
     private final Environment env;
     private final OrderService orderService;
+    private final CartService cartService;
     private final ProductService productService;
     private final ProductDetailService productDetailService;
     private final String RETURN_URL = "http://localhost:4200/payment/vnpay";
@@ -143,34 +146,35 @@ public class VNPayService {
 
     private void updateOrderStatus(VNPIPN vnpipn){
         Order order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
-        if(order != null) {
-            switch (vnpipn.getVnp_ResponseCode()) {
-                case "00":
-                    updateProductStockAndSold(order);
-                    order.setStatus(OrderStatus.PAID_VNPAY);
-                    break;
-                case "24":
-                    order.setStatus(OrderStatus.CANCELED);
-                    break;
-                default:
-                    order.setStatus(OrderStatus.FAILED);
-                    break;
-            }
-            orderService.saveOrder(order);
+        Cart cart = cartService.getCartByUsername(order.getUser().getUsername());
+        List<CartItem> cartItems = cart.getCartItems();
+        switch (vnpipn.getVnp_ResponseCode()) {
+            case "00":
+                order.setStatus(OrderStatus.PAID_VNPAY);
+                break;
+            case "24":
+                orderService.rollbackProductStockAndSold(cartItems);
+                order.setStatus(OrderStatus.CANCELED);
+                break;
+            default:
+                orderService.rollbackProductStockAndSold(cartItems);
+                order.setStatus(OrderStatus.FAILED);
+                break;
         }
+        orderService.saveOrder(order);
     }
 
-    private void updateProductStockAndSold(Order order){
-        List<OrderDetail> orderDetails = order.getOrderDetails();
-        for(OrderDetail orderDetail: orderDetails){
-            ProductDetail pd = orderDetail.getProductDetail();
-            pd.setStock(pd.getStock() - orderDetail.getQuantity());
-            productDetailService.saveProductDetail(pd);
-            Product product = orderDetail.getProductDetail().getProduct();
-            product.setSold(product.getSold() + orderDetail.getQuantity());
-            productService.save(product);
-        }
-    }
+//    private void updateProductStockAndSold(Order order){
+//        List<OrderDetail> orderDetails = order.getOrderDetails();
+//        for(OrderDetail orderDetail: orderDetails){
+//            ProductDetail pd = orderDetail.getProductDetail();
+//            pd.setStock(pd.getStock() - orderDetail.getQuantity());
+//            productDetailService.saveProductDetail(pd);
+//            Product product = orderDetail.getProductDetail().getProduct();
+//            product.setSold(product.getSold() + orderDetail.getQuantity());
+//            productService.save(product);
+//        }
+//    }
 
     private String vnpRequest(OrderDto orderDto, HttpServletRequest req){
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));

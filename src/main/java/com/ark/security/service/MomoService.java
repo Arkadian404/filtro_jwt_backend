@@ -2,6 +2,8 @@ package com.ark.security.service;
 
 import com.ark.security.dto.OrderDetailDto;
 import com.ark.security.dto.OrderDto;
+import com.ark.security.models.Cart;
+import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
 import com.ark.security.models.order.OrderDetail;
 import com.ark.security.models.order.OrderStatus;
@@ -44,8 +46,7 @@ public class MomoService {
     private final String IPN_API = "https://61ad1be2af9fa8b56c26000c08751f63.serveo.net";
     private final Environment env;
     private final OrderDetailService orderDetailService;
-    private final ProductService productService;
-    private final ProductDetailService productDetailService;
+    private final CartService cartService;
     private final OrderService orderService;
     private final RestTemplate restTemplate;
     private final Logger logger = LoggerFactory.getLogger(MomoService.class);
@@ -105,30 +106,26 @@ public class MomoService {
 
     private void updateOrderStatus(MomoIPN momoIPN){
         Order order = orderService.getOrderByOrderCode(momoIPN.getOrderId());
-        if(order != null){
-            switch (momoIPN.getResultCode().toString()) {
-                case "0":
-                    //update quantity of product and stock
-                    orderDetailService.getOrderDetailByOrderId(order.getId())
-                            .forEach(od -> {
-                                ProductDetail productDetail = od.getProductDetail();
-                                productDetail.setStock(productDetail.getStock() - od.getQuantity());
-                                productDetailService.saveProductDetail(productDetail);
-                                Product product = productDetail.getProduct();
-                                product.setSold(product.getSold() + od.getQuantity());
-                                productService.save(product);
-                            });
-                    order.setStatus(OrderStatus.PAID_MOMO);
-                    break;
-                case "1006":
-                    order.setStatus(OrderStatus.CANCELED);
-                    break;
-                default:
-                    order.setStatus(OrderStatus.FAILED);
-                    break;
-            }
-            orderService.saveOrder(order);
+        Cart cart = cartService.getCartByUsername(order.getUser().getUsername());
+        List<CartItem> cartItems = cart.getCartItems();
+        switch (momoIPN.getResultCode().toString()) {
+            case "0":
+                order.setStatus(OrderStatus.PAID_MOMO);
+                break;
+            case "1006":
+                orderService.rollbackProductStockAndSold(cartItems);
+                cart.setStatus(false);
+                cartService.saveCart(cart);
+                order.setStatus(OrderStatus.CANCELED);
+                break;
+            default:
+                orderService.rollbackProductStockAndSold(cartItems);
+                cart.setStatus(false);
+                cartService.saveCart(cart);
+                order.setStatus(OrderStatus.FAILED);
+                break;
         }
+        orderService.saveOrder(order);
     }
 
 

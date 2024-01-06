@@ -4,6 +4,9 @@ import com.ark.security.exception.BadCredentialsException;
 import com.ark.security.exception.DuplicateException;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.NullException;
+import com.ark.security.models.order.Order;
+import com.ark.security.models.order.OrderDetail;
+import com.ark.security.models.order.OrderStatus;
 import com.ark.security.models.user.Role;
 import com.ark.security.models.user.User;
 import com.ark.security.repository.user.UserRepository;
@@ -139,5 +142,19 @@ public class UserService implements UserDetailsService {
         user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
         user.setEnabled(true);
         userRepository.save(user);
+    }
+
+    public boolean hasUserBoughtProduct(int userId, int productId){
+        User user = getUserById(userId);
+        List<Order> orders = user.getOrders();
+        for(Order order: orders){
+            List<OrderDetail> orderDetails = order.getOrderDetails();
+            for(OrderDetail orderDetail: orderDetails){
+                if(orderDetail.getProductDetail().getProduct().getId() == productId && order.getStatus().equals(OrderStatus.CONFIRMED)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
