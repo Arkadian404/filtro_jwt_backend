@@ -21,7 +21,7 @@ public class UserDto implements Serializable {
     private String lastname;
     private String username;
     private String email;
-    private LocalDate dob;
+    private Date dob;
     private String address;
     private String province;
     private String district;

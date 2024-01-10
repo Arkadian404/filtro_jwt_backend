@@ -3,6 +3,7 @@ package com.ark.security.models.user;
 import com.ark.security.dto.UserDto;
 import com.ark.security.models.Cart;
 import com.ark.security.models.Employee;
+import com.ark.security.models.UserVoucher;
 import com.ark.security.models.Wishlist;
 import com.ark.security.models.order.Order;
 import com.ark.security.models.product.Review;
@@ -41,23 +42,23 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @NotNull
+    @NotNull(message = "Họ không được null")
     @NotBlank(message = "Họ không được để trống")
     private String firstname;
-    @NotNull
+    @NotNull(message = "Tên không được null")
     @NotBlank(message = "Tên không được để trống")
     private String lastname;
-    @NotNull
+    @NotNull(message = "Tên đăng nhập không được null")
     @NotBlank(message = "Tên đăng nhập không được để trống")
     private String username;
-    @NotNull
+    @NotNull(message = "Email không được null")
     @Email(message = "Email không đúng định dạng")
     @NotBlank(message = "Email không được để trống")
     private String email;
     private String password;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dob;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", shape = JsonFormat.Shape.STRING)
+    private Date dob;
     private String address;
     private String province;
     private String district;
@@ -99,6 +100,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     @JsonBackReference(value = "user-review")
     private List<Review> reviews;
+
+    @OneToMany(mappedBy = "user")
+    @JsonBackReference(value = "user-voucher")
+    private List<UserVoucher> userVoucherList;
 
     @JsonIgnore
     @Override

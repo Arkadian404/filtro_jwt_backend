@@ -2,6 +2,7 @@ package com.ark.security.models.product;
 
 import com.ark.security.config.CustomResolver;
 import com.ark.security.dto.CategoryDto;
+import com.ark.security.models.Voucher;
 import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
@@ -32,6 +33,10 @@ public class Category {
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Product> productList;
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Voucher> voucherList;
 
     public CategoryDto convertToDto(){
         return CategoryDto.builder()

@@ -25,8 +25,8 @@ public class Employee  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate startOn;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", shape = JsonFormat.Shape.STRING)
+    private Date startOn;
 
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id")
