@@ -95,6 +95,9 @@ public class CartItemService {
         }
     }
 
+    public void saveCartItem(CartItem cartItem){
+        cartItemRepository.save(cartItem);
+    }
 
 
     public CartItem getCartItemById(int id){

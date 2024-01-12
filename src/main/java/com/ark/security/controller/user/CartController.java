@@ -27,8 +27,6 @@ import java.util.Date;
 public class CartController {
     private final CartItemService cartItemService;
 
-    private final ProductImageService productImageService;
-
     private final CartService cartService;
 
     private final UserService userService;
@@ -45,7 +43,7 @@ public class CartController {
         if(cart == null || !cartService.checkActiveCart(user.getId())){
             cart= cartService.createCart(user);
         }
-        return ResponseEntity.ok(cart);
+        return ResponseEntity.ok(cart.convertToDto());
     }
 
     @GetMapping("/{cartId}/getCartItems")

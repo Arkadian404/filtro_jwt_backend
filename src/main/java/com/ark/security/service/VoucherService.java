@@ -1,20 +1,30 @@
 package com.ark.security.service;
 
 import com.ark.security.exception.NotFoundException;
+import com.ark.security.exception.VoucherException;
+import com.ark.security.models.Cart;
+import com.ark.security.models.CartItem;
+import com.ark.security.models.UserVoucher;
 import com.ark.security.models.Voucher;
+import com.ark.security.models.user.User;
 import com.ark.security.repository.VoucherRepository;
+import com.ark.security.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class VoucherService {
     private final VoucherRepository voucherRepository;
-
+    private final UserService userService;
+    private final UserVoucherService userVoucherService;
+    private final CartService cartService;
+    private final CartItemService cartItemService;
 
     public void saveVoucher(Voucher voucher){
         voucher.setCode(RandomStringUtils.random(10, true, true));
@@ -55,4 +65,57 @@ public class VoucherService {
         voucherRepository.deleteById(id);
     }
 
+
+    public void applyVoucher(int userId, String code) {
+        Voucher voucher = voucherRepository.findByCode(code).orElse(null);
+        if (voucher != null) {
+            if (voucher.getExpirationDate().isAfter(LocalDateTime.now())) {
+                UserVoucher userVoucher = userVoucherService.getUserVoucherByUserIdAndVoucherId(userId, voucher.getId());
+                if(userVoucher == null){
+                    User user = userService.getUserById(userId);
+                    Cart cart = cartService.getCartByUsername(user.getUsername());
+                    List<CartItem> cartItems = cart.getCartItems();
+                    List<CartItem> validCartItems = cartItems.stream()
+                            .filter(cartItem -> cartItem.getProductDetail().getProduct().getCategory().equals(voucher.getCategory()))
+                            .toList();
+                    if (voucher.getCategory() != null){
+                        if (validCartItems.isEmpty()){
+                            throw new VoucherException("Voucher này không áp dụng cho sản phẩm bạn chọn");
+                        }
+                        processVoucher(voucher, user, cart, validCartItems);
+                    }else{
+                        processVoucher(voucher, user, cart, cartItems);
+                    }
+                }else{
+                    throw new VoucherException("Voucher này đã được sử dụng");
+                }
+            }else {
+                throw new VoucherException("Voucher này đã hết hạn");
+            }
+        }else{
+            throw new VoucherException("Voucher không tồn tại");
+        }
+    }
+
+    private void processVoucher(Voucher voucher,  User user, Cart cart, List<CartItem> validCartItems) {
+        UserVoucher userVoucher;
+        double discount = voucher.getDiscount();
+        validCartItems
+                .forEach(cartItem ->{
+                    cartItem.setPrice((int) (cartItem.getPrice() - (cartItem.getPrice() * discount/100)));
+                    cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
+                    cartItemService.saveCartItem(cartItem);
+                });
+        userVoucher = new UserVoucher();
+        userVoucher.setVoucher(voucher);
+        userVoucher.setUser(user);
+        userVoucher.setUsed(true);
+        userVoucherService.saveUserVoucher(userVoucher);
+        cart.setVoucher(voucher);
+        cart.setTotal(validCartItems.stream().mapToInt(CartItem::getTotal).sum());
+        cartService.saveCart(cart);
+    }
+
 }
+
+

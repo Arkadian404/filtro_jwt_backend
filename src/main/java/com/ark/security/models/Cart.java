@@ -2,10 +2,7 @@ package com.ark.security.models;
 
 import com.ark.security.dto.CartDto;
 import com.ark.security.models.user.User;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -45,6 +42,11 @@ public class Cart {
     @JsonIgnore
     private List<CartItem> cartItems;
 
+    @ManyToOne
+    @JoinColumn(name = "voucher_id")
+    @JsonBackReference
+    private Voucher voucher;
+
 
     public CartDto convertToDto(){
         return CartDto.builder()
@@ -53,6 +55,7 @@ public class Cart {
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .total(this.total)
+                .voucher(this.voucher.convertToDto())
                 .build();
     }
 }

@@ -173,6 +173,18 @@ public class ExceptionHandlerAdvice {
     }
 
 
+    @ExceptionHandler(VoucherException.class)
+    public ResponseEntity<?> handleVoucherException(VoucherException ex, WebRequest request){
+        logger.error("Voucher error: {}", ex.getMessage());
+        var error = ErrorMessage.builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .description(request.getDescription(false))
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<?> handleDisabledException(DisabledException ex, WebRequest request){
         logger.error("Disabled error: {}", ex.getMessage());

@@ -24,7 +24,7 @@ public class CartDto implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
     private Integer total;
-
+    private VoucherDto voucher;
 
     public Cart convertToEntity(){
         return Cart.builder()

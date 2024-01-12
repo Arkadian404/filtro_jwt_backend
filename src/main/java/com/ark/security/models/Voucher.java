@@ -1,7 +1,10 @@
 package com.ark.security.models;
 
+import com.ark.security.dto.VoucherDto;
 import com.ark.security.models.product.Category;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -43,5 +46,20 @@ public class Voucher {
 
     @OneToMany(mappedBy = "voucher", fetch = FetchType.LAZY)
     List<UserVoucher> userVoucherList;
+
+    @OneToMany(mappedBy = "voucher", fetch = FetchType.LAZY)
+    List<Cart> cartList;
+
+    public VoucherDto convertToDto(){
+        return VoucherDto.builder()
+                .id(this.id)
+                .name(this.name)
+                .code(this.code)
+                .discount(this.discount)
+                .description(this.description)
+                .expirationDate(this.expirationDate)
+                .build();
+    }
+
 
 }
