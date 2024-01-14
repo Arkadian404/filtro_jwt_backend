@@ -34,4 +34,17 @@ public class VoucherController {
         return ResponseEntity.ok(successMessage);
     }
 
+    @DeleteMapping("/remove/{voucherId}")
+    public ResponseEntity<?> removeVoucher(@PathVariable int voucherId,
+                                           HttpServletRequest request,
+                                           HttpServletResponse response){
+        User user = authenticationService.getCurrentUser(request, response);
+        voucherService.removeVoucher(user.getId(), voucherId);
+        var successMessage = SuccessMessage.builder()
+                .statusCode(200)
+                .message("Xóa mã giảm giá thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(successMessage);
+    }
 }

@@ -38,7 +38,6 @@ public class CartController {
     public ResponseEntity<?> getCart(@PathVariable String username){
         Cart cart;
         User user = userService.getByUsername(username);
-        System.out.println(user.getUsername());
         cart = cartService.getCartByUsername(user.getUsername());
         if(cart == null || !cartService.checkActiveCart(user.getId())){
             cart= cartService.createCart(user);

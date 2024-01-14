@@ -55,7 +55,7 @@ public class Cart {
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .total(this.total)
-                .voucher(this.voucher.convertToDto())
+                .voucher(this.voucher != null ? this.voucher.convertToDto() : null)
                 .build();
     }
 }

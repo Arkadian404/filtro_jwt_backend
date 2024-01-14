@@ -19,6 +19,8 @@ public class UserVoucherService {
         userVoucherRepository.save(userVoucher);
     }
 
-
+    public void deleteUserVoucher(int id){
+        userVoucherRepository.deleteById(id);
+    }
 
 }

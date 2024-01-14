@@ -65,6 +65,38 @@ public class VoucherService {
         voucherRepository.deleteById(id);
     }
 
+    public void removeVoucher(int userId, int voucherId){
+        Voucher voucher = getVoucherById(voucherId);
+        if(voucher != null){
+            User user = userService.getUserById(userId);
+            UserVoucher userVoucher = userVoucherService.getUserVoucherByUserIdAndVoucherId(userId, voucherId);
+            Cart cart = cartService.getCartByUsername(user.getUsername());
+            List<CartItem> cartItems = cart.getCartItems();
+            List<CartItem> validCartItems = cartItems.stream()
+                    .filter(cartItem -> cartItem.getProductDetail().getProduct().getCategory().equals(voucher.getCategory()))
+                    .toList();
+            if (voucher.getCategory() != null){
+                processRemoveVoucher(userVoucher, cart, validCartItems);
+            }else{
+                processRemoveVoucher(userVoucher, cart, cartItems);
+            }
+        }else{
+            throw new VoucherException("Voucher is null");
+        }
+
+    }
+
+    public void checkVoucherExpiration(int id){
+        Voucher voucher = getVoucherById(id);
+        if(voucher == null){
+            throw new VoucherException("Không tìm thấy voucher");
+        }
+        if(voucher.getExpirationDate().isBefore(LocalDateTime.now())){
+            throw new VoucherException("Voucher hết hạn sử dụng");
+        }
+    }
+
+
 
     public void applyVoucher(int userId, String code) {
         Voucher voucher = voucherRepository.findByCode(code).orElse(null);
@@ -114,6 +146,20 @@ public class VoucherService {
         cart.setVoucher(voucher);
         cart.setTotal(validCartItems.stream().mapToInt(CartItem::getTotal).sum());
         cartService.saveCart(cart);
+    }
+
+    private void processRemoveVoucher(UserVoucher userVoucher, Cart cart, List<CartItem> validCartItems) {
+        validCartItems
+                .forEach(cartItem -> {
+                    cartItem.setPrice(cartItem.getProductDetail().getPrice());
+                    cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
+                    cartItemService.saveCartItem(cartItem);
+                });
+        cart.setVoucher(null);
+        cart.setTotal(validCartItems.stream().mapToInt(CartItem::getTotal).sum());
+        cartService.saveCart(cart);
+        //delete user voucher
+        userVoucherService.deleteUserVoucher(userVoucher.getId());
     }
 
 }

@@ -109,6 +109,7 @@ public class CartItemService {
         if (cartItem == null){
             throw new NotFoundException(CART_ITEM_NOT_FOUND+ id);
         }
+
         cartItem.getCart().setTotal(cartItem.getCart().getTotal() - cartItem.getTotal());
         cartItemRepository.deleteById(id);
     }
