@@ -144,7 +144,8 @@ public class VoucherService {
         userVoucher.setUsed(true);
         userVoucherService.saveUserVoucher(userVoucher);
         cart.setVoucher(voucher);
-        cart.setTotal(validCartItems.stream().mapToInt(CartItem::getTotal).sum());
+        List<CartItem> allCartItems = cart.getCartItems();
+        cart.setTotal(allCartItems.stream().mapToInt(CartItem::getTotal).sum());
         cartService.saveCart(cart);
     }
 

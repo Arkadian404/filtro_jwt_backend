@@ -18,4 +18,5 @@ public class VoucherDto {
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime expirationDate;
+    private CategoryDto category;
 }

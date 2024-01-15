@@ -3,6 +3,8 @@ import com.ark.security.dto.CartItemDto;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
+import com.ark.security.models.UserVoucher;
+import com.ark.security.models.Voucher;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.user.User;
 import com.ark.security.repository.CartItemRepository;
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class CartItemService {
     private final CartItemRepository cartItemRepository;
     private final ProductDetailService productDetailService;
+    private final UserVoucherService userVoucherService;
 
     private final CartService cartService;
 
@@ -109,9 +112,34 @@ public class CartItemService {
         if (cartItem == null){
             throw new NotFoundException(CART_ITEM_NOT_FOUND+ id);
         }
-
-        cartItem.getCart().setTotal(cartItem.getCart().getTotal() - cartItem.getTotal());
-        cartItemRepository.deleteById(id);
+        Cart cart = cartItem.getCart();
+        Voucher voucher = cart.getVoucher();
+        if(voucher!=null){
+            List<CartItem> cartItems = cart.getCartItems().stream()
+                    .filter(item-> item.getProductDetail().getProduct().getCategory().equals(voucher.getCategory()))
+                    .toList();
+            if(voucher.getCategory()!=null){
+                if(cartItems.size() == 1){
+                    UserVoucher userVoucher = userVoucherService.getUserVoucherByUserIdAndVoucherId(cart.getUser().getId(), voucher.getId());
+                    cart.setVoucher(null);
+                    cart.setTotal(cart.getTotal() - cartItem.getTotal());
+                    cartService.saveCart(cart);
+                    cartItemRepository.deleteById(id);
+                    userVoucherService.deleteUserVoucher(userVoucher.getId());
+                }else {
+                    cart.setTotal(cart.getTotal() - cartItem.getTotal());
+                    cartService.saveCart(cart);
+                    cartItemRepository.deleteById(id);
+                }
+            }else{
+                cart.setTotal(cart.getTotal() - cartItem.getTotal());
+                cartService.saveCart(cart);
+                cartItemRepository.deleteById(id);
+            }
+        }else{
+            cartItem.getCart().setTotal(cartItem.getCart().getTotal() - cartItem.getTotal());
+            cartItemRepository.deleteById(id);
+        }
     }
 
 }
