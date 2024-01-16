@@ -58,7 +58,7 @@ public class Voucher {
                 .discount(this.discount)
                 .description(this.description)
                 .expirationDate(this.expirationDate)
-                .category(this.category.convertToDto())
+                .category(this.category != null ? this.category.convertToDto() : null)
                 .build();
     }
 

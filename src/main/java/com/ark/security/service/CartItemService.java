@@ -5,10 +5,12 @@ import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.UserVoucher;
 import com.ark.security.models.Voucher;
+import com.ark.security.models.product.Product;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.user.User;
 import com.ark.security.repository.CartItemRepository;
 import com.ark.security.service.product.ProductDetailService;
+import com.ark.security.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ public class CartItemService {
     private final CartItemRepository cartItemRepository;
     private final ProductDetailService productDetailService;
     private final UserVoucherService userVoucherService;
+    private final ProductService productService;
 
     private final CartService cartService;
 
@@ -37,6 +40,7 @@ public class CartItemService {
 
     private void add(CartItemDto cartItemDto, Cart cart){
         ProductDetail productDetail = productDetailService.getProductDetailById(cartItemDto.getProductDetail().getId());
+        Voucher voucher = cart.getVoucher();
         Optional<CartItem> existingItems = cart.getCartItems()
                 .stream()
                 .filter(item-> item.getProductDetail().getId().equals(productDetail.getId()))
@@ -51,17 +55,48 @@ public class CartItemService {
         }
         else {
             CartItem cartItem  = cartItemDto.convertToEntity();
-            cartItem.setCart(cart);
-            cartItem.setProductDetail(productDetail);
-            cartItem.setPrice(productDetail.getPrice());
-            cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
-            cartItem.setPurchaseDate(LocalDateTime.now());
-            cartItemRepository.save(cartItem);
-            cart.getCartItems().add(cartItem);
-            cart.setUpdatedAt(LocalDateTime.now());
-            cart.setTotal(cart.getTotal() + cartItem.getTotal());
-            cartService.saveCart(cart);
+            Product product = productService.getProductBySlug(cartItemDto.getSlug());
+            if(voucher!=null){
+                double discount = voucher.getDiscount();
+                if(voucher.getCategory()!=null){
+                    if(product.getCategory().equals(voucher.getCategory())){
+                        addCartItemWithVoucher(cart, productDetail, cartItem, discount);
+                    }else{
+                        addCartItemWithoutVoucher(cart, productDetail, cartItem);
+                    }
+                }else{
+                    addCartItemWithVoucher(cart, productDetail, cartItem, discount);
+                }
+            }else {
+                addCartItemWithoutVoucher(cart, productDetail, cartItem);
+            }
         }
+    }
+
+    private void addCartItemWithoutVoucher(Cart cart, ProductDetail productDetail, CartItem cartItem) {
+        cartItem.setCart(cart);
+        cartItem.setProductDetail(productDetail);
+        cartItem.setPrice(productDetail.getPrice());
+        cartItem.setPurchaseDate(LocalDateTime.now());
+        cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
+        cartItemRepository.save(cartItem);
+        cart.getCartItems().add(cartItem);
+        cart.setUpdatedAt(LocalDateTime.now());
+        cart.setTotal(cart.getTotal() + cartItem.getTotal());
+        cartService.saveCart(cart);
+    }
+
+    private void addCartItemWithVoucher(Cart cart, ProductDetail productDetail, CartItem cartItem, double discount) {
+        cartItem.setCart(cart);
+        cartItem.setProductDetail(productDetail);
+        cartItem.setPrice((int) (cartItem.getPrice() - (cartItem.getPrice() *discount/100)));
+        cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
+        cartItem.setPurchaseDate(LocalDateTime.now());
+        cartItemRepository.save(cartItem);
+        cart.getCartItems().add(cartItem);
+        cart.setUpdatedAt(LocalDateTime.now());
+        cart.setTotal(cart.getTotal() + cartItem.getTotal());
+        cartService.saveCart(cart);
     }
 
     public void addCartItemToCart(CartItemDto cartItemDto, User user){
