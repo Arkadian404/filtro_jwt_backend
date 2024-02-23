@@ -1,7 +1,7 @@
 package com.ark.security.models.product;
 
 import com.ark.security.dto.ReviewDto;
-import com.ark.security.models.product.Product;
+
 import com.ark.security.models.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -12,7 +12,7 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+
 
 @Getter
 @Setter

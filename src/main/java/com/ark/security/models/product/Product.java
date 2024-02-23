@@ -86,7 +86,8 @@ public class Product {
     private List<WishlistItem> wishlistItems;
 
     @OneToMany(mappedBy = "product")
-    @JsonBackReference
+//    @JsonBackReference
+    @JsonIgnore
     private List<Review> reviews;
 
 

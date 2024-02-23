@@ -37,7 +37,7 @@ public class ProductDetail {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    @JsonManagedReference
+//    @JsonManagedReference
     private Product product;
 
     @OneToMany(mappedBy = "productDetail")
@@ -60,5 +60,4 @@ public class ProductDetail {
                 .categoryId(categoryId)
                 .build();
     }
-
 }
