@@ -14,6 +14,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,7 +97,22 @@ public class VoucherService {
         }
     }
 
-
+    public List<Voucher> showAvailableVoucherByProductId(int productId){
+        List<Voucher> vouchers = voucherRepository.findAll();
+        List<Voucher> availableVouchers = vouchers.stream()
+                .filter(voucher-> {
+                    if(voucher.getCategory() != null){
+                        return voucher.getCategory().getProductList().stream().anyMatch(product -> product.getId() == productId)
+                                && voucher.getExpirationDate().isAfter(LocalDateTime.now());
+                    }
+                    return false;
+                })
+                .toList();
+        if(availableVouchers.isEmpty()){
+            return Collections.emptyList();
+        }
+        return availableVouchers;
+    }
 
     public void applyVoucher(int userId, String code) {
         Voucher voucher = voucherRepository.findByCode(code).orElse(null);

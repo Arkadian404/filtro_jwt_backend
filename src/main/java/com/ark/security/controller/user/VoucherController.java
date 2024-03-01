@@ -20,6 +20,13 @@ public class VoucherController {
 
     private final AuthenticationService authenticationService;
 
+
+    @GetMapping("/availableVouchers/{productId}")
+    public ResponseEntity<?> getAvailableVouchers(@PathVariable int productId){
+        return ResponseEntity.ok(voucherService.showAvailableVoucherByProductId(productId));
+    }
+
+
     @PostMapping("/apply")
     public ResponseEntity<?> applyVoucher(@RequestBody String code,
                                           HttpServletRequest request,
