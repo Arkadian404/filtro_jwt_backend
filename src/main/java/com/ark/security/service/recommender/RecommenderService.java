@@ -11,14 +11,22 @@ import com.ark.security.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.common.Weighting;
+import org.apache.mahout.cf.taste.eval.*;
+import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
+import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommenderEvaluator;
+import org.apache.mahout.cf.taste.impl.eval.GenericRecommenderIRStatsEvaluator;
+import org.apache.mahout.cf.taste.impl.model.GenericBooleanPrefDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
+import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.CachingRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.*;
 import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
@@ -62,49 +70,70 @@ public class RecommenderService {
 
 
 
+    boolean checkIfUserExistsInTastePreferences(Long userId){
+        return tastePreferencesRepository.existsByUserId(userId);
+    }
+
     public List<ProductDto> recommendProductsForUser(int userId) throws TasteException {
         List<ProductDto> productDtos = new ArrayList<>();
 //        migrateOrderDataToTastePreferences();
-        try{
-            DataModel dataModel = new ReloadFromJDBCDataModel(new MySQLJDBCDataModel(getDataSource()));
-//            LogLikelihoodSimilarity similarity = new LogLikelihoodSimilarity(dataModel);
-            SpearmanCorrelationSimilarity similarity = new SpearmanCorrelationSimilarity(dataModel);
-
-//            UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModel);
-//            UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel);
-//            ItemSimilarity similarity = new PearsonCorrelationSimilarity(dataModel);
-//            ItemSimilarity similarity = new TanimotoCoefficientSimilarity(dataModel);
-//            UserSimilarity similarity = new TanimotoCoefficientSimilarity(dataModel);
-            UserNeighborhood neighborhood = new NearestNUserNeighborhood(NEIGHBORHOOD_NUM, similarity, dataModel);
-
-            UserBasedRecommender userBasedRecommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
-
-            Recommender recommender = new CachingRecommender(userBasedRecommender);
-            List<RecommendedItem> recommendations = recommender.recommend(userId, 5);
-            System.out.println("Recommneds for user " + userId + " are: ");
-            System.out.println("**********************************************");
-            System.out.println("ItemID\t estimated preference");
-            for (RecommendedItem ri : recommendations){
-                int itemId = (int) ri.getItemID();
-                Product product = productService.getProductById(itemId);
-                float estimatePref = recommender.estimatePreference(userId, itemId);
-                System.out.println(itemId + " " + product.getName() + "\t" + estimatePref);
-                ProductDto productDto = product.convertToDto();
-                productDtos.add(productDto);
+        if (checkIfUserExistsInTastePreferences((long) userId)) {
+            try {
+                Recommender recommender = getRecommender();
+                List<RecommendedItem> recommendations = recommender.recommend(userId, 5);
+                System.out.println("Recommneds for user " + userId + " are: ");
+                System.out.println("**********************************************");
+                System.out.println("ItemID\t estimated preference");
+                for (RecommendedItem ri : recommendations) {
+                    int itemId = (int) ri.getItemID();
+                    Product product = productService.getProductById(itemId);
+                    float estimatePref = recommender.estimatePreference(userId, itemId);
+                    System.out.println(itemId + " " + product.getName() + "\t" + estimatePref);
+                    ProductDto productDto = product.convertToDto();
+                    productDtos.add(productDto);
+                }
+//                    System.out.println("**********************************************");
+//                    long[] userIds = recommender.mostSimilarUserIDs(userId, 5);
+//                    System.out.println("Most similar users to user " + userId + " are: ");
+//                    for (long uid : userIds){
+//                        int id = (int) uid;
+//                        User user = userService.getUserById(id);
+//                        System.out.println(user.getUsername());
+//                    }
+            } catch (TasteException e) {
+                logger.error(String.valueOf(e));
             }
-            System.out.println("**********************************************");
-//            long[] userIds = recommender.mostSimilarUserIDs(userId, 5);
-//            System.out.println("Most similar users to user " + userId + " are: ");
-//            for (long uid : userIds){
-//                int id = (int) uid;
-//                User user = userService.getUserById(id);
-//                System.out.println(user.getUsername());
-//            }
-        } catch (TasteException e){
-            logger.error(String.valueOf(e));
         }
         return productDtos;
+
     }
+
+    private Recommender getRecommender() throws TasteException {
+        DataModel dataModel = new ReloadFromJDBCDataModel(new MySQLJDBCDataModel(getDataSource()));
+        UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel, Weighting.WEIGHTED);
+        UserNeighborhood neighborhood = new NearestNUserNeighborhood(NEIGHBORHOOD_NUM, similarity, dataModel);
+        UserBasedRecommender userBasedRecommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
+        return new CachingRecommender(userBasedRecommender);
+    }
+
+
+//    public void recommendProductsForUser(int userId) throws TasteException {
+//        try{
+//            DataModel dataModel = new ReloadFromJDBCDataModel(new MySQLJDBCDataModel(getDataSource()));
+//            RecommenderEvaluator evaluator = new AverageAbsoluteDifferenceRecommenderEvaluator();
+//            RecommenderBuilder recommenderBuilder = this;
+//            double score = evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 1.0);
+//            System.out.println("Score: " + score);
+////            RecommenderIRStatsEvaluator statsEvaluator = new GenericRecommenderIRStatsEvaluator();
+////            RecommenderBuilder recommenderBuilder = this;
+////            IRStatistics stats = statsEvaluator.evaluate(recommenderBuilder, null, dataModel, null, 10, GenericRecommenderIRStatsEvaluator.CHOOSE_THRESHOLD, 1.0);
+////            System.out.println("Precision: " + stats.getPrecision());
+////            System.out.println("Recall: " + stats.getRecall());
+//        }catch (TasteException e){
+//            logger.error(String.valueOf(e));
+//        }
+//
+//    }
 
 
     private MysqlDataSource getDataSource(){
@@ -118,4 +147,16 @@ public class RecommenderService {
     }
 
 
+//    @Override
+//    public Recommender buildRecommender(DataModel dataModel) throws TasteException {
+//        UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModel, Weighting.WEIGHTED);
+////        UserSimilarity similarity = new LogLikelihoodSimilarity(dataModel);
+//        UserNeighborhood neighborhood = new ThresholdUserNeighborhood(NEIGHBORHOOD_NUM, similarity, dataModel);
+//        return new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
+//    }
+//
+//    @Override
+//    public DataModel buildDataModel(FastByIDMap<PreferenceArray> fastByIDMap) {
+//        return new GenericBooleanPrefDataModel(GenericBooleanPrefDataModel.toDataMap(fastByIDMap));
+//    }
 }

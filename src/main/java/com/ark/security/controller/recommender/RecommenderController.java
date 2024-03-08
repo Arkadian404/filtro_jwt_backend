@@ -27,6 +27,17 @@ public class RecommenderController {
     }
 
 
+//    @GetMapping("/recommend/{userId}")
+//    public ResponseEntity<List<ProductDto>> recommendProductsForUser(@PathVariable int userId){
+//        try{
+//            List<ProductDto> list =  recommenderService.recommendProductsForUser(userId);
+//            return ResponseEntity.ok(list);
+//        } catch (TasteException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+
     @GetMapping("/recommend/{userId}")
     public ResponseEntity<List<ProductDto>> recommendProductsForUser(@PathVariable int userId){
         try{
