@@ -30,6 +30,13 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
+    @GetMapping("/get/all")
+    public ResponseEntity<List<ProductDto>> getAllProducts(){
+        List<ProductDto> productList = productService.getProductDtoList();
+        return ResponseEntity.ok(productList);
+    }
+
+
     @GetMapping("/all")
     public ResponseEntity<?> getList(@RequestParam Optional<Integer> page,
                                      @RequestParam Optional<String> sort,

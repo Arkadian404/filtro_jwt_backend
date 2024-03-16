@@ -45,9 +45,11 @@ public class Voucher {
     private Category category;
 
     @OneToMany(mappedBy = "voucher", fetch = FetchType.LAZY)
+    @JsonIgnore
     List<UserVoucher> userVoucherList;
 
     @OneToMany(mappedBy = "voucher", fetch = FetchType.LAZY)
+    @JsonIgnore
     List<Cart> cartList;
 
     public VoucherDto convertToDto(){

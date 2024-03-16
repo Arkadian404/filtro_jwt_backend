@@ -18,6 +18,6 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     @Query(value = "select count(user_id) from review where product_id =:id and parent_id is null group by product_id", nativeQuery = true)
     Integer countReviewByProductId(int id);
 
-
+    Boolean existsByUserIdAndProductId(int userId, int productId);
 
 }

@@ -38,12 +38,17 @@ public class ReviewService {
     }
 
     public void create(Review review){
-        review.setCreatedAt(LocalDateTime.now());
-        reviewRepository.save(review);
-
-        int productId = review.getProduct().getId();
-        Double avgRating = getAvgRatingByProductId(productId);
-        productService.updateProductRating(productId, avgRating);
+        Integer userId =  review.getUser().getId();
+        Integer parentId = review.getParentId();
+        Integer productId = review.getProduct().getId();
+        if(existsByUserId(userId, productId) && parentId == null){
+            throw new NotFoundException("Bạn đã đánh giá sản phẩm này rồi!");
+        }else {
+            review.setCreatedAt(LocalDateTime.now());
+            reviewRepository.save(review);
+            Double avgRating = getAvgRatingByProductId(productId);
+            productService.updateProductRating(productId, avgRating);
+        }
     }
 
     public Double getAvgRatingByProductId(Integer id){
@@ -78,5 +83,10 @@ public class ReviewService {
         Double avgRating = getAvgRatingByProductId(productId);
         productService.updateProductRating(productId, avgRating);
     }
+
+    public boolean existsByUserId(int userId, int productId){
+        return reviewRepository.existsByUserIdAndProductId(userId, productId);
+    }
+
 
 }

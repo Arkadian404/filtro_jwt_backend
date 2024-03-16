@@ -47,6 +47,11 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.countReviewByProductId(id));
     }
 
+    @GetMapping("/check/user/{userId}/review/{productId}")
+    public ResponseEntity<?> isUserReviewed(@PathVariable int userId, @PathVariable int productId){
+        return ResponseEntity.ok(reviewService.existsByUserId(userId, productId));
+    }
+
     @GetMapping("/get/productReviewRating/{id}")
     public ResponseEntity<?> getReviewRating(@PathVariable Integer id){
         return ResponseEntity.ok(statisticService.getReviewRating(id));

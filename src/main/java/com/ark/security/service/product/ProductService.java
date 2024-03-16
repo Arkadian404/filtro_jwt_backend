@@ -41,6 +41,19 @@ public class ProductService {
         return productRepository.findById(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
     }
 
+    public List<ProductDto> getProductDtoList(){
+        List<Product> products = productRepository.findAll();
+        List<ProductDto> dtos = new ArrayList<>();
+        if(products.isEmpty()){
+            throw new NotFoundException(PRODUCT_EMPTY);
+        }else{
+            for(Product product : products){
+                dtos.add(product.convertToDto());
+            }
+        }
+        return dtos;
+    }
+
     public ProductDto getProductDtoById(int id){
         Product product = getProductById(id);
         return  product.convertToDto();
