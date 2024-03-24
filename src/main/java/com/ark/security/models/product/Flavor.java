@@ -1,8 +1,6 @@
 package com.ark.security.models.product;
 
-import com.ark.security.config.CustomResolver;
 import com.ark.security.dto.FlavorDto;
-import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

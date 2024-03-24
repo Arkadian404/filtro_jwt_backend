@@ -56,7 +56,7 @@ public class ReviewService {
     }
 
     public Integer countReviewByProductId(Integer id){
-        System.out.println(reviewRepository.countReviewByProductId(id));
+//        System.out.println(reviewRepository.countReviewByProductId(id));
         return reviewRepository.countReviewByProductId(id);
     }
 

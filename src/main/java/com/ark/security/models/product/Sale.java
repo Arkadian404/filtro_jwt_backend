@@ -1,13 +1,11 @@
 package com.ark.security.models.product;
 
-import com.ark.security.config.CustomResolver;
 import com.ark.security.dto.SaleDto;
-import com.ark.security.models.product.Product;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
+
 import java.util.Date;
 import java.util.List;
 
