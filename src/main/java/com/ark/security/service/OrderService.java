@@ -105,6 +105,8 @@ public class OrderService {
         }
         order.setOrderDetails(orderDetails);
         orderRepository.save(order);
+        cart.setStatus(false);
+        cartService.saveCart(cart);
         return order;
 
     }

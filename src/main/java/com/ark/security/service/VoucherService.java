@@ -87,14 +87,16 @@ public class VoucherService {
 
     }
 
-    public void checkVoucherExpiration(int id){
+    public boolean checkVoucherExpiration(int id){
         Voucher voucher = getVoucherById(id);
-        if(voucher == null){
-            throw new VoucherException("Không tìm thấy voucher");
+        if(voucher!=null){
+            if(voucher.getExpirationDate().isAfter(LocalDateTime.now())){
+                return true;
+            }else{
+                throw new VoucherException("Voucher hết hạn");
+            }
         }
-        if(voucher.getExpirationDate().isBefore(LocalDateTime.now())){
-            throw new VoucherException("Voucher hết hạn sử dụng");
-        }
+        return false;
     }
 
     public List<Voucher> showAvailableVoucherByProductId(int productId){

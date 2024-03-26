@@ -10,7 +10,6 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
@@ -31,7 +30,7 @@ public class OrderDto {
     private String notes;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
-    private ShippingMethodDto shippingMethod;
+    private String deliveryService;
     private Integer shippingFee;
     private Integer total;
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -54,7 +53,7 @@ public class OrderDto {
                 .ward(this.ward)
                 .notes(this.notes)
                 .paymentMethod(this.paymentMethod)
-                .shippingMethod(this.shippingMethod.convertToEntity())
+                .deliveryService(this.deliveryService)
                 .shippingFee(this.shippingFee)
                 .total(this.total)
                 .orderDate(this.orderDate)

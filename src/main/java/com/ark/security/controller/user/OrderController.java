@@ -4,7 +4,7 @@ import com.ark.security.auth.AuthenticationService;
 import com.ark.security.dto.OrderDto;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.order.Order;
-import com.ark.security.models.order.ShippingMethod;
+
 import com.ark.security.models.payment.momo.MomoResponse;
 import com.ark.security.models.payment.vnpay.VNPResponse;
 import com.ark.security.models.user.User;
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+
 
 import java.util.Date;
 

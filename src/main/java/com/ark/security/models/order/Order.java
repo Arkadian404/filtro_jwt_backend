@@ -1,6 +1,5 @@
 package com.ark.security.models.order;
 
-import com.ark.security.dto.OrderDetailDto;
 import com.ark.security.dto.OrderDto;
 import com.ark.security.models.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -10,7 +9,6 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -49,9 +47,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
-    @ManyToOne
-    @JoinColumn(name = "shipping_method_id")
-    private ShippingMethod shippingMethod;
+    private String deliveryService;
     private Integer shippingFee;
 
     private Integer total;
@@ -72,7 +68,7 @@ public class Order {
                 .ward(this.ward)
                 .notes(this.notes)
                 .paymentMethod(this.paymentMethod)
-                .shippingMethod(this.shippingMethod == null ? null :this.shippingMethod.convertToDto())
+                .deliveryService(this.deliveryService)
                 .shippingFee(this.shippingFee)
                 .total(this.total)
                 .orderDate(this.orderDate)

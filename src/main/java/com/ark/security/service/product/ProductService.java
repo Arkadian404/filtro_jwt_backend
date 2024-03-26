@@ -349,6 +349,7 @@ public class ProductService {
         Slugify slugify = Slugify.builder().transliterator(true).build();
         product.setSlug(slugify.slugify(product.getName()));
         product.setCreatedAt(LocalDateTime.now());
+        product.setSold(0);
         productRepository.save(product);
     }
 
@@ -440,6 +441,7 @@ public class ProductService {
         return ProductDto.builder()
                 .id(product.getId())
                 .name(product.getName())
+                .slug(product.getSlug())
                 .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
                 .rating(product.getRating())
                 .description(product.getDescription())

@@ -27,6 +27,12 @@ public class VoucherController {
     }
 
 
+    @GetMapping("/check/{voucherId}")
+    public ResponseEntity<?> checkVoucher(@PathVariable int voucherId){
+        return ResponseEntity.ok(voucherService.checkVoucherExpiration(voucherId));
+    }
+
+
     @PostMapping("/apply")
     public ResponseEntity<?> applyVoucher(@RequestBody String code,
                                           HttpServletRequest request,
@@ -54,4 +60,7 @@ public class VoucherController {
                 .build();
         return ResponseEntity.ok(successMessage);
     }
+
+
+
 }

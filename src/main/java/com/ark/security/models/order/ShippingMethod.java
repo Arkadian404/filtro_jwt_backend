@@ -24,10 +24,6 @@ public class ShippingMethod {
     private Integer surcharge;
     private String duration;
 
-    @OneToMany(mappedBy = "shippingMethod")
-    @JsonBackReference
-    private List<Order> orders;
-
     public ShippingMethodDto convertToDto(){
         return ShippingMethodDto.builder()
                 .id(this.id)
