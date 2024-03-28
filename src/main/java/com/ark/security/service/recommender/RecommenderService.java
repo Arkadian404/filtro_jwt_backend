@@ -76,7 +76,7 @@ public class RecommenderService {
 
     public List<ProductDto> recommendProductsForUser(int userId) throws TasteException {
         List<ProductDto> productDtos = new ArrayList<>();
-//        migrateOrderDataToTastePreferences();
+        migrateOrderDataToTastePreferences();
         if (checkIfUserExistsInTastePreferences((long) userId)) {
             try {
                 Recommender recommender = getRecommender();

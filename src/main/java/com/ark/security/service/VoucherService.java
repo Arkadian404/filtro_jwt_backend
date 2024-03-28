@@ -116,6 +116,23 @@ public class VoucherService {
         return availableVouchers;
     }
 
+    public List<Voucher> showAvailableVoucherToAllProducts(){
+        List<Voucher> vouchers = voucherRepository.findAll();
+        List<Voucher> availableVouchers = vouchers.stream()
+                .filter(voucher-> {
+                    if(voucher.getCategory() == null){
+                        return voucher.getExpirationDate().isAfter(LocalDateTime.now());
+                    }
+                    return false;
+                })
+                .toList();
+        if(availableVouchers.isEmpty()){
+            return Collections.emptyList();
+        }
+        return availableVouchers;
+    }
+
+
     public void applyVoucher(int userId, String code) {
         Voucher voucher = voucherRepository.findByCode(code).orElse(null);
         if (voucher != null) {

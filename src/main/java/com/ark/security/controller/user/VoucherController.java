@@ -22,8 +22,13 @@ public class VoucherController {
 
 
     @GetMapping("/availableVouchers/{productId}")
-    public ResponseEntity<?> getAvailableVouchers(@PathVariable int productId){
+    public ResponseEntity<?> getAvailableVouchersByProductId(@PathVariable int productId){
         return ResponseEntity.ok(voucherService.showAvailableVoucherByProductId(productId));
+    }
+
+    @GetMapping("/availableVouchers/all")
+    public ResponseEntity<?> getAvailableVouchers(){
+        return ResponseEntity.ok(voucherService.showAvailableVoucherToAllProducts());
     }
 
 
