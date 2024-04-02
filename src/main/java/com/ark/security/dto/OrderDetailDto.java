@@ -18,6 +18,7 @@ public class OrderDetailDto {
         private Integer id;
         private OrderDto order;
         private String productName;
+        private String productSlug;
         private ProductDetailDto productDetail;
         private ProductImageDto productImage;
         private Integer quantity;

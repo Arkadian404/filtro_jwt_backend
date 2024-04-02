@@ -4,18 +4,23 @@ import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.product.Review;
 import com.ark.security.repository.product.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductService productService;
     private final String REVIEW_NOT_FOUND = "Review not found";
     private final String REVIEW_EMPTY = "Review is empty";
+     private final Logger logger = LoggerFactory.getLogger(ReviewService.class);
 
     public List<Review> getAllReview(){
         List<Review> reviews = reviewRepository.findAll();
@@ -41,7 +46,8 @@ public class ReviewService {
         Integer userId =  review.getUser().getId();
         Integer parentId = review.getParentId();
         Integer productId = review.getProduct().getId();
-        if(existsByUserId(userId, productId) && parentId == null){
+        logger.info("User id: " + userId + " Product id: " + productId + " Parent id: " + parentId);
+        if(checkReviewExist(userId, productId, parentId) > 0){
             throw new NotFoundException("Bạn đã đánh giá sản phẩm này rồi!");
         }else {
             review.setCreatedAt(LocalDateTime.now());
@@ -84,9 +90,15 @@ public class ReviewService {
         productService.updateProductRating(productId, avgRating);
     }
 
+    public Long checkReviewExist(int userId, int productId, Integer parentId){
+        return reviewRepository.isReviewExisting(userId, productId, parentId);
+    }
+
     public boolean existsByUserId(int userId, int productId){
         return reviewRepository.existsByUserIdAndProductId(userId, productId);
     }
+
+
 
 
 }

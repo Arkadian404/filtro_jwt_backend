@@ -44,11 +44,13 @@ public class OrderDetail {
 
     public OrderDetailDto convertToDto(){
         String productName = this.productDetail.getProduct().getName();
+        String productSlug = this.productDetail.getProduct().getSlug();
         ProductImage productImage = this.productDetail.getProduct().getImages().get(0);
         return OrderDetailDto.builder()
                 .id(this.id)
                 .order(this.order.convertToDto())
                 .productName(productName)
+                .productSlug(productSlug)
                 .productImage(productImage.convertToDto())
                 .productDetail(this.productDetail.convertToDto())
                 .quantity(this.quantity)
