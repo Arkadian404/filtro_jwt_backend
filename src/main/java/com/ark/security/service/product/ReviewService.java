@@ -95,7 +95,7 @@ public class ReviewService {
     }
 
     public boolean existsByUserId(int userId, int productId){
-        return reviewRepository.existsByUserIdAndProductId(userId, productId);
+        return reviewRepository.existsByUserIdAndProductIdAndParentIdIsNull(userId, productId);
     }
 
 

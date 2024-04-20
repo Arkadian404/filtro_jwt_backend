@@ -35,6 +35,11 @@ public class UserService implements UserDetailsService {
     private final String OLD_PASSWORD_NOT_MATCH = "Mật khẩu cũ không đúng";
 
 
+    public boolean checkUserExistById(int id){
+        return userRepository.existsById(id);
+    }
+
+
     public void saveUser(User user){
         if(userRepository.existsUserByUsername(user.getUsername())){
             throw new DuplicateException(USERNAME_DUPLICATE);
@@ -153,6 +158,18 @@ public class UserService implements UserDetailsService {
                 if(orderDetail.getProductDetail().getProduct().getId() == productId && order.getStatus().equals(OrderStatus.CONFIRMED)){
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+
+    public boolean hasUserEverBoughtAProduct(int userId){
+        User user = getUserById(userId);
+        List<Order> orders = user.getOrders();
+        for(Order order: orders){
+            if(order.getStatus().equals(OrderStatus.CONFIRMED)){
+                return true;
             }
         }
         return false;

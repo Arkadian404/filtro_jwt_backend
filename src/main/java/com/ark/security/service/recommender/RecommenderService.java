@@ -1,6 +1,8 @@
 package com.ark.security.service.recommender;
 
 import com.ark.security.dto.ProductDto;
+import com.ark.security.exception.NotFoundException;
+import com.ark.security.models.recommender.RecommendationResponse;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import com.ark.security.models.product.Product;
 import com.ark.security.models.recommender.TastePreferences;
@@ -10,6 +12,7 @@ import com.ark.security.service.product.ProductService;
 import com.ark.security.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.common.Weighting;
 import org.apache.mahout.cf.taste.eval.*;
@@ -35,10 +38,18 @@ import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.apache.mahout.common.distance.CosineDistanceMeasure;
 import org.apache.mahout.math.hadoop.similarity.cooccurrence.measures.CosineSimilarity;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import javax.print.attribute.standard.Media;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -49,8 +60,10 @@ public class RecommenderService {
     private final OrderRepository orderRepository;
     private final ProductService productService;
     private final UserService userService;
+    private final RestTemplate restTemplate;
     private final Logger logger = LoggerFactory.getLogger(RecommenderService.class);
     private final int NEIGHBORHOOD_NUM = 5;
+    private static String URL = "http://localhost:8000/";
 
 
     public void migrateOrderDataToTastePreferences(){
@@ -147,16 +160,33 @@ public class RecommenderService {
     }
 
 
-//    @Override
-//    public Recommender buildRecommender(DataModel dataModel) throws TasteException {
-//        UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModel, Weighting.WEIGHTED);
-////        UserSimilarity similarity = new LogLikelihoodSimilarity(dataModel);
-//        UserNeighborhood neighborhood = new ThresholdUserNeighborhood(NEIGHBORHOOD_NUM, similarity, dataModel);
-//        return new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
-//    }
-//
-//    @Override
-//    public DataModel buildDataModel(FastByIDMap<PreferenceArray> fastByIDMap) {
-//        return new GenericBooleanPrefDataModel(GenericBooleanPrefDataModel.toDataMap(fastByIDMap));
-//    }
+    public RecommendationResponse fastApi(int userId){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<RecommendationResponse> response = restTemplate.exchange(URL+"/recommendations/"+userId, HttpMethod.GET, entity, RecommendationResponse.class);
+        return response.getBody();
+    }
+
+    public List<ProductDto> recommend(int userId){
+        if(!userService.checkUserExistById(userId)){
+            throw new NotFoundException("Không tìm thấy user với ID: " + userId);
+        }
+        if(userService.hasUserEverBoughtAProduct(userId)){
+            RecommendationResponse response = fastApi(userId);
+            List<ProductDto> productDtos = new ArrayList<>();
+            for(int id : response.getRecommendations()){
+                Product product = productService.getProductById(id);
+                ProductDto productDto = product.convertToDto();
+                productDtos.add(productDto);
+            }
+            return productDtos;
+        }
+        return List.of();
+    }
+
+    public boolean check(int userId){
+        return userService.hasUserEverBoughtAProduct(userId);
+    }
 }
+

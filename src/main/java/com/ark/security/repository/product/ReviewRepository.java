@@ -27,6 +27,6 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 """, nativeQuery = true)
     Long isReviewExisting(int userId, int productId, Integer parentId);
 
-    Boolean existsByUserIdAndProductId(int userId, int productId);
+    Boolean existsByUserIdAndProductIdAndParentIdIsNull(int userId, int productId);
 
 }
