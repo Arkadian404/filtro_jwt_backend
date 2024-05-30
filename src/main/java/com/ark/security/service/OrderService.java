@@ -78,7 +78,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(User user, Order order){
+    public OrderDto createOrder(User user, Order order){
         Cart cart = cartService.getCartByUsername(user.getUsername());
         List<CartItem> cartItems = cart.getCartItems();
         // check item quantity in stock
@@ -107,8 +107,9 @@ public class OrderService {
         orderRepository.save(order);
         cart.setStatus(false);
         cartService.saveCart(cart);
-        return order;
-
+        OrderDto orderDto = order.convertToDto();
+        orderDto.setDiscount(cart.getVoucher().getDiscount());
+        return orderDto;
     }
 
 

@@ -38,6 +38,7 @@ public class OrderDto {
     private LocalDateTime orderDate;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+    private Double discount;
 
 
     public Order convertToEntity(){

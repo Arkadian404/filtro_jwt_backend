@@ -2,8 +2,10 @@ package com.ark.security.controller;
 
 import com.ark.security.exception.BadCredentialsException;
 import com.ark.security.exception.SuccessMessage;
+import com.ark.security.models.mail.FeedbackMail;
 import com.ark.security.service.EmailDetailsService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,4 +37,22 @@ public class SendMailController {
                 .build();
         return ResponseEntity.ok(success);
     }
+
+    @PostMapping("/send-feedback-mail")
+    public ResponseEntity<?> processSendFeedbackMail(@Valid @RequestBody FeedbackMail feedbackMail){
+        try{
+            emailDetailsService.sendFeedbackMail(feedbackMail);
+        } catch (UnsupportedEncodingException | MessagingException ex){
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+            throw new BadCredentialsException("Lỗi khi gửi mail");
+        }
+        var success = SuccessMessage.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Gửi mail thành công")
+                .timestamp(new Date())
+                .build();
+        return ResponseEntity.ok(success);
+    }
+
 }

@@ -76,7 +76,8 @@ public class OrderController {
                                         HttpServletRequest request,
                                         HttpServletResponse response){
         User user = authenticationService.getCurrentUser(request, response);
-        return ResponseEntity.ok(orderService.createOrder(user, order));
+        OrderDto userOrder = orderService.createOrder(user, order);
+        return ResponseEntity.ok(userOrder);
     }
 
 

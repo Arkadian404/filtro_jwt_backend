@@ -1,8 +1,7 @@
 package com.ark.security.service;
 
-import com.ark.security.models.EmailDetails;
+import com.ark.security.models.mail.FeedbackMail;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +10,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +39,16 @@ public class EmailDetailsService {
         message.setContent(template, "text/html;charset=UTF-8");
         message.saveChanges();
         mailSender.send(message);
+    }
+
+    public void sendFeedbackMail(FeedbackMail feedbackMail) throws MessagingException, UnsupportedEncodingException{
+        MimeMessage mesage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mesage);
+        helper.setFrom(feedbackMail.getEmail(), feedbackMail.getName());
+        helper.setTo(fromEmail);
+        helper.setSubject("Phản hồi từ khách hàng " + feedbackMail.getName()+ " - " + feedbackMail.getPhone());
+        helper.setText(feedbackMail.getContent());
+        mailSender.send(mesage);
     }
 
 
