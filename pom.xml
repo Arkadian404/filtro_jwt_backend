@@ -161,19 +161,19 @@
         </dependency>
 
 
-        <!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-mr -->
-        <dependency>
-            <groupId>org.apache.mahout</groupId>
-            <artifactId>mahout-mr</artifactId>
-            <version>0.13.0</version>
-        </dependency>
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.mahout/mahout-mr &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.mahout</groupId>-->
+<!--            <artifactId>mahout-mr</artifactId>-->
+<!--            <version>0.13.0</version>-->
+<!--        </dependency>-->
 
-        <!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-integration -->
-        <dependency>
-            <groupId>org.apache.mahout</groupId>
-            <artifactId>mahout-integration</artifactId>
-            <version>0.13.0</version>
-        </dependency>
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.mahout/mahout-integration &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.mahout</groupId>-->
+<!--            <artifactId>mahout-integration</artifactId>-->
+<!--            <version>0.13.0</version>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
         <dependency>
