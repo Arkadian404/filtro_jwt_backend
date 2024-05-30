@@ -3,12 +3,17 @@ package com.ark.security.service.product;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.models.product.Product;
 import com.ark.security.models.product.Review;
+import com.ark.security.models.user.User;
 import com.ark.security.repository.product.ReviewRepository;
+import com.ark.security.repository.user.UserRepository;
+import com.ark.security.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -25,6 +30,12 @@ class ReviewServiceTest {
 
     @Mock
     private ProductService productService;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
 
     @InjectMocks
     private ReviewService reviewService;
@@ -71,6 +82,8 @@ class ReviewServiceTest {
 
     @Test
     void testCreate() {
+        User user =  new User();
+        user.setId(1);
         Product product = new Product();
         product.setId(1);
 
@@ -78,9 +91,9 @@ class ReviewServiceTest {
         Review review = new Review();
         review.setId(1);
         review.setProduct(product);
+        review.setUser(user);
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         when(reviewRepository.avgRatingByProductId(anyInt())).thenReturn(5.0);
-
         reviewService.create(review);
 
         verify(reviewRepository, times(1)).save(review);
