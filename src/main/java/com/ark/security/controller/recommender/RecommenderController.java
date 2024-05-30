@@ -5,7 +5,6 @@ import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.recommender.RecommendationResponse;
 import com.ark.security.service.recommender.RecommenderService;
 import lombok.RequiredArgsConstructor;
-import org.apache.mahout.cf.taste.common.TasteException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
