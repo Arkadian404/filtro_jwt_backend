@@ -35,7 +35,7 @@ public class RecommenderService {
     private final Logger logger = LoggerFactory.getLogger(RecommenderService.class);
     private final int NEIGHBORHOOD_NUM = 5;
     @Value("${spring.fast-api.url}")
-    private static String URL;
+    private String URL;
 
 
     public void migrateOrderDataToTastePreferences(){
