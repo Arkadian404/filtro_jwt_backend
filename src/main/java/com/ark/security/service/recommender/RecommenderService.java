@@ -133,10 +133,12 @@ public class RecommenderService {
 
 
     public RecommendationResponse fastApi(int userId){
+        System.out.println(URL+"/recommendations/"+userId);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<RecommendationResponse> response = restTemplate.exchange(URL+"/recommendations/"+userId, HttpMethod.GET, entity, RecommendationResponse.class);
+//        ResponseEntity<RecommendationResponse> response = restTemplate.exchange(URL+"/recommendations/"+userId, HttpMethod.GET, entity, RecommendationResponse.class);
+        ResponseEntity<RecommendationResponse> response = restTemplate.getForEntity(URL+"/recommendations/"+userId, RecommendationResponse.class);
         return response.getBody();
     }
 
