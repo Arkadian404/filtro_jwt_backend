@@ -34,7 +34,7 @@ public class RecommenderService {
     private final RestTemplate restTemplate;
     private final Logger logger = LoggerFactory.getLogger(RecommenderService.class);
     private final int NEIGHBORHOOD_NUM = 5;
-    @Value("${fastapi.url}")
+    @Value("${spring.fast-api.url}")
     private static String URL;
 
 
