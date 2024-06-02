@@ -18,6 +18,8 @@ spring:
             enable: true
   jackson:
     time-zone: Asia/Ho_Chi_Minh
+  fast-api:
+    url: ${FASTAPI_URL:http://localhost}:8000
 
 
 application:

@@ -7,6 +7,10 @@ services:
     environment:
       MYSQL_DATABASE: filtro_jwt
       MYSQL_ROOT_PASSWORD: 123456
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
     ports:
       - "3307:3306"
     volumes:
@@ -19,7 +23,8 @@ services:
     environment:
       DB_HOST: docker-mysql
     depends_on:
-      - docker-mysql
+      docker-mysql:
+        condition: service_healthy
   front-end:
     image: zafuog/angular-filtro:latest
     volumes:

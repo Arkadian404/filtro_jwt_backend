@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -33,7 +34,8 @@ public class RecommenderService {
     private final RestTemplate restTemplate;
     private final Logger logger = LoggerFactory.getLogger(RecommenderService.class);
     private final int NEIGHBORHOOD_NUM = 5;
-    private static String URL = "http://localhost:8000/";
+    @Value("${fastapi.url}")
+    private static String URL;
 
 
     public void migrateOrderDataToTastePreferences(){
