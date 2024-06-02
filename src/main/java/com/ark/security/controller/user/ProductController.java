@@ -4,6 +4,7 @@ import com.ark.security.dto.ProductDto;
 import com.ark.security.models.product.Product;
 import com.ark.security.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    @Value("${spring.fast-api.url}")
+    private String testString;
 
 
     @GetMapping("/getList")
@@ -241,6 +244,7 @@ public class ProductController {
 
     @GetMapping("/getTop10ProductsInColombia")
     public ResponseEntity<?> getTop10ProductsInColombia(){
+        System.out.println(testString);
         return ResponseEntity.ok(productService.getTop10ProductsInColombia());
     }
 

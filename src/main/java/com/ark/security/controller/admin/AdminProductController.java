@@ -6,7 +6,6 @@ import com.ark.security.service.product.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,8 +23,7 @@ import java.util.List;
 public class AdminProductController {
 
     private final ProductService productService;
-    @Value("${spring.fast-api.url}")
-    private String testString;
+
 
     @GetMapping("/getList")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
@@ -110,7 +108,6 @@ public class AdminProductController {
     @GetMapping("/getTop10ProductsInColombia")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> getTop10ProductsInColombia(){
-
         return ResponseEntity.ok(productService.getTop10ProductsInColombia());
     }
 
