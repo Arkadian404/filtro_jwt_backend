@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -37,7 +38,8 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfiguration corsConfiguration(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "https://test-payment.momo.vn", "http://103.153.254.61:4200"));
+//        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "https://test-payment.momo.vn", "http://103.153.254.61:4200"));
+        corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
         return corsConfiguration;
