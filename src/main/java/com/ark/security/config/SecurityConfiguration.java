@@ -37,7 +37,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfiguration corsConfiguration(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "https://test-payment.momo.vn"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "https://test-payment.momo.vn", "http://103.153.254.61:4200"));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
         return corsConfiguration;
