@@ -37,4 +37,4 @@ application:
       secret-key: SetA5RDnLHvt51AULf51DyauxUo3kDU6
     vnpay:
       vnp_TmnCode: ZF769ZRJ
-      vnp_HashSecret: DEFBUBPEMBQFYDQGIIUJAXKRCUKMOOYU
+      vnp_HashSecret: ND5W6RV8BWDVW0RQ65FRQ58E3OBPGKEG
