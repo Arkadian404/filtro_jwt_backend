@@ -108,7 +108,7 @@ public class OrderService {
         cart.setStatus(false);
         cartService.saveCart(cart);
         OrderDto orderDto = order.convertToDto();
-        orderDto.setDiscount(cart.getVoucher().getDiscount());
+        orderDto.setDiscount(cart.getVoucher() != null ? cart.getVoucher().getDiscount() : 0);
         return orderDto;
     }
 
