@@ -15,6 +15,7 @@ import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -60,34 +61,40 @@ public class StatisticService implements StatisticRepository {
     }
 
     @Override
-    public Revenue getRevenueByDate(Integer day, Integer month, Integer year) {
+    public List<Revenue> getRevenueByDate(LocalDate startDate, LocalDate endDate) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Revenue>  cq = cb.createQuery(Revenue.class);
+        CriteriaQuery<Revenue> cq = cb.createQuery(Revenue.class);
         Root<Order> root = cq.from(Order.class);
-        cq.select(cb.construct(
-                Revenue.class,
-                cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
-                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
-                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
-                cb.sum(root.get("total")).alias("revenue")
 
-        ))
+        cq.select(cb.construct(
+                        Revenue.class,
+                        cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
+                        cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                        cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                        cb.sum(root.get("total")).alias("revenue")
+                ))
                 .where(cb.and(
-                        cb.equal(cb.function("DAY", Integer.class, root.get("orderDate")), day),
-                        cb.equal(cb.function("MONTH", Integer.class, root.get("orderDate")), month),
-                        cb.equal(cb.function("YEAR", Integer.class, root.get("orderDate")), year),
-                        cb.equal(root.get("status"), OrderStatus.CONFIRMED)))
-                .groupBy(cb.function("DAY", Integer.class, root.get("orderDate")),
+                        cb.greaterThanOrEqualTo(root.get("orderDate"), startDate),
+                        cb.lessThanOrEqualTo(root.get("orderDate"), endDate),
+                        cb.equal(root.get("status"), OrderStatus.CONFIRMED)
+                )).groupBy(
+                        cb.function("DAY", Integer.class, root.get("orderDate")),
                         cb.function("MONTH", Integer.class, root.get("orderDate")),
-                        cb.function("YEAR", Integer.class, root.get("orderDate")));
+                        cb.function("YEAR", Integer.class, root.get("orderDate")
+                        ));
         TypedQuery<Revenue> query = entityManager.createQuery(cq);
-        return query.getResultStream().findFirst().orElse(new Revenue(day,month, year, 0L));
+        return query.getResultList();
     }
 
 
     private LocalDateTime firstDayOfMonth(){
         LocalDateTime now = LocalDateTime.now();
         return now.withDayOfMonth(1);
+    }
+
+    private LocalDateTime firstDayOfChosenMonth(int month){
+        LocalDateTime chosen = LocalDateTime.now();
+        return chosen.minusMonths(month).withDayOfMonth(1);
     }
 
     private LocalDateTime firstDayOfLastMonth(){
@@ -99,6 +106,7 @@ public class StatisticService implements StatisticRepository {
         LocalDateTime now = LocalDateTime.now();
         return now.withDayOfMonth(1).minusDays(1);
     }
+
 
     @Override
     public List<Revenue> getRevenueByCurrentMonth() {
@@ -125,6 +133,39 @@ public class StatisticService implements StatisticRepository {
                 cb.function("MONTH", Integer.class, root.get("orderDate")),
                 cb.function("YEAR", Integer.class, root.get("orderDate")
         ));
+        TypedQuery<Revenue> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<Revenue> getRevenueByChosenMonth(int month) {
+CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Revenue> cq = cb.createQuery(Revenue.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                Revenue.class,
+                cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.sum(root.get("total")).alias("revenue")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        ),
+                        cb.equal(root.get("status"), OrderStatus.CONFIRMED)
+                )
+
+        ).groupBy(
+                cb.function("DAY", Integer.class, root.get("orderDate")),
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
         TypedQuery<Revenue> query = entityManager.createQuery(cq);
         return query.getResultList();
     }
@@ -162,7 +203,6 @@ public class StatisticService implements StatisticRepository {
         return query.getResultList();
     }
 
-
     @Override
     public OrderStatistic getOrderStatistic(Integer month, Integer year) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -184,7 +224,7 @@ public class StatisticService implements StatisticRepository {
     }
 
     @Override
-    public OrderStatistic getOrderStatisticByDate(Integer day, Integer month, Integer year) {
+    public List<OrderStatistic> getOrderStatisticByDate(LocalDate startDate, LocalDate endDate) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<OrderStatistic>  cq = cb.createQuery(OrderStatistic.class);
         Root<Order> root = cq.from(Order.class);
@@ -197,14 +237,15 @@ public class StatisticService implements StatisticRepository {
 
         ))
                 .where(cb.and(
-                        cb.equal(cb.function("DAY", Integer.class, root.get("orderDate")), day),
-                        cb.equal(cb.function("MONTH", Integer.class, root.get("orderDate")), month),
-                        cb.equal(cb.function("YEAR", Integer.class, root.get("orderDate")), year)))
-                .groupBy(cb.function("DAY", Integer.class, root.get("orderDate")),
+                        cb.greaterThanOrEqualTo(root.get("orderDate"), startDate),
+                        cb.lessThanOrEqualTo(root.get("orderDate"), endDate)
+                )).groupBy(
+                        cb.function("DAY", Integer.class, root.get("orderDate")),
                         cb.function("MONTH", Integer.class, root.get("orderDate")),
-                        cb.function("YEAR", Integer.class, root.get("orderDate")));
+                        cb.function("YEAR", Integer.class, root.get("orderDate")
+                        ));
         TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
-        return query.getResultStream().findFirst().orElse(new OrderStatistic(day,month, year, 0L));
+        return query.getResultList();
     }
 
     @Override
@@ -228,6 +269,36 @@ public class StatisticService implements StatisticRepository {
                 ));
         TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
         return query.getResultStream().findFirst().orElse(new OrderStatistic(null,null, null, 0L));
+    }
+
+    @Override
+    public List<OrderStatistic> getOrderStatisticByChosenMonth(int month) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
     }
 
     @Override
@@ -261,6 +332,43 @@ public class StatisticService implements StatisticRepository {
     }
 
     @Override
+    public List<OrderStatistic> getFailedOrderStatisticByDate(LocalDate startDate, LocalDate endDate) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("DAY", Integer.class, root.get("orderDate")).alias("day"),
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                startDate
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                endDate
+                        ),
+                        cb.or(
+                                cb.equal(root.get("status"), OrderStatus.CANCELED),
+                                cb.equal(root.get("status"), OrderStatus.FAILED)
+                        )
+                )
+
+        ).groupBy(
+                cb.function("DAY", Integer.class, root.get("orderDate")),
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+
+    @Override
     public OrderStatistic getFailedOrderStatisticByCurrentMonth() {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
@@ -288,6 +396,40 @@ public class StatisticService implements StatisticRepository {
                 ));
         TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
         return query.getResultStream().findFirst().orElse(new OrderStatistic(null,null, null, 0L));
+    }
+
+    @Override
+    public List<OrderStatistic> getFailedOrderStatisticByChosenMonth(int month) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderStatistic> cq = cb.createQuery(OrderStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderStatistic.class,
+                cb.function("MONTH", Integer.class, root.get("orderDate")).alias("month"),
+                cb.function("YEAR", Integer.class, root.get("orderDate")).alias("year"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        ),
+                        cb.or(
+                                cb.equal(root.get("status"), OrderStatus.CANCELED),
+                                cb.equal(root.get("status"), OrderStatus.FAILED)
+                        )
+                )
+
+        ).groupBy(
+                cb.function("MONTH", Integer.class, root.get("orderDate")),
+                cb.function("YEAR", Integer.class, root.get("orderDate")
+                ));
+        TypedQuery<OrderStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
     }
 
     @Override
@@ -359,6 +501,34 @@ public class StatisticService implements StatisticRepository {
                         cb.greaterThanOrEqualTo(
                                 root.get("orderDate"),
                                 firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                root.get("province")
+        );
+        TypedQuery<OrderLocationStatistic> query = entityManager.createQuery(cq).setMaxResults(6);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<OrderLocationStatistic> getOrderLocationStatisticByChosenMonth(int month) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OrderLocationStatistic> cq = cb.createQuery(OrderLocationStatistic.class);
+        Root<Order> root = cq.from(Order.class);
+        cq.select(cb.construct(
+                OrderLocationStatistic.class,
+                root.get("province").alias("province"),
+                cb.count(root.get("orderCode")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
                         ),
                         cb.lessThanOrEqualTo(
                                 root.get("orderDate"),
@@ -469,6 +639,37 @@ public class StatisticService implements StatisticRepository {
     }
 
     @Override
+    public List<CategoryStatistic> getCategoryStatisticByChosenMonth(int month) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<CategoryStatistic> cq = cb.createQuery(CategoryStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Category> c = p.join("category");
+        cq.select(cb.construct(
+                CategoryStatistic.class,
+                c.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                c.get("name")
+        );
+        TypedQuery<CategoryStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
     public List<FlavorStatistic> getFlavorStatisticByCurrentMonth() {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<FlavorStatistic> cq = cb.createQuery(FlavorStatistic.class);
@@ -509,6 +710,37 @@ public class StatisticService implements StatisticRepository {
                         cb.greaterThanOrEqualTo(
                                 root.get("orderDate"),
                                 firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                f.get("name")
+        );
+        TypedQuery<FlavorStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<FlavorStatistic> getFlavorStatisticByChosenMonth(int month) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<FlavorStatistic> cq = cb.createQuery(FlavorStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Flavor> f = p.join("flavor");
+        cq.select(cb.construct(
+                FlavorStatistic.class,
+                f.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
                         ),
                         cb.lessThanOrEqualTo(
                                 root.get("orderDate"),
@@ -579,6 +811,37 @@ public class StatisticService implements StatisticRepository {
     }
 
     @Override
+    public List<BrandStatistic> getBrandStatisticByChosenMonth(int month) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BrandStatistic> cq = cb.createQuery(BrandStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, Brand> b = p.join("brand");
+        cq.select(cb.construct(
+                BrandStatistic.class,
+                b.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                b.get("name")
+        );
+        TypedQuery<BrandStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
     public List<OriginStatistic> getOriginStatisticByCurrentMonth() {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<OriginStatistic> cq = cb.createQuery(OriginStatistic.class);
@@ -621,6 +884,39 @@ public class StatisticService implements StatisticRepository {
                         cb.greaterThanOrEqualTo(
                                 root.get("orderDate"),
                                 firstDayOfLastMonth()
+                        ),
+                        cb.lessThanOrEqualTo(
+                                root.get("orderDate"),
+                                lastDayOfPreviousMonth()
+                        )
+                )
+
+        ).groupBy(
+                po.get("name")
+        ).orderBy(
+                cb.desc(cb.count(root.get("id")))
+        );
+        TypedQuery<OriginStatistic> query = entityManager.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<OriginStatistic> getOriginStatisticByChosenMonth(int month) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<OriginStatistic> cq = cb.createQuery(OriginStatistic.class);
+        Root<OrderDetail> root = cq.from(OrderDetail.class);
+        Join<OrderDetail, ProductDetail> pd = root.join("productDetail");
+        Join<ProductDetail, Product> p = pd.join("product");
+        Join<Product, ProductOrigin> po = p.join("origin");
+        cq.select(cb.construct(
+                OriginStatistic.class,
+                po.get("name").alias("name"),
+                cb.count(root.get("id")).alias("count")
+        )).where(
+                cb.and(
+                        cb.greaterThanOrEqualTo(
+                                root.get("orderDate"),
+                                firstDayOfChosenMonth(month)
                         ),
                         cb.lessThanOrEqualTo(
                                 root.get("orderDate"),
