@@ -42,8 +42,8 @@ import java.util.UUID;
 @Slf4j
 public class MomoService {
     private final String MOMO_API = "https://test-payment.momo.vn/v2/gateway/api";
-    private final String RETURN_URL = "https://filtrocoffee.com/payment/momo";
-    private final String IPN_API = "https://filtrocoffee.com/springboot";
+    private final String RETURN_URL = "http://localhost:4200/payment/momo"; //https://filtrocoffee.com/payment/momo
+    private final String IPN_API = "https://yourdomain.com"; //https://filtrocoffee.com/springboot
     private final Environment env;
     private final OrderDetailService orderDetailService;
     private final CartService cartService;

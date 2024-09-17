@@ -47,7 +47,7 @@ public class VNPayService {
     private final CartService cartService;
     private final ProductService productService;
     private final ProductDetailService productDetailService;
-    private final String RETURN_URL = "https://filtrocoffee.com/payment/vnpay";
+    private final String RETURN_URL = "http://localhost:4200/payment/vnpay"; //"https://filtrocoffee.com/payment/vnpay"
     private final String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
     public VNPResponse createVNPayOrder(OrderDto orderDto, HttpServletRequest req){
