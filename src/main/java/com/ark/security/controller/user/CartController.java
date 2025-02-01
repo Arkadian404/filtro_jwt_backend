@@ -1,98 +1,63 @@
 package com.ark.security.controller.user;
 
-import com.ark.security.auth.AuthenticationService;
-import com.ark.security.dto.CartItemDto;
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.Cart;
-import com.ark.security.models.user.User;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.CartItemRequest;
+import com.ark.security.dto.response.CartItemResponse;
+import com.ark.security.dto.response.CartResponse;
 import com.ark.security.service.CartItemService;
 import com.ark.security.service.CartService;
-import com.ark.security.service.product.ProductImageService;
-import com.ark.security.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.Date;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/user/cart")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'EMPLOYEE')")
 @SecurityRequirement(name = "BearerAuth")
 public class CartController {
-    private final CartItemService cartItemService;
+    private final CartService cartTestService;
+    private final CartItemService cartItemTestService;
 
-    private final CartService cartService;
-
-    private final UserService userService;
-
-    private final AuthenticationService authenticationService;
-
-    @GetMapping("/get/{username}")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
-    public ResponseEntity<?> getCart(@PathVariable String username){
-        Cart cart;
-        User user = userService.getByUsername(username);
-        cart = cartService.getCartByUsername(user.getUsername());
-        if(cart == null || !cartService.checkActiveCart(user.getId())){
-            cart= cartService.createCart(user);
-        }
-        return ResponseEntity.ok(cart.convertToDto());
-    }
-
-    @GetMapping("/{cartId}/getCartItems")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
-    public ResponseEntity<?> getCartItems(@PathVariable int cartId){
-        return ResponseEntity.ok(cartItemService.getCartItemsByCartId(cartId));
-    }
-
-    @PostMapping("/saveCartItem")
-    @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create', 'user:create')")
-    public ResponseEntity<?> saveCartItem(@Valid @RequestBody CartItemDto cartItemDto,
-                                            HttpServletRequest request,
-                                            HttpServletResponse response){
-        User user = authenticationService.getCurrentUser(request, response);
-        cartItemService.addCartItemToCart(cartItemDto, user);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Đã thêm sản phẩm vào giỏ hàng")
-                .timestamp(new Date())
+    @GetMapping("/myCart")
+    public ApiResponse<CartResponse> getUserCart(){
+        return ApiResponse.<CartResponse>builder()
+                .result(cartTestService.getCurrentUserCart())
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @PutMapping("/update/cart/items/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update', 'user:update')")
-    public ResponseEntity<?> updateCartItem(@PathVariable int id,
-                                            @RequestBody int amount,
-                                            HttpServletRequest request,
-                                            HttpServletResponse response){
-        User user = authenticationService.getCurrentUser(request, response);
-        cartItemService.updateCartItemQuantity(id, user, amount);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Cập nhật số lượng sản phẩm thành công")
-                .timestamp(new Date())
+    @GetMapping("/{id}/items")
+    public ApiResponse<List<CartItemResponse>> getCartItemByCartId(@PathVariable int id){
+        return ApiResponse.<List<CartItemResponse>>builder()
+                .result(cartItemTestService.getCartItemsByCartId(id))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-
-    @DeleteMapping("/delete/cart/items/{cartItemID}")
-    @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete', 'user:delete')")
-    public ResponseEntity<?> delete(@PathVariable int cartItemID){
-        cartItemService.deleteCartItem(cartItemID);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Xóa sản phẩm thành công")
-                .timestamp(new Date())
+    @PostMapping("/add")
+    public ApiResponse<String> addCartItem(@RequestBody CartItemRequest request){
+        cartItemTestService.addCartItemToCart(request);
+        return ApiResponse.<String>builder()
+                .result("Add cart item successfully")
                 .build();
-        return ResponseEntity.ok(success);
+    }
+
+    @PutMapping("/items/{id}")
+    public ApiResponse<String> updateCartItemQuantity(@PathVariable int id, @RequestBody int amount){
+        cartItemTestService.updateCartItemQuantity(id, amount);
+        return ApiResponse.<String>builder()
+                .result("Update cart item quantity successfully")
+                .build();
+    }
+
+    @DeleteMapping("/items/{id}")
+    public ApiResponse<String> deleteCartItem(@PathVariable int id){
+        cartItemTestService.deleteCartItem(id);
+        return ApiResponse.<String>builder()
+                .result("Delete cart item successfully")
+                .build();
     }
 
 

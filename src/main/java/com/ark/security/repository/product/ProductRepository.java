@@ -60,8 +60,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 """)
     Optional<List<Product>> findAllByFlavorId(int id);
 
-    Optional<List<Product>> findAllBySaleId(int id);
-
     //MYSQL QUERY
     @Query(value = "select * from product as p where p.flavor_id in (select f.id from flavor as f where f.status = true ) " +
             "and p.category_id in (select c.id from category as c where c.status = true) " +

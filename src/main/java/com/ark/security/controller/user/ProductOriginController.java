@@ -1,36 +1,63 @@
 package com.ark.security.controller.user;
 
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.ProductOriginRequest;
+import com.ark.security.dto.response.ProductOriginResponse;
 import com.ark.security.service.product.ProductOriginService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user/product-origin")
 @RequiredArgsConstructor
 public class ProductOriginController {
+    private final ProductOriginService productOriginTestService;
 
-    private final ProductOriginService productOriginService;
-
-    @GetMapping("/getList")
-    public ResponseEntity<?> getAllProductOrigin(){
-        return ResponseEntity.ok(productOriginService.getAllProductOriginDto());
+    @GetMapping
+    public ApiResponse<List<ProductOriginResponse>> getAll(){
+        return ApiResponse.<List<ProductOriginResponse>>builder()
+                .result(productOriginTestService.getAllProductOrigins())
+                .build();
     }
 
-    @GetMapping("/getListByContinent/{continent}")
-    public ResponseEntity<?> getProductOriginByContinent(@PathVariable String continent){
-        return ResponseEntity.ok(productOriginService.getProductOriginDtoByContinent(continent));
+    @GetMapping("/{id}")
+    public ApiResponse<ProductOriginResponse> getById(@PathVariable int id){
+        return ApiResponse.<ProductOriginResponse>builder()
+                .result(productOriginTestService.getProductOriginById(id))
+                .build();
     }
 
 
+    @GetMapping("/continent/{name}")
+    public ApiResponse<List<ProductOriginResponse>> getByContinent(@PathVariable String name){
+        return ApiResponse.<List<ProductOriginResponse>>builder()
+                .result(productOriginTestService.getByContinent(name))
+                .build();
+    }
 
+    @PostMapping
+    public ApiResponse<ProductOriginResponse> create(@RequestBody @Valid ProductOriginRequest request){
+        return ApiResponse.<ProductOriginResponse>builder()
+                .result(productOriginTestService.createProductOrigin(request))
+                .build();
+    }
 
-    @GetMapping("/find/{id}")
-    public ResponseEntity<?> find(@PathVariable int id){
-        return ResponseEntity.ok(productOriginService.getProductOriginById(id));
+    @PutMapping("/{id}")
+    public ApiResponse<ProductOriginResponse> update(@PathVariable int id, @RequestBody @Valid ProductOriginRequest request){
+        return ApiResponse.<ProductOriginResponse>builder()
+                .result(productOriginTestService.updateProductOrigin(id, request))
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> delete(@PathVariable int id){
+        productOriginTestService.deleteProductOrigin(id);
+        return ApiResponse.<String>builder()
+                .result("Product Origin deleted successfully")
+                .build();
     }
 
 }   

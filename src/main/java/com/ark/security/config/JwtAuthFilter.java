@@ -1,6 +1,10 @@
 package com.ark.security.config;
 
+import com.ark.security.auth.LogoutService;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.exception.ErrorCode;
 import com.ark.security.service.user.TokenService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -10,8 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,42 +26,34 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final TokenService tokenService;
+    private final LogoutService logoutService;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-//        final String authHeader = request.getHeader(AUTHORIZATION);
-//        String jwt = null;
-//        String username = null;
-//        if(authHeader != null && authHeader.startsWith("Bearer ")){
-//            jwt = authHeader.substring(7);
-//            try{
-//                username = jwtService.extractUsername(jwt);
-//            }catch (IllegalArgumentException ex){
-//                System.out.println("Unable to get JWT Token");
-//            }catch (ExpiredJwtException ex){
-//                System.out.println("JWT Token has expired");
-//            }catch(MalformedJwtException ex){
-//                System.out.println("JWT Token has been tampered");
-//            }catch(SignatureException ex){
-//                System.out.println("JWT Signature does not match locally computed signature");
-//            }
-//        }else{
-//            logger.warn("JWT Token does not begin with Bearer String");
-//
-//        }
-
+        log.info(request.getServletPath());
         try{
-            String jwt = parseJwt(request);
+            String jwt =parseJwt(request);
+            if(logoutService.isTokenBlacklisted(jwt)){
+                ObjectMapper objectMapper = new ObjectMapper();
+                ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                ApiResponse<?> api = ApiResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build();
+                response.getWriter().write(objectMapper.writeValueAsString(api));
+                response.flushBuffer();
+            }
             String username = jwtService.extractUsername(jwt);
             if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);

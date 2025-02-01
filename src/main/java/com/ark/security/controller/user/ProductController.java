@@ -1,269 +1,246 @@
 package com.ark.security.controller.user;
 
-import com.ark.security.dto.ProductDto;
-import com.ark.security.models.product.Product;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.PageResponse;
+import com.ark.security.dto.ProductFilterRequest;
+import com.ark.security.dto.request.ProductRequest;
+import com.ark.security.dto.response.ProductResponse;
 import com.ark.security.service.product.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/user/product")
 @RequiredArgsConstructor
 public class ProductController {
-    private final ProductService productService;
-    @Value("${spring.fast-api.url}")
-    private String testString;
+    private final ProductService productTestService;
 
-
-    @GetMapping("/getList")
-    public ResponseEntity<?> getProductList(){
-        List<ProductDto> productList = productService.getAllProductsDto();
-        return ResponseEntity.ok(productList);
+    @GetMapping
+    public ApiResponse<List<ProductResponse>> getAll(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getAllProducts())
+                .build();
     }
 
-    @GetMapping("/get/{slug}")
-    public ResponseEntity<?> getProductBySlug(@PathVariable String  slug){
-        ProductDto product = productService.getProductDtoBySlug(slug);
-        return ResponseEntity.ok(product);
-    }
-
-    @GetMapping("/get/all")
-    public ResponseEntity<List<ProductDto>> getAllProducts(){
-        List<ProductDto> productList = productService.getProductDtoList();
-        return ResponseEntity.ok(productList);
-    }
-
-
-    @GetMapping("/all")
-    public ResponseEntity<?> getList(@RequestParam Optional<Integer> page,
-                                     @RequestParam Optional<String> sort,
-                                     @RequestParam Optional<String> flavor,
-                                     @RequestParam Optional<String> category,
-                                     @RequestParam Optional<String> brand,
-                                     @RequestParam Optional<String> origin,
-                                     @RequestParam Optional<String> vendor
-                                     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoPaging(page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
-    }
-
-
-    @GetMapping("/byInstantCoffee")
-    public ResponseEntity<?> getInstantCoffee(@RequestParam Optional<Integer> page,
-                                     @RequestParam Optional<String> sort,
-                                     @RequestParam Optional<String> flavor,
-                                     @RequestParam Optional<String> category,
-                                     @RequestParam Optional<String> brand,
-                                     @RequestParam Optional<String> origin,
-                                     @RequestParam Optional<String> vendor
+    @GetMapping("/page/all")
+    public ApiResponse<PageResponse<ProductResponse>> getAllPaging(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(1,
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getProductsPaging(page, request))
+                .build();
     }
 
-    @GetMapping("/byRoastedBeanCoffee")
-    public ResponseEntity<?> getRoastedBeanCoffee(@RequestParam Optional<Integer> page,
-                                              @RequestParam Optional<String> sort,
-                                              @RequestParam Optional<String> flavor,
-                                              @RequestParam Optional<String> category,
-                                              @RequestParam Optional<String> brand,
-                                              @RequestParam Optional<String> origin,
-                                              @RequestParam Optional<String> vendor
+    @GetMapping("/slug/{slug}")
+    public ApiResponse<ProductResponse> getBySlug(@PathVariable String slug){
+        return ApiResponse.<ProductResponse>builder()
+                .result(productTestService.getProductBySlug(slug))
+                .build();
+    }
+
+    @GetMapping("/page/instantCoffee")
+    public ApiResponse<PageResponse<ProductResponse>> getInstantCoffee(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(2,
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getInstantCoffeePaging(page, request))
+                .build();
     }
 
-    @GetMapping("/byCoffeeBall")
-    public ResponseEntity<?> getCoffeeBall(@RequestParam Optional<Integer> page,
-                                              @RequestParam Optional<String> sort,
-                                              @RequestParam Optional<String> flavor,
-                                              @RequestParam Optional<String> category,
-                                              @RequestParam Optional<String> brand,
-                                              @RequestParam Optional<String> origin,
-                                              @RequestParam Optional<String> vendor
+    @GetMapping("/page/roastedBeanCoffee")
+    public ApiResponse<PageResponse<ProductResponse>> getRoastedCoffee(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(3,
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getRoastedBeanCoffeePaging(page, request))
+                .build();
     }
 
-    @GetMapping("/byBottledCoffee")
-    public ResponseEntity<?> getBottledCoffee(@RequestParam Optional<Integer> page,
-                                              @RequestParam Optional<String> sort,
-                                              @RequestParam Optional<String> flavor,
-                                              @RequestParam Optional<String> category,
-                                              @RequestParam Optional<String> brand,
-                                              @RequestParam Optional<String> origin,
-                                              @RequestParam Optional<String> vendor
+    @GetMapping("/page/coffeeBall")
+    public ApiResponse<PageResponse<ProductResponse>> getCoffeeBall(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByCategoryPaging(4,
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getCoffeeBallPaging(page, request))
+                .build();
     }
 
-    @GetMapping("/byIsSpecial")
-    public ResponseEntity<?> getByIsSpecial(@RequestParam Optional<Integer> page,
-                                              @RequestParam Optional<String> sort,
-                                              @RequestParam Optional<String> flavor,
-                                              @RequestParam Optional<String> category,
-                                              @RequestParam Optional<String> brand,
-                                              @RequestParam Optional<String> origin,
-                                              @RequestParam Optional<String> vendor
+    @GetMapping("/page/bottledCoffee")
+    public ApiResponse<PageResponse<ProductResponse>> getBottledCoffee(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByIsSpecialPaging(true,
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getBottledCoffeePaging(page, request))
+                .build();
     }
 
-    @GetMapping("/byIsLimited")
-    public ResponseEntity<?> getByIsLimited(@RequestParam Optional<Integer> page,
-                                            @RequestParam Optional<String> sort,
-                                            @RequestParam Optional<String> flavor,
-                                            @RequestParam Optional<String> category,
-                                            @RequestParam Optional<String> brand,
-                                            @RequestParam Optional<String> origin,
-                                            @RequestParam Optional<String> vendor
+    @GetMapping("/page/special")
+    public ApiResponse<PageResponse<ProductResponse>> getSpecial(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByIsLimitedPaging(true,
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getProductsPagingBySpecial(page, request))
+                .build();
     }
 
-    @GetMapping("/byContinent/{name}")
-    public ResponseEntity<?> getByContinent(@PathVariable String name,
-                                            @RequestParam Optional<Integer> page,
-                                            @RequestParam Optional<String> sort,
-                                            @RequestParam Optional<String> flavor,
-                                            @RequestParam Optional<String> category,
-                                            @RequestParam Optional<String> brand,
-                                            @RequestParam Optional<String> origin,
-                                            @RequestParam Optional<String> vendor
+    @GetMapping("/page/limited")
+    public ApiResponse<PageResponse<ProductResponse>> getLimited(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByOriginContinentPaging(name,
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getProductsPagingByLimited(page, request))
+                .build();
     }
 
-    @GetMapping("/bestSeller")
-    public ResponseEntity<?> getBestSeller(@RequestParam Optional<Integer> page,
-                                            @RequestParam Optional<String> sort,
-                                            @RequestParam Optional<String> flavor,
-                                            @RequestParam Optional<String> category,
-                                            @RequestParam Optional<String> brand,
-                                            @RequestParam Optional<String> origin,
-                                            @RequestParam Optional<String> vendor
+    @GetMapping("/page/continent/{name}")
+    public ApiResponse<PageResponse<ProductResponse>> getByContinent(
+            @PathVariable String name,
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
     ){
-        Page<ProductDto> productList = productService.getAllProductsDtoByBestSellerPaging(
-                page.orElse(0), sort.orElse(""), flavor.orElse(""), category.orElse(""),
-                brand.orElse(""), origin.orElse(""), vendor.orElse(""));
-        return ResponseEntity.ok(productList);
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getProductsPagingByContinent(name, page, request))
+                .build();
     }
 
-    @GetMapping("/find/{id}")
-    public ResponseEntity<?> find(@PathVariable int id){
-        Product product = productService.getProductById(id);
-        return ResponseEntity.ok(product);
+    @GetMapping("/page/bestSeller")
+    public ApiResponse<PageResponse<ProductResponse>> getBestSeller(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            ProductFilterRequest request
+    ){
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productTestService.getProductsPagingByBestSeller(page, request))
+                .build();
     }
 
-    @GetMapping("/find/dto/{id}")
-    public ResponseEntity<?> findDto(@PathVariable int id){
-        ProductDto product = productService.getProductDtoById(id);
-        return ResponseEntity.ok(product);
+    @GetMapping("/category/{id}")
+    public ApiResponse<List<ProductResponse>> getByCategory(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getProductsByCategory(id))
+                .build();
     }
 
-    @GetMapping("/getListByCategory/{id}")
-    public ResponseEntity<?> getListByCategory(@PathVariable int id){
-        return ResponseEntity.ok(productService.getAllProductsByCategory(id));
+    @GetMapping("/flavor/{id}")
+    public ApiResponse<List<ProductResponse>> getByFlavor(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getProductsByFlavor(id))
+                .build();
     }
 
-    @GetMapping("/getListByOrigin/{id}")
-    public ResponseEntity<?> getListByOrigin(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsByOrigin(id));
+    @GetMapping("/origin/{id}")
+    public ApiResponse<List<ProductResponse>> getByOrigin(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getProductsByOrigin(id))
+                .build();
     }
 
-
-    @GetMapping("/getListByFlavor/{id}")
-    public ResponseEntity<?> getListByFlavor(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsByFlavor(id));
+    @GetMapping("/special")
+    public ApiResponse<List<ProductResponse>> getSpecial(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getSpecialProducts())
+                .build();
     }
 
-    @GetMapping("/getListByIsSpecial")
-    public ResponseEntity<?> getListByIsSpecial(){
-        return ResponseEntity.ok(productService.getProductsByIsSpecial(true));
+    @GetMapping("/limited")
+    public ApiResponse<List<ProductResponse>> getLimited(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getLimitedProducts())
+                .build();
     }
 
-    @GetMapping("/getListByIsLimited")
-    public ResponseEntity<?> getListByIsLimited(){
-        return ResponseEntity.ok(productService.getProductsByIsLimited(true));
+    @GetMapping("/vendor/{id}")
+    public ApiResponse<List<ProductResponse>> getByVendor(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getProductsByVendor(id))
+                .build();
     }
 
-    @GetMapping("/getListByVendor/{id}")
-    public ResponseEntity<?> getListByVendor(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsByVendor(id));
+    @GetMapping("/top/3LatestProducts")
+    public ApiResponse<List<ProductResponse>> getTop3LatestProducts(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getTop3LatestProducts())
+                .build();
     }
 
-    @GetMapping("/getListBySale/{id}")
-    public ResponseEntity<?> getListBySale(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsBySale(id));
+    @GetMapping("/top/3BestSeller")
+    public ApiResponse<List<ProductResponse>> getTop3BestSeller(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getTop3BestSellerProducts())
+                .build();
     }
 
-
-    @GetMapping("/getTop3LatestProducts")
-    public ResponseEntity<?> getTop3Latest(){
-        return ResponseEntity.ok(productService.getTop3LatestProducts());
+    @GetMapping("/top/3Special")
+    public ApiResponse<List<ProductResponse>> getTop3Special(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getTop3SpecialProducts())
+                .build();
     }
 
-    @GetMapping("/getTop3BestSellerProducts")
-    public ResponseEntity<?> getTop3BestSeller(){
-        return ResponseEntity.ok(productService.getTop3BestSellerProducts());
+    @GetMapping("/top/10Colombia")
+    public ApiResponse<List<ProductResponse>> getTop10Colombia(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getColombiaTop10Products())
+                .build();
     }
 
-
-    @GetMapping("/getTop3SpecialProducts")
-    public ResponseEntity<?> getTop3Special(){
-        return ResponseEntity.ok(productService.getTop3SpecialProducts());
+    @GetMapping("/top/10RoastedBean")
+    public ApiResponse<List<ProductResponse>> getTop10RoastedBean(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getRoastedBeanTop10Products())
+                .build();
     }
 
-
-    @GetMapping("/getTop10ProductsInColombia")
-    public ResponseEntity<?> getTop10ProductsInColombia(){
-        System.out.println(testString);
-        return ResponseEntity.ok(productService.getTop10ProductsInColombia());
+    @GetMapping("/top/10BottledCoffee")
+    public ApiResponse<List<ProductResponse>> getTop10BottledCoffee(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getBottledCoffeeTop10Products())
+                .build();
     }
 
-
-    @GetMapping("/getTop10ProductsByRoastedCoffeeBeans")
-    public ResponseEntity<?> getTop10ProductsByRoastedCoffeeBeans(){
-        return ResponseEntity.ok(productService.getTop10ProductsByRoastedCoffeeBeans());
+    @GetMapping("{id}/related/{flavorId}")
+    public ApiResponse<List<ProductResponse>> getRelatedProducts(@PathVariable int id, @PathVariable int flavorId){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getTop10RelatedProductsByFlavor(id, flavorId))
+                .build();
     }
 
-
-    @GetMapping("/getTop10ProductsByBottledCoffee")
-    public ResponseEntity<?> getTop10ProductsByBottledCoffee(){
-        return ResponseEntity.ok(productService.getTop10ProductsByBottledCoffee());
+    @GetMapping("/{id}")
+    public ApiResponse<ProductResponse> getById(@PathVariable int id){
+        return ApiResponse.<ProductResponse>builder()
+                .result(productTestService.getProductById(id))
+                .build();
     }
 
+    @PostMapping
+    public ApiResponse<ProductResponse> create(@RequestBody @Valid ProductRequest request){
+        return ApiResponse.<ProductResponse>builder()
+                .result(productTestService.createProduct(request))
+                .build();
+    }
 
-    @GetMapping("/{id}/related/{flavorId}")
-    public ResponseEntity<?> getTop10RelatedProducts(@PathVariable int id, @PathVariable int flavorId){
-        return ResponseEntity.ok(productService.getTop10RelatedProductsByFlavor(id, flavorId));
+    @PutMapping("/{id}")
+    public ApiResponse<ProductResponse> update(@PathVariable int id, @RequestBody @Valid ProductRequest request){
+        return ApiResponse.<ProductResponse>builder()
+                .result(productTestService.updateProduct(id, request))
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> delete(@PathVariable int id){
+        productTestService.deleteProduct(id);
+        return ApiResponse.<String>builder()
+                .result("Product deleted successfully")
+                .build();
     }
 
 }

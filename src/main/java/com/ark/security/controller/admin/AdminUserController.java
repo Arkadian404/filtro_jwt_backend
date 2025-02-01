@@ -1,18 +1,15 @@
 package com.ark.security.controller.admin;
 
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.user.Role;
-import com.ark.security.models.user.User;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.UserRequest;
+import com.ark.security.dto.response.UserResponse;
 import com.ark.security.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -24,70 +21,60 @@ import java.util.Map;
 public class AdminUserController {
     private final UserService userService;
 
-    @GetMapping("/getList")
+    @GetMapping
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getList(){
-        List<User> users = userService.getUsersByRole(Role.USER);
-        return ResponseEntity.ok(users);
+    public ApiResponse<List<UserResponse>> getList(){
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(userService.getAllUsers())
+                .build();
     }
 
-    @GetMapping("/find/{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> find(@PathVariable int id){
-        User user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+    public ApiResponse<UserResponse> find(@PathVariable int id){
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getUserById(id))
+                .build();
     }
 
-    @PostMapping("/create")
+    @PostMapping
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@Valid @RequestBody User user){
-        userService.saveUser(user);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<UserResponse> create(@Valid @RequestBody UserRequest user){
+        return ApiResponse.<UserResponse>builder()
                 .message("Tạo tài khoản thành công")
-                .timestamp(new Date())
+                .result(userService.createUser(user))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id,
-                                    @Valid @RequestBody User user){
-        userService.updateUser(id, user);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<UserResponse> update(@PathVariable int id,
+                                    @Valid @RequestBody UserRequest user){
+        return ApiResponse.<UserResponse>builder()
                 .message("Cập nhật tài khoản thành công")
-                .timestamp(new Date())
+                .result(userService.updateUser(id, user))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin:delete')")
-    public ResponseEntity<?> delete(@PathVariable int id){
+    public ApiResponse<String > delete(@PathVariable int id){
         userService.deleteUser(id);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+        return ApiResponse.<String >builder()
                 .message("Xóa tài khoản thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok(success);
     }
 
     @PostMapping("/change-password/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> changePassword(
+    public ApiResponse<String> changePassword(
             @PathVariable int id,
             @Valid @RequestBody Map<String, String> body
             ){
         userService.changePassword(id, body.get("oldPassword"), body.get("newPassword"));
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+        return ApiResponse.<String>builder()
                 .message("Đổi mật khẩu thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok(success);
     }
 
 }

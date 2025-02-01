@@ -1,8 +1,10 @@
 package com.ark.security.service.product;
 
-import com.ark.security.dto.VendorDto;
-import com.ark.security.exception.DuplicateException;
-import com.ark.security.exception.NotFoundException;
+import com.ark.security.dto.request.VendorRequest;
+import com.ark.security.dto.response.VendorResponse;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
+import com.ark.security.mapper.VendorMapper;
 import com.ark.security.models.product.Vendor;
 import com.ark.security.repository.product.VendorRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,52 +16,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VendorService {
     private final VendorRepository vendorRepository;
-    private final String NOT_FOUND = "Không tìm thấy nhà cung cấp: ";
-    private final String EMPTY = "Không có nhà cung cấp nào";
+    private final VendorMapper vendorMapper;
 
-    public void saveVendor(Vendor vendor){
-        if (vendorRepository.existsVendorByName(vendor.getName()))
-            throw new DuplicateException("Nhà cung cấp đã tồn tại");
-        vendorRepository.save(vendor);
-    }
-
-    public List<Vendor> getAllVendor(){
-        if(vendorRepository.findAll().isEmpty()) {
-            throw new NotFoundException(EMPTY);
-        }
-        return vendorRepository.findAll();
-    }
-
-    public List<VendorDto> getAllVendorDto() {
-        List<VendorDto> vendors = vendorRepository.findAll()
+    public List<VendorResponse> getAllVendors() {
+        return vendorRepository.findAll()
                 .stream()
-                .map(Vendor::convertToDto)
+                .map(vendorMapper::toVendorResponse)
                 .toList();
-        if(vendors.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return vendors;
     }
 
-    public Vendor getVendorById(int id){
-        return vendorRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
+    public VendorResponse getVendorById(int id) {
+        return vendorMapper.toVendorResponse(
+                vendorRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.VENDOR_NOT_FOUND))
+        );
     }
 
-    public void updateVendor(int id, Vendor vendor){
-        Vendor vendorUpdate = getVendorById(id);
-        vendorUpdate.setName(vendor.getName());
-        vendorUpdate.setAddress(vendor.getAddress());
-        vendorUpdate.setPhone(vendor.getPhone());
-        vendorUpdate.setEmail(vendor.getEmail());
-        vendorUpdate.setDescription(vendor.getDescription());
-        vendorUpdate.setStatus(vendor.getStatus());
-        vendorRepository.save(vendorUpdate);
+    public VendorResponse createVendor(VendorRequest request) {
+        Vendor vendor = vendorMapper.toVendor(request);
+        return vendorMapper.toVendorResponse(vendorRepository.save(vendor));
     }
 
-    public void deleteVendor(int id){
-        if(!vendorRepository.existsById(id))
-            throw new NotFoundException(NOT_FOUND+ id);
-        vendorRepository.deleteById(id);
+    public VendorResponse updateVendor(int id, VendorRequest request) {
+        Vendor vendor = vendorRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.VENDOR_NOT_FOUND));
+        vendorMapper.updateVendor(vendor, request);
+        return vendorMapper.toVendorResponse(vendorRepository.save(vendor));
+    }
+
+    public void deleteVendor(int id) {
+        Vendor vendor = vendorRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.VENDOR_NOT_FOUND));
+        vendorRepository.delete(vendor);
     }
 
 }

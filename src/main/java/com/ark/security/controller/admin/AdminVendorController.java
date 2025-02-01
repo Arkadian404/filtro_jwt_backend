@@ -1,17 +1,16 @@
 package com.ark.security.controller.admin;
 
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.product.Vendor;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.VendorRequest;
+import com.ark.security.dto.response.VendorResponse;
 import com.ark.security.service.product.VendorService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.List;
 
 
 @RestController
@@ -22,51 +21,46 @@ import java.util.Date;
 public class AdminVendorController {
     private final VendorService vendorService;
 
-    @GetMapping("/getList")
+    @GetMapping
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getAllVendor(){
-        return ResponseEntity.ok(vendorService.getAllVendor());
+    public ApiResponse<List<VendorResponse>> getAllVendor(){
+        return ApiResponse.<List<VendorResponse>>builder()
+                .result(vendorService.getAllVendors())
+                .build();
     }
 
-    @GetMapping("/find/{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> find(@PathVariable int id){
-        return ResponseEntity.ok(vendorService.getVendorById(id));
+    public ApiResponse<VendorResponse> find(@PathVariable int id){
+        return ApiResponse.<VendorResponse>builder()
+                .result(vendorService.getVendorById(id))
+                .build();
     }
 
-    @PostMapping("/create")
+    @PostMapping
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@Valid @RequestBody Vendor vendor){
-        vendorService.saveVendor(vendor);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<VendorResponse> create(@Valid @RequestBody VendorRequest vendor){
+        return ApiResponse.<VendorResponse>builder()
                 .message("Tạo nhà cung cấp thành công")
-                .timestamp(new Date())
+                .result(vendorService.createVendor(vendor))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody Vendor vendor){
-        vendorService.updateVendor(id, vendor);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<VendorResponse> update(@PathVariable int id, @Valid @RequestBody VendorRequest vendor){
+        return ApiResponse.<VendorResponse>builder()
                 .message("Cập nhật nhà cung cấp thành công")
-                .timestamp(new Date())
+                .result(vendorService.updateVendor(id, vendor))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
-    public ResponseEntity<?> delete(@PathVariable int id){
+    public ApiResponse<String> delete(@PathVariable int id){
         vendorService.deleteVendor(id);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+        return ApiResponse.<String>builder()
                 .message("Xóa nhà cung cấp thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok(success);
     }
 }

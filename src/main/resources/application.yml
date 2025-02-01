@@ -20,6 +20,17 @@ spring:
     time-zone: Asia/Ho_Chi_Minh
   fast-api:
     url: http://${FASTAPI_URL:localhost}:8000
+  jpa:
+#    hibernate:
+#      ddl-auto: update
+    show-sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 16379
+      database: 0
+
+
 
 
 application:
@@ -36,5 +47,7 @@ application:
       partner-code: MOMOLRJZ20181206
       secret-key: SetA5RDnLHvt51AULf51DyauxUo3kDU6
     vnpay:
-      vnp_TmnCode: ZF769ZRJ
-      vnp_HashSecret: ND5W6RV8BWDVW0RQ65FRQ58E3OBPGKEG
+#      vnp_TmnCode: ZF769ZRJ
+#      vnp_HashSecret: ND5W6RV8BWDVW0RQ65FRQ58E3OBPGKEG
+      vnp_TmnCode: ZR6JX760
+      vnp_HashSecret: Q5W93OC0WHLR5N47OJ8A7KLJ8IYV5TLE

@@ -1,14 +1,12 @@
 package com.ark.security.controller.user;
 
-import com.ark.security.dto.FlavorDto;
-import com.ark.security.models.product.Flavor;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.FlavorRequest;
+import com.ark.security.dto.response.FlavorResponse;
 import com.ark.security.service.product.FlavorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,18 +14,47 @@ import java.util.List;
 @RequestMapping("/api/v1/user/flavor")
 @RequiredArgsConstructor
 public class FlavorController {
-    private final FlavorService flavorService;
+    private final FlavorService flavorTestService;
 
-    @GetMapping("/getList")
-    public ResponseEntity<?> getFlavorList(){
-        List<FlavorDto> flavors = flavorService.getAllFlavorsDto();
-        return ResponseEntity.ok(flavors);
 
+    @GetMapping
+    public ApiResponse<List<FlavorResponse>> getAllFlavors(){
+        return ApiResponse.<List<FlavorResponse>>builder()
+                .message("Get all flavors successfully")
+                .result(flavorTestService.getAllFlavors())
+                .build();
     }
 
-    @GetMapping("/find/{id}")
-    public ResponseEntity<?> find(@PathVariable int id){
-        Flavor flavor = flavorService.getFlavorById(id);
-        return ResponseEntity.ok(flavor);
+    @GetMapping("/{id}")
+    public ApiResponse<FlavorResponse> getFlavorById(@PathVariable int id){
+        return ApiResponse.<FlavorResponse>builder()
+                .message("Get flavor by id successfully")
+                .result(flavorTestService.getFlavorById(id))
+                .build();
+    }
+
+    @PostMapping
+    public ApiResponse<FlavorResponse> saveFlavor(@RequestBody @Valid FlavorRequest request){
+        return ApiResponse.<FlavorResponse>builder()
+                .message("Save flavor successfully")
+                .result(flavorTestService.saveFlavor(request))
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<FlavorResponse> updateFlavor(@PathVariable int id, @RequestBody @Valid FlavorRequest request){
+        return ApiResponse.<FlavorResponse>builder()
+                .message("Update flavor successfully")
+                .result(flavorTestService.updateFlavor(id, request))
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> deleteFlavor(@PathVariable int id){
+        flavorTestService.deleteFlavor(id);
+        return ApiResponse.<String>builder()
+                .message("Delete flavor successfully")
+                .result("Delete flavor successfully")
+                .build();
     }
 }

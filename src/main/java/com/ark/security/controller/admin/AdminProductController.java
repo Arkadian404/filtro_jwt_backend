@@ -1,18 +1,15 @@
 package com.ark.security.controller.admin;
 
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.product.Product;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.ProductRequest;
+import com.ark.security.dto.response.ProductResponse;
 import com.ark.security.service.product.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -25,141 +22,99 @@ public class AdminProductController {
     private final ProductService productService;
 
 
-    @GetMapping("/getList")
+    @GetMapping
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getProductList(){
-        List<Product> productList = productService.getAllProducts();
-        return ResponseEntity.ok(productList);
+    public ApiResponse<List<ProductResponse>> getProductList(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getAllProducts())
+                .build();
     }
 
-    @GetMapping("/find/{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> find(@PathVariable int id){
-        Product product = productService.getProductById(id);
-        return ResponseEntity.ok(product);
-    }
-
-
-
-    @GetMapping("/getListByCategory/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getListByCategory(@PathVariable int id){
-        return ResponseEntity.ok(productService.getAllProductsByCategory(id));
-    }
-
-    @GetMapping("/getListByOrigin/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getListByOrigin(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsByOrigin(id));
+    public ApiResponse<ProductResponse> find(@PathVariable int id){
+        return ApiResponse.<ProductResponse>builder()
+                .result(productService.getProductById(id))
+                .build();
     }
 
 
-    @GetMapping("/getListByFlavor/{id}")
+
+    @GetMapping("/category/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getListByFlavor(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsByFlavor(id));
+    public ApiResponse<List<ProductResponse>> getListByCategory(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getProductsByCategory(id))
+                .build();
     }
 
-    @GetMapping("/getListByIsSpecial")
+    @GetMapping("/origin/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getListByIsSpecial(){
-        return ResponseEntity.ok(productService.getProductsByIsSpecial(true));
-    }
-
-    @GetMapping("/getListByIsLimited")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getListByIsLimited(){
-        return ResponseEntity.ok(productService.getProductsByIsLimited(true));
-    }
-
-    @GetMapping("/getListByVendor/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getListByVendor(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsByVendor(id));
-    }
-
-    @GetMapping("/getListBySale/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getListBySale(@PathVariable int id){
-        return ResponseEntity.ok(productService.getProductsBySale(id));
+    public ApiResponse<List<ProductResponse>> getListByOrigin(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getProductsByOrigin(id))
+                .build();
     }
 
 
-    @GetMapping("/getTop3LatestProducts")
+    @GetMapping("/flavor/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getTop3Latest(){
-        return ResponseEntity.ok(productService.getTop3LatestProducts());
+    public ApiResponse<List<ProductResponse>> getListByFlavor(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getProductsByFlavor(id))
+                .build();
     }
 
-    @GetMapping("/getTop3BestSellerProducts")
+    @GetMapping("/special")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getTop3BestSeller(){
-        return ResponseEntity.ok(productService.getTop3BestSellerProducts());
+    public ApiResponse<List<ProductResponse>> getListByIsSpecial(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getSpecialProducts())
+                .build();
     }
 
-
-    @GetMapping("/getTop3SpecialProducts")
+    @GetMapping("/limited")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getTop3Special(){
-        return ResponseEntity.ok(productService.getTop3SpecialProducts());
+    public ApiResponse<List<ProductResponse>> getListByIsLimited(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getLimitedProducts())
+                .build();
     }
 
-
-    @GetMapping("/getTop10ProductsInColombia")
+    @GetMapping("/vendor/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getTop10ProductsInColombia(){
-        return ResponseEntity.ok(productService.getTop10ProductsInColombia());
-    }
-
-
-    @GetMapping("/getTop10ProductsByRoastedCoffeeBeans")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getTop10ProductsByRoastedCoffeeBeans(){
-        return ResponseEntity.ok(productService.getTop10ProductsByRoastedCoffeeBeans());
-    }
-
-
-    @GetMapping("/getTop10ProductsByBottledCoffee")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getTop10ProductsByBottledCoffee(){
-        return ResponseEntity.ok(productService.getTop10ProductsByBottledCoffee());
+    public ApiResponse<List<ProductResponse>> getListByVendor(@PathVariable int id){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getProductsByVendor(id))
+                .build();
     }
 
 
-    @PostMapping("/create")
+    @PostMapping
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@Valid @RequestBody Product product){
-        productService.saveProduct(product);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<ProductResponse> create(@Valid @RequestBody ProductRequest product){
+        return ApiResponse.<ProductResponse>builder()
                 .message("Tạo sản phẩm thành công")
-                .timestamp(new Date())
+                .result(productService.createProduct(product))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody Product product){
-        productService.updateProduct(id, product);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<ProductResponse> update(@PathVariable int id, @Valid @RequestBody ProductRequest product){
+        return ApiResponse.<ProductResponse>builder()
                 .message("Cập nhật sản phẩm thành công")
-                .timestamp(new Date())
+                .result(productService.updateProduct(id, product))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
-    public ResponseEntity<?> delete(@PathVariable int id){
+    public ApiResponse<String > delete(@PathVariable int id){
         productService.deleteProduct(id);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+        return ApiResponse.<String>builder()
                 .message("Xóa sản phẩm thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok(success);
     }
 
 }

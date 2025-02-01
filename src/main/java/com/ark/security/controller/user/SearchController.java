@@ -1,9 +1,9 @@
 package com.ark.security.controller.user;
 
-import com.ark.security.dto.ProductDto;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.response.ProductResponse;
 import com.ark.security.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,13 +15,13 @@ import java.util.List;
 @RequestMapping("/api/v1/user/search")
 @RequiredArgsConstructor
 public class SearchController {
-    private final ProductService productService;
+    private final ProductService productTestService;
 
-
-    @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam("query") String name){
-        List<ProductDto> productList = productService.getProductsDtoByName(name);
-        return ResponseEntity.ok(productList);
+    @GetMapping
+    public ApiResponse<List<ProductResponse>> search(@RequestParam String query){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productTestService.getProductsByName(query))
+                .build();
     }
 
 }

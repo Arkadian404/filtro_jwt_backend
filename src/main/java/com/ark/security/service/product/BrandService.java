@@ -1,67 +1,54 @@
 package com.ark.security.service.product;
 
 
-import com.ark.security.dto.BrandDto;
-import com.ark.security.exception.DuplicateException;
-import com.ark.security.exception.NotFoundException;
+import com.ark.security.dto.request.BrandRequest;
+import com.ark.security.dto.response.BrandResponse;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
+import com.ark.security.mapper.BrandMapper;
 import com.ark.security.models.product.Brand;
 import com.ark.security.repository.product.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BrandService {
     private final BrandRepository brandRepository;
+    private final BrandMapper brandMapper;
 
-    public List<Brand> getAllBrands(){
-        List<Brand> brands = brandRepository.findAll();
-        if(brands.isEmpty()){
-            throw new NotFoundException("Không tìm thấy thương hiệu nào");
-        }
-        return brands;
-    }
-
-    public List<BrandDto> getAllBrandsDto(){
-        List<BrandDto> brands = brandRepository.findAll()
+    public List<BrandResponse> getAllBrands(){
+        return brandRepository.findAll()
                 .stream()
-                .map(Brand::convertToDto)
-                .collect(Collectors.toList());
-        if(brands.isEmpty()){
-            throw new NotFoundException("Không tìm thấy thương hiệu nào");
-        }
-        return brands;
-    }
-
-    public Brand getBrandById(int id){
-        return brandRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy thương hiệu có id = " + id));
+                .map(brandMapper::toBrandResponse)
+                .toList();
     }
 
 
-
-    public void saveBrand(Brand brand){
-        //check if duplicate
-        if(brandRepository.existsBrandByName(brand.getName())){
-            throw new DuplicateException("Thương hiệu đã tồn tại");
-        }
-        brandRepository.save(brand);
+    public BrandResponse getBrandById(int id){
+        return brandMapper.toBrandResponse(
+                brandRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.BRAND_NOT_FOUND))
+        );
     }
 
-    public void updateBrand(int id, Brand brand){
-        Brand oldBrand = getBrandById(id);
-        oldBrand.setName(brand.getName());
-        oldBrand.setDescription(brand.getDescription());
-        oldBrand.setStatus(brand.getStatus());
-        oldBrand.setProducts(brand.getProducts());
-        brandRepository.save(oldBrand);
+
+
+    public BrandResponse saveBrand(BrandRequest request){
+        Brand brand = brandMapper.toBrand(request);
+        return brandMapper.toBrandResponse(brandRepository.save(brand));
+    }
+
+    public BrandResponse updateBrand(int id, BrandRequest request){
+        Brand brand = brandRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.BRAND_NOT_FOUND));
+        brandMapper.updateBrand(brand, request);
+        return brandMapper.toBrandResponse(brandRepository.save(brand));
     }
 
     public void deleteBrand(int id){
-
-        brandRepository.deleteById(id);
+        Brand brand = brandRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.BRAND_NOT_FOUND));
+        brandRepository.delete(brand);
     }
 
 

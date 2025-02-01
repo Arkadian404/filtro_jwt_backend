@@ -1,12 +1,19 @@
 package com.ark.security.service.product;
 
+import com.ark.security.dto.request.ProductImageRequest;
+import com.ark.security.dto.response.ProductImageResponse;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
 import com.ark.security.exception.NotFoundException;
+import com.ark.security.mapper.ProductImageMapper;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.product.ProductImage;
 import com.ark.security.repository.product.ProductImageRepository;
+import com.ark.security.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,63 +22,56 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductImageService {
     private final ProductImageRepository productImageRepository;
-    private final String NOT_FOUND = "Không tìm thấy ảnh: ";
-    private final String EMPTY = "Không có ảnh nào";
-    public List<ProductImage> getAllProductImages(){
-        List<ProductImage> list =  productImageRepository.findAll();
-        if(list.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return list;
+    private final ProductRepository productRepository;
+    private final ProductImageMapper productImageMapper;
+
+    public List<ProductImageResponse> getAllProductImages(){
+        return productImageRepository.findAll()
+                .stream()
+                .map(productImageMapper::toProductImageResponse)
+                .toList();
     }
 
-    public List<ProductImage> getProductImagesByProductId(int id){
-        List<ProductImage> list =  productImageRepository.findAllByProductId(id);
-        if(list.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return list;
+    public List<ProductImageResponse> getAllByProductId(int id){
+        return productImageRepository.findAllByProductId(id)
+                .stream()
+                .map(productImageMapper::toProductImageResponse)
+                .toList();
     }
 
-    public ProductImage getProductImageById(int id){
-        return productImageRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
+    public ProductImageResponse getProductImageById(int id){
+        return productImageMapper.toProductImageResponse(
+                productImageRepository
+                        .findById(id)
+                        .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_IMAGE_NOT_FOUND)));
     }
 
-    public void saveProductImage(ProductImage productImage){
-        productImage.setCreatedAt(new Date());
-        productImage.setStatus(true);
-        productImageRepository.save(productImage);
+    public ProductImageResponse createProductImage(ProductImageRequest productImageRequest){
+        ProductImage productImage = productImageMapper.toProductImage(productImageRequest);
+        int productId = productImageRequest.getProductId();
+        productImage.setProduct(productRepository.findById(productId)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
+        productImage.setCreatedAt(LocalDateTime.now());
+        productImage.setUpdatedAt(LocalDateTime.now());
+        return productImageMapper
+                .toProductImageResponse(productImageRepository.save(productImage));
+
     }
 
-    public void updateImage(int id, ProductImage productImage){
-        ProductImage oldImage = getProductImageById(id);
-//        if(productImage == null){
-//            throw new NullException("Không được để trống");
-//        }
-        if(oldImage != null){
-            oldImage.setImageName(productImage.getImageName());
-            oldImage.setUrl(productImage.getUrl());
-            oldImage.setProduct(productImage.getProduct());
-            oldImage.setUpdatedAt(new Date());
-            productImageRepository.save(oldImage);
-        }else{
-            throw new NotFoundException(NOT_FOUND+ id);
-        }
+    public ProductImageResponse updateProductImage(int id, ProductImageRequest productImageRequest){
+        var productImage = productImageRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_IMAGE_NOT_FOUND));
+        productImageMapper.updateProductImage(productImage, productImageRequest);
+        int productId = productImageRequest.getProductId();
+        productImage.setProduct(productRepository.findById(productId)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
+        return productImageMapper
+                .toProductImageResponse(productImageRepository.save(productImage));
     }
 
-    public void deleteImage(int id){
-        ProductImage productImage = getProductImageById(id);
-        if(productImage == null){
-            throw new NotFoundException(NOT_FOUND+ id);
-        }
-        productImageRepository.deleteById(id);
-    }
-
-    public List<ProductImage> getProductImagesFromListCartItem(List<CartItem> cartItems){
-        List<ProductImage> productImages = new ArrayList<>();
-        cartItems.forEach(item -> {
-            productImages.add(getProductImagesByProductId(item.getProductDetail().getProduct().getId()).get(0));
-        });
-        return productImages;
+    public void deleteProductImage(int id){
+        ProductImage productImage = productImageRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_IMAGE_NOT_FOUND));
+        productImageRepository.deleteById(productImage.getId());
     }
 }

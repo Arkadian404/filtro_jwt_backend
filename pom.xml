@@ -15,6 +15,8 @@
     <description>security</description>
     <properties>
         <java.version>17</java.version>
+        <mapstruct.version>1.6.2</mapstruct.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
     </properties>
     <dependencies>
         <dependency>
@@ -41,7 +43,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -160,21 +162,6 @@
             <scope>test</scope>
         </dependency>
 
-
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.mahout/mahout-mr &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.mahout</groupId>-->
-<!--            <artifactId>mahout-mr</artifactId>-->
-<!--            <version>0.13.0</version>-->
-<!--        </dependency>-->
-
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.mahout/mahout-integration &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.mahout</groupId>-->
-<!--            <artifactId>mahout-integration</artifactId>-->
-<!--            <version>0.13.0</version>-->
-<!--        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -198,21 +185,26 @@
         </dependency>
 
 
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/jdk.tools/jdk.tools &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>jdk.tools</groupId>-->
-<!--            <artifactId>jdk.tools</artifactId>-->
-<!--            <version>1.8.0</version>-->
-<!--            <scope>system</scope>-->
-<!--        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-reload4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
             <version>2.0.12</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
 
@@ -230,6 +222,37 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>${lombok-mapstruct-binding.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
+                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
+                        <arg>-Amapstruct.verbose=true</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

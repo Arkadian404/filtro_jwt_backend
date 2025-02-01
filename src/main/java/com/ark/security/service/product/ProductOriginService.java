@@ -1,76 +1,63 @@
 package com.ark.security.service.product;
 
-import com.ark.security.dto.ProductOriginDto;
-import com.ark.security.exception.DuplicateException;
-import com.ark.security.exception.NotFoundException;
+import com.ark.security.dto.request.ProductOriginRequest;
+import com.ark.security.dto.response.ProductOriginResponse;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
+import com.ark.security.mapper.ProductOriginMapper;
 import com.ark.security.models.product.ProductOrigin;
 import com.ark.security.repository.product.ProductOriginRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductOriginService {
     private final ProductOriginRepository productOriginRepository;
-    private final String NOT_FOUND = "Không tìm thấy nguồn gốc sản phẩm: ";
-    private final String EMPTY = "Không có nguồn gốc sản phẩm nào";
+    private final ProductOriginMapper productOriginMapper;
 
-    public void saveProductOrigin(ProductOrigin productOrigin) {
-        if(productOriginRepository.existsProductOriginByName(productOrigin.getName()))
-            throw new DuplicateException("Nguồn gốc sản phẩm đã tồn tại");
-        productOriginRepository.save(productOrigin);
-    }
-
-
-    public List<ProductOrigin> getAllProductOrigin() {
-        if(productOriginRepository.findAll().isEmpty())
-            throw new NotFoundException(EMPTY);
-        return productOriginRepository.findAll();
-    }
-
-    public List<ProductOriginDto> getAllProductOriginDto() {
-        List<ProductOriginDto> productOrigins = productOriginRepository.findAll()
+    public List<ProductOriginResponse> getAllProductOrigins(){
+        return productOriginRepository.findAll()
                 .stream()
-                .map(ProductOrigin::convertToDto)
+                .map(productOriginMapper::toProductOriginResponse)
                 .toList();
-        if(productOrigins.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return productOrigins;
     }
 
-    public List<ProductOriginDto> getProductOriginDtoByContinent(String continent) {
-        List<ProductOriginDto> productOrigins = productOriginRepository.findByContinent(continent)
-                .orElseThrow(() -> new NotFoundException(NOT_FOUND + continent))
+    public ProductOriginResponse getProductOriginById(int id){
+        return productOriginMapper.toProductOriginResponse(
+                productOriginRepository
+                        .findById(id)
+                        .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_ORIGIN_NOT_FOUND)));
+    }
+
+    public ProductOriginResponse createProductOrigin(ProductOriginRequest productOriginRequest){
+        ProductOrigin productOrigin = productOriginMapper.toProductOrigin(productOriginRequest);
+        return productOriginMapper.toProductOriginResponse(productOriginRepository.save(productOrigin));
+    }
+
+    public ProductOriginResponse updateProductOrigin(int id, ProductOriginRequest productOriginRequest){
+        var productOrigin = productOriginRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_ORIGIN_NOT_FOUND));
+        productOriginMapper.updateProductOrigin(productOrigin, productOriginRequest);
+        return productOriginMapper.toProductOriginResponse(productOriginRepository.save(productOrigin));
+    }
+
+    public void deleteProductOrigin(int id){
+        ProductOrigin productOrigin = productOriginRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_ORIGIN_NOT_FOUND));
+        productOriginRepository.deleteById(productOrigin.getId());
+    }
+
+    public List<ProductOriginResponse> getByContinent(String name){
+        return productOriginRepository
+                .findByContinent(name)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_ORIGIN_NOT_FOUND))
                 .stream()
-                .map(ProductOrigin::convertToDto)
-                .collect(Collectors.toList());
-        if(productOrigins.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return productOrigins;
-    }
+                .map(productOriginMapper::toProductOriginResponse)
+                .toList();
 
-    public ProductOrigin getProductOriginById(int id) {
-        return productOriginRepository.findById(id).orElseThrow(() -> new NotFoundException(NOT_FOUND + id));
-    }
-
-    public void updateProductOrigin(int id, ProductOrigin productOrigin) {
-        ProductOrigin productOriginUpdate = getProductOriginById(id);
-        productOriginUpdate.setName(productOrigin.getName());
-        productOriginUpdate.setContinent(productOrigin.getContinent());
-        productOriginUpdate.setDescription(productOrigin.getDescription());
-        productOriginUpdate.setStatus(productOrigin.getStatus());
-        productOriginRepository.save(productOriginUpdate);
-    }
-
-    public void deleteProductOrigin(int id) {
-        if (!productOriginRepository.existsById(id))
-            throw new NotFoundException(NOT_FOUND + id);
-        productOriginRepository.deleteById(id);
     }
 
 }

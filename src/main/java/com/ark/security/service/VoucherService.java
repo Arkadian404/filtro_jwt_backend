@@ -1,16 +1,27 @@
 package com.ark.security.service;
 
+import com.ark.security.dto.request.VoucherRequest;
+import com.ark.security.dto.response.VoucherResponse;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
 import com.ark.security.exception.NotFoundException;
 import com.ark.security.exception.VoucherException;
+import com.ark.security.mapper.VoucherMapper;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.UserVoucher;
 import com.ark.security.models.Voucher;
 import com.ark.security.models.user.User;
+import com.ark.security.repository.CartItemRepository;
+import com.ark.security.repository.CartRepository;
+import com.ark.security.repository.UserVoucherRepository;
 import com.ark.security.repository.VoucherRepository;
+import com.ark.security.repository.product.CategoryRepository;
+import com.ark.security.repository.user.UserRepository;
 import com.ark.security.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,180 +33,208 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VoucherService {
     private final VoucherRepository voucherRepository;
-    private final UserService userService;
-    private final UserVoucherService userVoucherService;
-    private final CartService cartService;
-    private final CartItemService cartItemService;
+    private final VoucherMapper voucherMapper;
+    private final UserRepository userRepository;
+    private final CartItemRepository cartItemRepository;
+    private final CartRepository cartRepository;
+    private final UserVoucherRepository userVoucherRepository;
+    private final CategoryRepository categoryRepository;
 
-    public void saveVoucher(Voucher voucher){
+    public VoucherResponse getVoucherByVoucherId(int id){
+        Voucher voucher = getVoucherById(id);
+        return voucherMapper.toVoucherResponse(voucher);
+    }
+
+    public List<VoucherResponse> getAllVouchers(){
+        return voucherRepository.findAll()
+                .stream()
+                .map(voucherMapper::toVoucherResponse)
+                .toList();
+    }
+
+
+
+    public VoucherResponse create(VoucherRequest voucherRequest){
+        Voucher voucher = voucherMapper.toVoucher(voucherRequest);
         voucher.setCode(RandomStringUtils.random(10, true, true));
         voucher.setCreatedAt(LocalDateTime.now());
-        voucherRepository.save(voucher);
+        voucher.setCategory(categoryRepository.findById(voucherRequest.getCategoryId())
+                .orElse(null));
+        return voucherMapper.toVoucherResponse(voucherRepository.save(voucher));
     }
 
 
-    public Voucher getVoucherById(Integer id){
-        return voucherRepository.findById(id).orElseThrow(()-> new NotFoundException("Voucher not found"));
+    public VoucherResponse update(int id, VoucherRequest voucherRequest){
+        Voucher voucher = voucherRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND));
+        voucherMapper.updateVoucher(voucher, voucherRequest);
+        voucher.setCategory(categoryRepository.findById(voucherRequest.getCategoryId())
+                .orElse(null));
+        return voucherMapper.toVoucherResponse(voucherRepository.save(voucher));
     }
 
-    public List<Voucher> getAllVoucher(){
-        return voucherRepository.findAll();
+    public void delete(int id){
+        Voucher voucher = voucherRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND));
+        voucherRepository.deleteById(voucher.getId());
     }
 
-    public void updateVoucher(int id, Voucher voucher){
-        Voucher oldVoucher = getVoucherById(id);
-        if(voucher == null){
-            throw new NotFoundException("Voucher is null");
-        }
-        if (oldVoucher != null) {
-            oldVoucher.setName(voucher.getName());
-            oldVoucher.setDiscount(voucher.getDiscount());
-            oldVoucher.setCode(oldVoucher.getCode());
-            oldVoucher.setExpirationDate(voucher.getExpirationDate());
-            oldVoucher.setDescription(voucher.getDescription());
-            oldVoucher.setCategory(voucher.getCategory());
-            voucherRepository.save(oldVoucher);
-        }
+    public boolean isVoucherExpired(int id){
+        Voucher voucher = voucherRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND));
+        return voucher.getExpirationDate().isBefore(LocalDateTime.now());
     }
 
-    public void deleteVoucher(int id){
-        Voucher oldVoucher = getVoucherById(id);
-        if(oldVoucher == null){
-            throw new NotFoundException("Voucher is null");
-        }
-        voucherRepository.deleteById(id);
-    }
-
-    public void removeVoucher(int userId, int voucherId){
-        Voucher voucher = getVoucherById(voucherId);
-        if(voucher != null){
-            User user = userService.getUserById(userId);
-            UserVoucher userVoucher = userVoucherService.getUserVoucherByUserIdAndVoucherId(userId, voucherId);
-            Cart cart = cartService.getCartByUsername(user.getUsername());
-            List<CartItem> cartItems = cart.getCartItems();
-            List<CartItem> validCartItems = cartItems.stream()
-                    .filter(cartItem -> cartItem.getProductDetail().getProduct().getCategory().equals(voucher.getCategory()))
-                    .toList();
-            if (voucher.getCategory() != null){
-                processRemoveVoucher(userVoucher, cart, validCartItems);
-            }else{
-                processRemoveVoucher(userVoucher, cart, cartItems);
-            }
-        }else{
-            throw new VoucherException("Voucher is null");
-        }
-
-    }
-
-    public boolean checkVoucherExpiration(int id){
-        Voucher voucher = getVoucherById(id);
-        if(voucher!=null){
-            if(voucher.getExpirationDate().isAfter(LocalDateTime.now())){
-                return true;
-            }else{
-                throw new VoucherException("Voucher hết hạn");
-            }
-        }
-        return false;
-    }
-
-    public List<Voucher> showAvailableVoucherByProductId(int productId){
-        List<Voucher> vouchers = voucherRepository.findAll();
-        List<Voucher> availableVouchers = vouchers.stream()
-                .filter(voucher-> {
-                    if(voucher.getCategory() != null){
-                        return voucher.getCategory().getProductList().stream().anyMatch(product -> product.getId() == productId)
-                                && voucher.getExpirationDate().isAfter(LocalDateTime.now());
-                    }
-                    return false;
-                })
-                .toList();
-        if(availableVouchers.isEmpty()){
-            return Collections.emptyList();
-        }
-        return availableVouchers;
-    }
-
-    public List<Voucher> showAvailableVoucherToAllProducts(){
-        List<Voucher> vouchers = voucherRepository.findAll();
-        List<Voucher> availableVouchers = vouchers.stream()
-                .filter(voucher-> {
-                    if(voucher.getCategory() == null){
-                        return voucher.getExpirationDate().isAfter(LocalDateTime.now());
-                    }
-                    return false;
-                })
-                .toList();
-        if(availableVouchers.isEmpty()){
-            return Collections.emptyList();
-        }
-        return availableVouchers;
-    }
-
-
-    public void applyVoucher(int userId, String code) {
-        Voucher voucher = voucherRepository.findByCode(code).orElse(null);
-        if (voucher != null) {
-            if (voucher.getExpirationDate().isAfter(LocalDateTime.now())) {
-                UserVoucher userVoucher = userVoucherService.getUserVoucherByUserIdAndVoucherId(userId, voucher.getId());
-                if(userVoucher == null){
-                    User user = userService.getUserById(userId);
-                    Cart cart = cartService.getCartByUsername(user.getUsername());
-                    List<CartItem> cartItems = cart.getCartItems();
-                    List<CartItem> validCartItems = cartItems.stream()
-                            .filter(cartItem -> cartItem.getProductDetail().getProduct().getCategory().equals(voucher.getCategory()))
-                            .toList();
-                    if (voucher.getCategory() != null){
-                        if (validCartItems.isEmpty()){
-                            throw new VoucherException("Voucher này không áp dụng cho sản phẩm bạn chọn");
+    public List<VoucherResponse> availableVouchersByProductId(int productId){
+        List<Voucher> vouchers = voucherRepository.findAll()
+                .stream()
+                .filter(
+                        voucher -> {
+                            if(voucher.getCategory() != null){
+                                return voucher.getCategory()
+                                        .getProductList()
+                                        .stream()
+                                        .anyMatch(product -> product.getId().equals(productId)
+                                                && !isVoucherExpired(voucher.getId())
+                                        );
+                            }else {
+                                return false;
+                            }
                         }
-                        processVoucher(voucher, user, cart, validCartItems);
-                    }else{
-                        processVoucher(voucher, user, cart, cartItems);
-                    }
-                }else{
-                    throw new VoucherException("Voucher này đã được sử dụng");
-                }
-            }else {
-                throw new VoucherException("Voucher này đã hết hạn");
-            }
-        }else{
-            throw new VoucherException("Voucher không tồn tại");
+                ).toList();
+        if(vouchers.isEmpty()){
+            return Collections.emptyList();
+        }
+        return vouchers.stream().map(voucherMapper::toVoucherResponse).toList();
+    }
+
+    public List<VoucherResponse> availableVouchersToAllProducts(){
+        List<Voucher> vouchers = voucherRepository.findAll()
+                .stream()
+                .filter(
+                        voucher -> {
+                            if(voucher.getCategory() == null){
+                                return !isVoucherExpired(voucher.getId());
+                            }else {
+                                return false;
+                            }
+                        }
+                ).toList();
+        if(vouchers.isEmpty()){
+            return Collections.emptyList();
+        }
+        return vouchers.stream().map(voucherMapper::toVoucherResponse).toList();
+    }
+
+    public void applyVoucher(String voucherCode){
+        Voucher voucher = getVoucherByCode(voucherCode);
+        User user = getCurrentAuthenticatedUser();
+        validateVoucher(voucher, user);
+
+        Cart cart = getUserCart(user.getUsername());
+        List<CartItem> validItems = getValidItems(cart, voucher);
+
+        if (voucher.getCategory() != null && validItems.isEmpty()) {
+            throw new AppException(ErrorCode.VOUCHER_NOT_VALID);
+        }
+
+        List<CartItem> itemsToApply = voucher.getCategory() == null ? cart.getCartItems() : validItems;
+        applyVoucherToCart(voucher, cart, itemsToApply);
+    }
+
+
+    public void removeVoucher(int voucherId){
+        Voucher voucher = getVoucherById(voucherId);
+        User user = getCurrentAuthenticatedUser();
+        UserVoucher userVoucher = getUserVoucher(user.getId(), voucherId);
+        Cart cart = getUserCart(user.getUsername());
+        List<CartItem> validItems = getValidItems(cart, voucher);
+        List<CartItem> itemsToApply = voucher.getCategory() == null ? cart.getCartItems() : validItems;
+        processRemoveVoucher(userVoucher, cart, itemsToApply);
+    }
+
+    private Voucher getVoucherById(int id){
+        return voucherRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND));
+    }
+
+    private Voucher getVoucherByCode(String voucherCode) {
+        return voucherRepository.findByCode(voucherCode)
+                .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND));
+    }
+
+    private User getCurrentAuthenticatedUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private UserVoucher getUserVoucher(int userId, int voucherId) {
+        return userVoucherRepository.findByUserIdAndVoucherId(userId, voucherId)
+                .orElseThrow(() -> new AppException(ErrorCode.VOUCHER_NOT_FOUND_FOR_USER));
+    }
+
+    private void validateVoucher(Voucher voucher, User user) {
+        if (isVoucherExpired(voucher.getId())) {
+            throw new AppException(ErrorCode.VOUCHER_EXPIRED);
+        }
+
+        boolean isVoucherUsed = userVoucherRepository
+                .findByUserIdAndVoucherId(user.getId(), voucher.getId())
+                .isPresent();
+        if (isVoucherUsed) {
+            throw new AppException(ErrorCode.VOUCHER_ALREADY_USED);
         }
     }
 
-    private void processVoucher(Voucher voucher,  User user, Cart cart, List<CartItem> validCartItems) {
-        UserVoucher userVoucher;
-        double discount = voucher.getDiscount();
-        validCartItems
-                .forEach(cartItem ->{
-                    cartItem.setPrice((int) (cartItem.getPrice() - (cartItem.getPrice() * discount/100)));
-                    cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
-                    cartItemService.saveCartItem(cartItem);
-                });
-        userVoucher = new UserVoucher();
+    private Cart getUserCart(String username) {
+        return cartRepository.findByUserUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+    }
+
+    private List<CartItem> getValidItems(Cart cart, Voucher voucher) {
+        return cart.getCartItems().stream()
+                .filter(item -> voucher.getCategory() != null &&
+                        item.getProductDetail().getProduct().getCategory().equals(voucher.getCategory()))
+                .toList();
+    }
+
+    private void applyVoucherToCart(Voucher voucher, Cart cart, List<CartItem> itemsToApply) {
+        double discount = voucher.getDiscount() / 100.0;
+
+        itemsToApply.forEach(item -> {
+            item.setPrice((int) (item.getPrice() * (1 - discount)));
+            item.setTotal(item.getPrice() * item.getQuantity());
+            cartItemRepository.save(item);
+        });
+
+        cart.setTotal(cart.getCartItems().stream().mapToInt(CartItem::getTotal).sum());
+        cart.setVoucher(voucher);
+        cartRepository.save(cart);
+
+        saveUserVoucher(voucher, cart.getUser());
+    }
+    private void processRemoveVoucher(UserVoucher userVoucher, Cart cart, List<CartItem> itemsToProcess) {
+        itemsToProcess.forEach(cartItem -> {
+            cartItem.setPrice(cartItem.getProductDetail().getPrice());
+            cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
+            cartItemRepository.save(cartItem);
+        });
+
+        cart.setVoucher(null);
+        cart.setTotal(cart.getCartItems().stream().mapToInt(CartItem::getTotal).sum());
+        cartRepository.save(cart);
+
+        userVoucherRepository.delete(userVoucher);
+    }
+
+
+    private void saveUserVoucher(Voucher voucher, User user) {
+        UserVoucher userVoucher = new UserVoucher();
         userVoucher.setVoucher(voucher);
         userVoucher.setUser(user);
         userVoucher.setUsed(true);
-        userVoucherService.saveUserVoucher(userVoucher);
-        cart.setVoucher(voucher);
-        List<CartItem> allCartItems = cart.getCartItems();
-        cart.setTotal(allCartItems.stream().mapToInt(CartItem::getTotal).sum());
-        cartService.saveCart(cart);
-    }
-
-    private void processRemoveVoucher(UserVoucher userVoucher, Cart cart, List<CartItem> validCartItems) {
-        validCartItems
-                .forEach(cartItem -> {
-                    cartItem.setPrice(cartItem.getProductDetail().getPrice());
-                    cartItem.setTotal(cartItem.getPrice() * cartItem.getQuantity());
-                    cartItemService.saveCartItem(cartItem);
-                });
-        cart.setVoucher(null);
-        cart.setTotal(validCartItems.stream().mapToInt(CartItem::getTotal).sum());
-        cartService.saveCart(cart);
-        //delete user voucher
-        userVoucherService.deleteUserVoucher(userVoucher.getId());
+        userVoucherRepository.save(userVoucher);
     }
 
 }

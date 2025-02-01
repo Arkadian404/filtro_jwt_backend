@@ -1,6 +1,5 @@
 package com.ark.security.models;
 
-import com.ark.security.dto.CartDto;
 import com.ark.security.models.user.User;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
@@ -46,16 +45,4 @@ public class Cart {
     @JoinColumn(name = "voucher_id")
     @JsonBackReference
     private Voucher voucher;
-
-
-    public CartDto convertToDto(){
-        return CartDto.builder()
-                .id(this.id)
-                .user(this.user.convertToDto())
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
-                .total(this.total)
-                .voucher(this.voucher != null ? this.voucher.convertToDto() : null)
-                .build();
-    }
 }

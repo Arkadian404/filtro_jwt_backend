@@ -1,5 +1,8 @@
 package com.ark.security.controller.admin;
 
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.ProductOriginRequest;
+import com.ark.security.dto.response.ProductOriginResponse;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.product.ProductOrigin;
 import com.ark.security.service.product.ProductOriginService;
@@ -12,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin/product-origin")
@@ -21,52 +25,47 @@ import java.util.Date;
 public class AdminProductOriginController {
     private final ProductOriginService productOriginService;
 
-    @GetMapping("/getList")
+    @GetMapping
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> getAllProductOrigin(){
-        return ResponseEntity.ok(productOriginService.getAllProductOrigin());
+    public ApiResponse<List<ProductOriginResponse>> getAllProductOrigin(){
+        return ApiResponse.<List<ProductOriginResponse>>builder()
+                .result(productOriginService.getAllProductOrigins())
+                .build();
     }
 
-    @GetMapping("/find/{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    public ResponseEntity<?> find(@PathVariable int id){
-        return ResponseEntity.ok(productOriginService.getProductOriginById(id));
+    public ApiResponse<ProductOriginResponse> find(@PathVariable int id){
+        return ApiResponse.<ProductOriginResponse>builder()
+                .result(productOriginService.getProductOriginById(id))
+                .build();
     }
 
-    @PostMapping("/create")
+    @PostMapping
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    public ResponseEntity<?> create(@Valid @RequestBody ProductOrigin productOrigin){
-        productOriginService.saveProductOrigin(productOrigin);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<ProductOriginResponse> create(@Valid @RequestBody ProductOriginRequest productOrigin){
+        return ApiResponse.<ProductOriginResponse>builder()
                 .message("Tạo xuất xứ sản phẩm thành công")
-                .timestamp(new Date())
+                .result(productOriginService.createProductOrigin(productOrigin))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody ProductOrigin productOrigin){
-        productOriginService.updateProductOrigin(id, productOrigin);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    public ApiResponse<ProductOriginResponse> update(@PathVariable int id, @Valid @RequestBody ProductOriginRequest productOrigin){
+        return ApiResponse.<ProductOriginResponse>builder()
                 .message("Cập nhật xuất xứ sản phẩm thành công")
-                .timestamp(new Date())
+                .result(productOriginService.updateProductOrigin(id, productOrigin))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
-    public ResponseEntity<?> delete(@PathVariable int id){
+    public ApiResponse<String> delete(@PathVariable int id){
         productOriginService.deleteProductOrigin(id);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+        return ApiResponse.<String>builder()
                 .message("Xóa xuất xứ sản phẩm thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok(success);
     }
 
 

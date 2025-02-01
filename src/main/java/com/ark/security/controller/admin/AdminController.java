@@ -1,5 +1,6 @@
 package com.ark.security.controller.admin;
 
+import com.ark.security.dto.response.UserResponse;
 import com.ark.security.models.user.User;
 import com.ark.security.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,7 +21,7 @@ public class AdminController {
     @GetMapping
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
     public ResponseEntity<?> get(Authentication authentication){
-        User user = userService.getByUsername(authentication.getName());
+        UserResponse user = userService.getCurrentUser();
         return ResponseEntity.ok(user);
     }
 }

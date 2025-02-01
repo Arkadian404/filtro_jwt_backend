@@ -1,6 +1,5 @@
 package com.ark.security.models.user;
 
-import com.ark.security.dto.UserDto;
 import com.ark.security.models.Cart;
 import com.ark.security.models.Employee;
 import com.ark.security.models.UserVoucher;
@@ -9,24 +8,16 @@ import com.ark.security.models.order.Order;
 import com.ark.security.models.product.Review;
 import com.ark.security.models.token.Token;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -36,28 +27,20 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+//@Table(name = "users")
 @Table
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @NotNull(message = "Họ không được null")
-    @NotBlank(message = "Họ không được để trống")
     private String firstname;
-    @NotNull(message = "Tên không được null")
-    @NotBlank(message = "Tên không được để trống")
     private String lastname;
-    @NotNull(message = "Tên đăng nhập không được null")
-    @NotBlank(message = "Tên đăng nhập không được để trống")
+    @Column(unique = true)
     private String username;
-    @NotNull(message = "Email không được null")
-    @Email(message = "Email không đúng định dạng")
-    @NotBlank(message = "Email không được để trống")
+    @Column(unique = true)
     private String email;
     private String password;
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", shape = JsonFormat.Shape.STRING)
     private Date dob;
     private String address;
     private String province;
@@ -66,11 +49,7 @@ public class User implements UserDetails {
     private String phone;
     @Enumerated(EnumType.STRING)
     private Role role;
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdDate;
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedDate;
     private Boolean enabled;
 
@@ -141,27 +120,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        if(this.enabled == null || !this.enabled){
-            return false;
-        }
-
-        return true;
+        return this.enabled != null && this.enabled;
     }
-
-    public UserDto convertToDto(){
-        return UserDto.builder()
-                .id(this.id)
-                .firstname(this.firstname)
-                .lastname(this.lastname)
-                .username(this.username)
-                .email(this.email)
-                .dob(this.dob)
-                .address(this.address)
-                .province(this.province)
-                .district(this.district)
-                .ward(this.ward)
-                .phone(this.phone)
-                .build();
-    }
-
 }

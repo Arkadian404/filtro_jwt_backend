@@ -1,9 +1,9 @@
 package com.ark.security.service.product;
 
-import com.ark.security.dto.FlavorDto;
-import com.ark.security.exception.DuplicateException;
-import com.ark.security.exception.NotFoundException;
-import com.ark.security.exception.NullException;
+import com.ark.security.dto.request.FlavorRequest;
+import com.ark.security.dto.response.FlavorResponse;
+import com.ark.security.exception.*;
+import com.ark.security.mapper.FlavorMapper;
 import com.ark.security.models.product.Flavor;
 import lombok.RequiredArgsConstructor;
 import com.ark.security.repository.product.FlavorRepository;
@@ -14,67 +14,38 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FlavorService {
-
     private final FlavorRepository flavorRepository;
-    private final String NOT_FOUND = "Không tìm thấy loại hương vị nào: ";
-    private final String EMPTY = "Không có loại hương vị nào";
-    private final String DUPLICATE = "Loại hương vị đã tồn tại";
-    private final String BLANK = "Không được để trống";
+    private final FlavorMapper flavorMapper;
 
-    public Flavor getFlavorById(int id) {
-        return flavorRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
-    }
-
-    public List<Flavor> getAllFlavors() {
-        List<Flavor> flavors = flavorRepository.findAll();
-        if(flavors.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return flavors;
-    }
-
-    public List<FlavorDto> getAllFlavorsDto() {
-        List<FlavorDto> flavors = flavorRepository.findAll()
+    public List<FlavorResponse> getAllFlavors(){
+        return flavorRepository.findAll()
                 .stream()
-                .map(Flavor::convertToDto)
+                .map(flavorMapper::toFlavorResponse)
                 .toList();
-        if(flavors.isEmpty()){
-            throw new NotFoundException(EMPTY);
-        }
-        return flavors;
     }
 
-    public boolean existsFlavorByName(String name){
-        return flavorRepository.existsFlavorByName(name);
+
+    public FlavorResponse getFlavorById(int id){
+        return flavorMapper.toFlavorResponse(
+                flavorRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.FLAVOR_NOT_FOUND))
+        );
     }
 
-    public void saveFlavor(Flavor flavor) {
-        if(existsFlavorByName(flavor.getName())) {
-            throw new DuplicateException(DUPLICATE);
-        }
-        flavorRepository.save(flavor);
+
+
+    public FlavorResponse saveFlavor(FlavorRequest request){
+        Flavor flavor = flavorMapper.toFlavor(request);
+        return flavorMapper.toFlavorResponse(flavorRepository.save(flavor));
     }
 
-    public void updateFlavor(int id, Flavor flavor){
-        Flavor oldFlavor = getFlavorById(id);
-        if(flavor == null){
-            throw new NullException(BLANK);
-        }
-        if (oldFlavor != null) {
-            oldFlavor.setName(flavor.getName());
-            oldFlavor.setDescription(flavor.getDescription());
-            oldFlavor.setStatus(flavor.getStatus());
-            flavorRepository.save(oldFlavor);
-        }else{
-            throw new NotFoundException(NOT_FOUND+ id);
-        }
+    public FlavorResponse updateFlavor(int id, FlavorRequest request){
+        Flavor flavor = flavorRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.FLAVOR_NOT_FOUND));
+        flavorMapper.updateFlavor(flavor, request);
+        return flavorMapper.toFlavorResponse(flavorRepository.save(flavor));
     }
 
-    public void deleteFlavor(int id) {
-        Flavor flavor = getFlavorById(id);
-        if(flavor == null){
-            throw new NotFoundException(NOT_FOUND+ id);
-        }
-        flavorRepository.deleteById(id);
+    public void deleteFlavor(int id){
+        Flavor flavor = flavorRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.FLAVOR_NOT_FOUND));
+        flavorRepository.delete(flavor);
     }
 }

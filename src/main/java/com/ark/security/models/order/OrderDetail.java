@@ -1,8 +1,6 @@
 package com.ark.security.models.order;
 
-import com.ark.security.dto.OrderDetailDto;
 import com.ark.security.models.product.ProductDetail;
-import com.ark.security.models.product.ProductImage;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
@@ -40,23 +38,4 @@ public class OrderDetail {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime orderDate;
-
-
-    public OrderDetailDto convertToDto(){
-        String productName = this.productDetail.getProduct().getName();
-        String productSlug = this.productDetail.getProduct().getSlug();
-        ProductImage productImage = this.productDetail.getProduct().getImages().get(0);
-        return OrderDetailDto.builder()
-                .id(this.id)
-                .order(this.order.convertToDto())
-                .productName(productName)
-                .productSlug(productSlug)
-                .productImage(productImage.convertToDto())
-                .productDetail(this.productDetail.convertToDto())
-                .quantity(this.quantity)
-                .price(this.price)
-                .total(this.total)
-                .orderDate(this.orderDate)
-                .build();
-    }
 }

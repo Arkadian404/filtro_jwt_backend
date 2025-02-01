@@ -1,16 +1,17 @@
 package com.ark.security.controller.admin;
 
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.order.Order;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.OrderRequest;
+import com.ark.security.dto.response.OrderDetailResponse;
+import com.ark.security.dto.response.OrderResponse;
 import com.ark.security.service.OrderDetailService;
 import com.ark.security.service.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin/order")
@@ -21,40 +22,38 @@ public class AdminOrderController {
     private final OrderService orderService;
     private final OrderDetailService orderDetailService;
 
-    @GetMapping("/get/all")
+    @GetMapping
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
-    public ResponseEntity<?> getAllOrders(){
-        return ResponseEntity.ok(orderService.getAllOrdersByOrderDate());
+    public ApiResponse<List<OrderResponse>> getAllOrders(){
+        return ApiResponse.<List<OrderResponse>>builder()
+                .result(orderService.getAllOrders())
+                .build();
     }
 
-    @GetMapping("/get/orderDetail/{orderId}")
+    @GetMapping("/{orderId}/details")
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
-    public ResponseEntity<?> getOrderDetailByOrderId(@PathVariable int orderId){
-        return ResponseEntity.ok(orderDetailService.getOrderDetailByOrderId(orderId));
+    public ApiResponse<List<OrderDetailResponse>> getOrderDetailByOrderId(@PathVariable int orderId){
+        return ApiResponse.<List<OrderDetailResponse>>builder()
+                .result(orderDetailService.getOrderDetailResponseByOrderId(orderId))
+                .build();
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update', 'user:update')")
-    public ResponseEntity<?> updateOrderStatus(@PathVariable int id,
-                                               @RequestBody Order order){
+    public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable int id,
+                                               @RequestBody OrderRequest order){
         orderService.updateOrder(id, order);
-        SuccessMessage success = SuccessMessage.builder()
-                .statusCode(200)
-                .message("Cập nhật trạng thái đơn hàng thành công")
-                .timestamp(new Date())
+        return ApiResponse.<OrderResponse>builder()
+                .message("Cập nhật đơn hàng thành công")
                 .build();
-        return ResponseEntity.ok().body(success);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete', 'user:delete')")
-    public ResponseEntity<?> deleteOrder(@PathVariable int id){
+    public ApiResponse<String> deleteOrder(@PathVariable int id){
         orderService.deleteOrder(id);
-        SuccessMessage success = SuccessMessage.builder()
-                .statusCode(200)
+        return ApiResponse.<String>builder()
                 .message("Xóa đơn hàng thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok().body(success);
     }
 }

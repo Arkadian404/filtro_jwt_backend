@@ -1,17 +1,16 @@
 package com.ark.security.controller.admin;
 
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.product.Brand;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.BrandRequest;
+import com.ark.security.dto.response.BrandResponse;
 import com.ark.security.service.product.BrandService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin/brand")
@@ -21,46 +20,41 @@ import java.util.Date;
 public class AdminBrandController {
     private final BrandService brandService;
 
-    @GetMapping("/getList")
-    public ResponseEntity<?> getList(){
-        return ResponseEntity.ok(brandService.getAllBrands());
-    }
-
-    @GetMapping("/find/{id}")
-    public ResponseEntity<?> findBrandById(@PathVariable int id){
-        return ResponseEntity.ok(brandService.getBrandById(id));
-    }
-
-    @PostMapping("/create")
-    public ResponseEntity<?> createBrand(@Valid @RequestBody Brand brand){
-        brandService.saveBrand(brand);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Thêm thương hiệu thành công")
-                .timestamp(new Date())
+    @GetMapping
+    public ApiResponse<List<BrandResponse>> getList(){
+        return ApiResponse.<List<BrandResponse>>builder()
+                .result(brandService.getAllBrands())
                 .build();
-        return ResponseEntity.ok().body(success);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateBrand(@PathVariable int id, @Valid @RequestBody Brand brand){
-        brandService.updateBrand(id, brand);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    @GetMapping("/{id}")
+    public ApiResponse<BrandResponse> findBrandById(@PathVariable int id){
+        return ApiResponse.<BrandResponse>builder()
+                .result(brandService.getBrandById(id))
+                .build();
+    }
+
+    @PostMapping
+    public ApiResponse<BrandResponse> createBrand(@Valid @RequestBody BrandRequest brand){
+        return ApiResponse.<BrandResponse>builder()
+                .message("Tạo thương hiệu thành công")
+                .result(brandService.saveBrand(brand))
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<BrandResponse> updateBrand(@PathVariable int id, @Valid @RequestBody BrandRequest brand){
+        return ApiResponse.<BrandResponse>builder()
                 .message("Cập nhật thương hiệu thành công")
-                .timestamp(new Date())
+                .result(brandService.updateBrand(id, brand))
                 .build();
-        return ResponseEntity.ok().body(success);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteBrand(@PathVariable int id){
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> deleteBrand(@PathVariable int id){
         brandService.deleteBrand(id);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+        return ApiResponse.<String>builder()
                 .message("Xóa thương hiệu thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok().body(success);
     }
 }

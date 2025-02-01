@@ -1,6 +1,7 @@
 package com.ark.security.service;
 
-import com.ark.security.dto.OrderDto;
+
+import com.ark.security.dto.response.OrderResponse;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
@@ -10,10 +11,6 @@ import com.ark.security.models.payment.vnpay.VNPIPN;
 import com.ark.security.models.payment.vnpay.VNPIPNResponse;
 import com.ark.security.models.payment.vnpay.VNPRequest;
 import com.ark.security.models.payment.vnpay.VNPResponse;
-import com.ark.security.models.product.Product;
-import com.ark.security.models.product.ProductDetail;
-import com.ark.security.service.product.ProductDetailService;
-import com.ark.security.service.product.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -41,16 +37,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class VNPayService {
     private final Logger logger = LoggerFactory.getLogger(VNPayService.class);
-    private final RestTemplate restTemplate;
     private final Environment env;
     private final OrderService orderService;
     private final CartService cartService;
-    private final ProductService productService;
-    private final ProductDetailService productDetailService;
     private final String RETURN_URL = "http://localhost:4200/payment/vnpay"; //"https://filtrocoffee.com/payment/vnpay"
     private final String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
-    public VNPResponse createVNPayOrder(OrderDto orderDto, HttpServletRequest req){
+    public VNPResponse createVNPayOrder(OrderResponse orderDto, HttpServletRequest req){
         String data = vnpRequest(orderDto, req);
         return VNPResponse.builder()
                 .status("OK")
@@ -124,7 +117,7 @@ public class VNPayService {
     }
 
     private boolean verifyAmount(VNPIPN vnpipn){
-        Order order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
+        OrderResponse order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
         if(order != null){
             return order.getTotal() == Integer.parseInt(vnpipn.getVnp_Amount())/100;
         }
@@ -132,12 +125,12 @@ public class VNPayService {
     }
 
     private boolean verifyOrder(VNPIPN vnpipn){
-        Order order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
+        OrderResponse order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
         return order != null;
     }
 
     private boolean verifyOrderStatus(VNPIPN vnpipn){
-        Order order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
+        OrderResponse order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
         if(order != null){
             return order.getStatus().equals(OrderStatus.PENDING);
         }
@@ -145,8 +138,8 @@ public class VNPayService {
     }
 
     private void updateOrderStatus(VNPIPN vnpipn){
-        Order order = orderService.getOrderByOrderCode(vnpipn.getVnp_TxnRef());
-        Cart cart = cartService.getCartByUsername(order.getUser().getUsername());
+        Order order = orderService.getOrderByCode(vnpipn.getVnp_TxnRef());
+        Cart cart = cartService.getCartById(order.getUser().getId());
         List<CartItem> cartItems = cart.getCartItems();
         switch (vnpipn.getVnp_ResponseCode()) {
             case "00":
@@ -164,19 +157,7 @@ public class VNPayService {
         orderService.saveOrder(order);
     }
 
-//    private void updateProductStockAndSold(Order order){
-//        List<OrderDetail> orderDetails = order.getOrderDetails();
-//        for(OrderDetail orderDetail: orderDetails){
-//            ProductDetail pd = orderDetail.getProductDetail();
-//            pd.setStock(pd.getStock() - orderDetail.getQuantity());
-//            productDetailService.saveProductDetail(pd);
-//            Product product = orderDetail.getProductDetail().getProduct();
-//            product.setSold(product.getSold() + orderDetail.getQuantity());
-//            productService.save(product);
-//        }
-//    }
-
-    private String vnpRequest(OrderDto orderDto, HttpServletRequest req){
+    private String vnpRequest(OrderResponse orderDto, HttpServletRequest req){
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Saigon"));

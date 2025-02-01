@@ -1,69 +1,62 @@
 package com.ark.security.controller.user;
 
-import com.ark.security.auth.AuthenticationService;
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.user.User;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.response.VoucherResponse;
 import com.ark.security.service.VoucherService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user/voucher")
 @RequiredArgsConstructor
 public class VoucherController {
-    private final VoucherService voucherService;
+    private final VoucherService voucherTestService;
 
-    private final AuthenticationService authenticationService;
-
-
-    @GetMapping("/availableVouchers/{productId}")
-    public ResponseEntity<?> getAvailableVouchersByProductId(@PathVariable int productId){
-        return ResponseEntity.ok(voucherService.showAvailableVoucherByProductId(productId));
-    }
-
-    @GetMapping("/availableVouchers/all")
-    public ResponseEntity<?> getAvailableVouchers(){
-        return ResponseEntity.ok(voucherService.showAvailableVoucherToAllProducts());
+    @GetMapping
+    public ApiResponse<List<VoucherResponse>> getAllVouchers(){
+        return ApiResponse.<List<VoucherResponse>>builder()
+                .result(voucherTestService.getAllVouchers())
+                .build();
     }
 
 
-    @GetMapping("/check/{voucherId}")
-    public ResponseEntity<?> checkVoucher(@PathVariable int voucherId){
-        return ResponseEntity.ok(voucherService.checkVoucherExpiration(voucherId));
+    @GetMapping("/available/{id}")
+    public ApiResponse<List<VoucherResponse>> getAvailableVouchersByProductId(@PathVariable int id){
+        return ApiResponse.<List<VoucherResponse>>builder()
+                .result(voucherTestService.availableVouchersByProductId(id))
+                .build();
     }
 
+    @GetMapping("/available/all")
+    public ApiResponse<List<VoucherResponse>> getAvailableVouchers(){
+        return ApiResponse.<List<VoucherResponse>>builder()
+                .result(voucherTestService.availableVouchersToAllProducts())
+                .build();
+    }
+
+    @GetMapping("/check/{id}")
+    public ApiResponse<Boolean> checkVoucher(@PathVariable int id){
+        return ApiResponse.<Boolean>builder()
+                .result(voucherTestService.isVoucherExpired(id))
+                .build();
+    }
 
     @PostMapping("/apply")
-    public ResponseEntity<?> applyVoucher(@RequestBody String code,
-                                          HttpServletRequest request,
-                                          HttpServletResponse response){
-        User user = authenticationService.getCurrentUser(request, response);
-        voucherService.applyVoucher(user.getId(), code);
-        var successMessage = SuccessMessage.builder()
-                .statusCode(200)
-                .message("Áp dụng mã giảm giá thành công")
-                .timestamp(new Date())
+    public ApiResponse<String> applyVoucher(@RequestBody String code){
+        voucherTestService.applyVoucher(code);
+        return ApiResponse.<String>builder()
+                .result("Áp dụng mã giảm giá thành công")
                 .build();
-        return ResponseEntity.ok(successMessage);
     }
 
-    @DeleteMapping("/remove/{voucherId}")
-    public ResponseEntity<?> removeVoucher(@PathVariable int voucherId,
-                                           HttpServletRequest request,
-                                           HttpServletResponse response){
-        User user = authenticationService.getCurrentUser(request, response);
-        voucherService.removeVoucher(user.getId(), voucherId);
-        var successMessage = SuccessMessage.builder()
-                .statusCode(200)
-                .message("Xóa mã giảm giá thành công")
-                .timestamp(new Date())
+    @DeleteMapping("/remove/{id}")
+    public ApiResponse<String> removeVoucher(@PathVariable int id){
+        voucherTestService.removeVoucher(id);
+        return ApiResponse.<String>builder()
+                .result("Xóa mã giảm giá thành công")
                 .build();
-        return ResponseEntity.ok(successMessage);
     }
 
 

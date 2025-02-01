@@ -1,7 +1,10 @@
 package com.ark.security.service;
 
-import com.ark.security.dto.OrderDto;
-import com.ark.security.exception.QuantityShortageException;
+import com.ark.security.dto.request.OrderRequest;
+import com.ark.security.dto.response.OrderResponse;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
+import com.ark.security.mapper.OrderMapper;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
@@ -10,15 +13,19 @@ import com.ark.security.models.order.OrderStatus;
 import com.ark.security.models.product.Product;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.user.User;
+import com.ark.security.repository.CartRepository;
+import com.ark.security.repository.OrderDetailRepository;
 import com.ark.security.repository.OrderRepository;
-import com.ark.security.service.product.ProductDetailService;
-import com.ark.security.service.product.ProductService;
+import com.ark.security.repository.product.ProductDetailRepository;
+import com.ark.security.repository.product.ProductRepository;
+import com.ark.security.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,125 +36,91 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
+    private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
-    private final OrderDetailService orderDetailService;
-    private final ProductDetailService productDetailService;
-    private final ProductService productService;
-    private final CartService cartService;
+    private final OrderDetailRepository orderDetailRepository;
+    private final OrderMapper orderMapper;
+    private final ProductRepository productRepository;
+    private final ProductDetailRepository productDetailRepository;
+    private final UserRepository userRepository;
 
-
-    public boolean checkOrderCode(String orderCode){
-        return orderRepository.existsByOrderCode(orderCode).orElse(false);
+    private User getCurrentUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        return userRepository.findUserByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
-    public List<Order> getAllOrdersByOrderDate(){
-        // Sort by orderDate DESC
-        return orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate"));
+    private Cart getCart(String username){
+        return cartRepository.findByUserUsername(username).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
     }
 
-    public Order getOrderByOrderCode(String orderCode){
+    public List<OrderResponse> getAllOrders(){
+        List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate"));
+        return orders.stream()
+                .map(orderMapper::toOrderResponse)
+                .toList();
+    }
+
+    public OrderResponse getOrderByOrderCode(String orderCode){
+        Order order = orderRepository.findByOrderCode(orderCode).orElse(null);
+        return orderMapper.toOrderResponse(order);
+    }
+
+    public Order getOrderByCode(String orderCode){
         return orderRepository.findByOrderCode(orderCode).orElse(null);
     }
 
-    public List<Order> getAllOrders(){
-        return orderRepository.findAll();
+    public OrderResponse getOrderById(int id){
+        Order order = orderRepository.findById(id).orElse(null);
+        return orderMapper.toOrderResponse(order);
     }
 
-    public Order getOrderById(Integer id){
-        return orderRepository.findById(id).orElse(null);
-    }
-
-    public void saveOrder(Order order){
-        orderRepository.save(order);
-    }
-
-    public List<Order> getOrdersByUserId(int id){
-        return orderRepository.findAllByUserId(id).orElse(null);
-    }
-
-    public List<OrderDto> getOrdersDtoByUserId(int id){
+    public List<OrderResponse> getOrdersByUserId(int id){
         List<Order> orders = orderRepository.findAllByUserId(id).orElse(null);
-        List<OrderDto> orderDtos = new ArrayList<>();
-        if(orders!=null){
-            orders.stream()
-                    .sorted((o1, o2)-> o2.getOrderDate().compareTo(o1.getOrderDate()))
-                    .forEach(order -> orderDtos.add(order.convertToDto()));
-            return orderDtos;
+        if(orders == null){
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+        return orders
+                .stream()
+                .sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()))
+                .map(orderMapper::toOrderResponse)
+                .toList();
     }
 
-    @Transactional
-    public OrderDto createOrder(User user, Order order){
-        Cart cart = cartService.getCartByUsername(user.getUsername());
+    public OrderResponse createOrder(OrderRequest request){
+        User user = getCurrentUser();
+        Cart cart = getCart(user.getUsername());
         List<CartItem> cartItems = cart.getCartItems();
-        // check item quantity in stock
         checkCartItemQuantity(cartItems);
-        // update product stock and sold
         updateProductStockAndSold(cartItems);
-        order.setOrderCode(RandomStringUtils.random(10, true, true));
+        Order order = orderMapper.toOrder(request);
         order.setUser(user);
+        order.setOrderCode(RandomStringUtils.random(10, true, true));
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PENDING);
         orderRepository.save(order);
 
-        List<OrderDetail> orderDetails = new ArrayList<>();
+        List<OrderDetail> list = new ArrayList<>();
         for(CartItem ci : cartItems){
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrder(order);
-            orderDetail.setProductDetail(ci.getProductDetail());
-            orderDetail.setQuantity(ci.getQuantity());
-            orderDetail.setPrice(ci.getPrice());
-            orderDetail.setTotal(ci.getTotal());
-            orderDetail.setOrderDate(LocalDateTime.now());
-            orderDetails.add(orderDetail);
-            orderDetailService.saveOrderDetail(orderDetail);
+            OrderDetail orderDetail = convertToOrderDetail(ci, order);
+            list.add(orderDetail);
+            orderDetailRepository.save(orderDetail);
         }
-        order.setOrderDetails(orderDetails);
+        order.setOrderDetails(list);
         orderRepository.save(order);
         cart.setStatus(false);
-        cartService.saveCart(cart);
-        OrderDto orderDto = order.convertToDto();
-        orderDto.setDiscount(cart.getVoucher() != null ? cart.getVoucher().getDiscount() : 0);
-        return orderDto;
+        cartRepository.save(cart);
+        OrderResponse response = orderMapper.toOrderResponse(order);
+        response.setDiscount(cart.getVoucher() != null ? cart.getVoucher().getDiscount() : 0);
+        return response;
     }
 
-
-    private void checkCartItemQuantity(List<CartItem> cartItems){
-        cartItems.stream()
-                .filter(cartItem -> cartItem.getProductDetail().getStock() < cartItem.getQuantity())
-                .findFirst()
-                .ifPresent(cartItem -> {
-                    throw new QuantityShortageException("Sản phẩm " + cartItem.getProductDetail().getProduct().getName() + " không đủ số lượng trong kho");
-                });
-    }
-
-    private void updateProductStockAndSold(List<CartItem> cartItems){
-        cartItems.forEach(ci -> {
-            ProductDetail productDetail = ci.getProductDetail();
-            productDetail.setStock(productDetail.getStock() - ci.getQuantity());
-            productDetailService.saveProductDetail(productDetail);
-            Product product = productDetail.getProduct();
-            product.setSold(product.getSold() + ci.getQuantity());
-            productService.save(product);
-        });
-    }
-
-    public void rollbackProductStockAndSold(List<CartItem> cartItems){
-        cartItems.forEach(ci -> {
-            ProductDetail productDetail = ci.getProductDetail();
-            productDetail.setStock(productDetail.getStock() + ci.getQuantity());
-            productDetailService.saveProductDetail(productDetail);
-            Product product = productDetail.getProduct();
-            product.setSold(product.getSold() - ci.getQuantity());
-            productService.save(product);
-        });
-    }
-
-    public void updateOrder(int id, Order order){
+    public void updateOrder(int id, OrderRequest request){
         Order oldOrder = orderRepository.findById(id).orElse(null);
+        Order order = orderMapper.toOrder(request);
+        log.info(order.toString());
         if(oldOrder!=null){
-            Cart cart = cartService.getCartByUsername(oldOrder.getUser().getUsername());
+            Cart cart = cartRepository.findByUserUsername(oldOrder.getUser().getUsername()).orElse(null);
             List<CartItem> cartItems = cart.getCartItems();
             if(order.getStatus().equals(OrderStatus.CANCELED) || order.getStatus().equals(OrderStatus.FAILED)){
                 rollbackProductStockAndSold(cartItems);
@@ -157,18 +130,63 @@ public class OrderService {
         }
     }
 
+    private static OrderDetail convertToOrderDetail(CartItem ci, Order order) {
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setOrder(order);
+        orderDetail.setProductDetail(ci.getProductDetail());
+        orderDetail.setQuantity(ci.getQuantity());
+        orderDetail.setPrice(ci.getPrice());
+        orderDetail.setTotal(ci.getTotal());
+        orderDetail.setOrderDate(LocalDateTime.now());
+        return orderDetail;
+    }
+
+
+    private void checkCartItemQuantity(List<CartItem> cartItems){
+        cartItems.stream()
+                .filter(cartItem -> cartItem.getProductDetail().getStock() < cartItem.getQuantity())
+                .findFirst()
+                .ifPresent(cartItem -> {
+                    throw new AppException(ErrorCode.SHORTAGE_QUANTITY);
+                });
+    }
+
+    private void updateProductStockAndSold(List<CartItem> cartItems){
+        cartItems.forEach(cartItem ->{
+            ProductDetail productDetail = cartItem.getProductDetail();
+            productDetail.setStock(productDetail.getStock() - cartItem.getQuantity());
+            productDetailRepository.save(productDetail);
+            Product product = productDetail.getProduct();
+            product.setSold(product.getSold() + cartItem.getQuantity());
+            productRepository.save(product);
+        });
+    }
+
+    public void rollbackProductStockAndSold(List<CartItem> cartItems){
+        cartItems.forEach(ci -> {
+            ProductDetail productDetail = ci.getProductDetail();
+            productDetail.setStock(productDetail.getStock() + ci.getQuantity());
+            productDetailRepository.save(productDetail);
+            Product product = productDetail.getProduct();
+            product.setSold(product.getSold() - ci.getQuantity());
+            productRepository.save(product);
+        });
+    }
+
     public void deleteOrder(int id){
-        Order order = orderRepository.findById(id).orElse(null);
-        if(order!=null){
-            orderRepository.delete(order);
-        }
+        orderRepository.findById(id).ifPresent(orderRepository::delete);
     }
 
     public void cancelOrder(int id){
-        Order order = getOrderById(id);
-        order.setStatus(OrderStatus.CANCELED);
-        orderRepository.save(order);
+        Order order = orderRepository.findById(id).orElse(null);
+        if(order!=null){
+            order.setStatus(OrderStatus.CANCELED);
+            orderRepository.save(order);
+        }
     }
 
 
+    public void saveOrder(Order order) {
+        orderRepository.save(order);
+    }
 }

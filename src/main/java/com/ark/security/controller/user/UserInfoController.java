@@ -1,19 +1,15 @@
 package com.ark.security.controller.user;
 
-import com.ark.security.auth.AuthenticationService;
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.user.User;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.UserInfoRequest;
+import com.ark.security.dto.request.UserRequest;
+import com.ark.security.dto.response.UserResponse;
 import com.ark.security.service.user.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.Map;
 
 @RestController
@@ -21,40 +17,32 @@ import java.util.Map;
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'EMPLOYEE')")
 public class UserInfoController {
-    private final UserService userService;
-    private final AuthenticationService authenticationService;
+    private final UserService userTestService;
 
     @GetMapping("/current-user")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read', 'user:read')")
-    public ResponseEntity<?> getCurrentUser(HttpServletRequest request, HttpServletResponse response){
-        return ResponseEntity.ok(authenticationService.getCurrentUser(request, response));
+    public ApiResponse<UserResponse> getCurrentUser(){
+        return ApiResponse.<UserResponse>builder()
+                .result(userTestService.getCurrentUser())
+                .build();
     }
 
-    @PutMapping("/update/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update', 'user:update')")
-    public ResponseEntity<?> update(@PathVariable int id,@Valid @RequestBody User user){
-        userService.updateUser(id, user);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    @PostMapping("/update")
+    public ApiResponse<UserResponse> updateCurrentUser(@RequestBody @Valid UserInfoRequest request){
+        return ApiResponse.<UserResponse>builder()
                 .message("Cập nhật tài khoản thành công")
-                .timestamp(new Date())
+                .result(userTestService.updateCurrentUser(request))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
     @PostMapping("/change-password/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update', 'user:update')")
-    public ResponseEntity<?> changePassword(
+    public ApiResponse<String> changePassword(
             @PathVariable int id,
             @Valid  @RequestBody Map<String, String> body
     ){
-        userService.changePassword(id, body.get("oldPassword"), body.get("newPassword"));
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Đổi mật khẩu thành công")
-                .timestamp(new Date())
+        userTestService.changePassword(id, body.get("oldPassword"), body.get("newPassword"));
+        return ApiResponse.<String>builder()
+                .result("Đổi mật khẩu thành công")
                 .build();
-        return ResponseEntity.ok(success);
     }
 
 }

@@ -1,8 +1,14 @@
 package com.ark.security.service.product;
 
+import com.ark.security.dto.request.ProductDetailRequest;
+import com.ark.security.dto.response.ProductDetailResponse;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
 import com.ark.security.exception.NotFoundException;
+import com.ark.security.mapper.ProductDetailMapper;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.repository.product.ProductDetailRepository;
+import com.ark.security.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,49 +18,54 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductDetailService {
     private final ProductDetailRepository productDetailRepository;
-    private final String NOT_FOUND = "Không tìm thấy chi tiết sản phẩm: ";
-    private final String EMPTY = "Không có chi tiết sản phẩm nào";
+    private final ProductRepository productRepository;
+    private final ProductDetailMapper productDetailMapper;
 
 
-    public void saveProductDetail(ProductDetail productDetail){
-           productDetailRepository.save(productDetail);
+    public List<ProductDetailResponse> getAllProductDetails(){
+        return productDetailRepository.findAll()
+                .stream()
+                .map(productDetailMapper::toProductDetailResponse)
+                .toList();
+    }
+    public List<ProductDetailResponse> getAllByProductId(int id){
+        return productDetailRepository.findAllByProductId(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_DETAIL_NOT_FOUND))
+                .stream()
+                .map(productDetailMapper::toProductDetailResponse)
+                .toList();
     }
 
-    public ProductDetail getProductDetailById(int id){
-        return productDetailRepository.findById(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
+    public ProductDetailResponse getProductDetailById(int id){
+        return productDetailMapper.toProductDetailResponse(
+                productDetailRepository
+                        .findById(id)
+                        .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_DETAIL_NOT_FOUND)));
     }
 
-    public List<ProductDetail> getAllProductDetail(){
-        if(productDetailRepository.findAll().isEmpty())
-            throw new NotFoundException(EMPTY);
-        return productDetailRepository.findAll();
+    public ProductDetailResponse createProductDetail(ProductDetailRequest request){
+        ProductDetail productDetail = productDetailMapper.toProductDetail(request);
+        int productId = request.getProductId();
+        productDetail.setProduct(productRepository.findById(productId)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
+        return productDetailMapper
+                .toProductDetailResponse(productDetailRepository.save(productDetail));
     }
 
-    public List<ProductDetail> getProductDetailsByProductId(int id){
-        if(productDetailRepository.findAllByProductId(id).isEmpty())
-            throw new NotFoundException(EMPTY);
-        return productDetailRepository.findAllByProductId(id).orElseThrow(()-> new NotFoundException(NOT_FOUND+ id));
-    }
-
-
-
-    public void updateProductDetail(int id, ProductDetail productDetail){
-        ProductDetail productDetailUpdate = getProductDetailById(id);
-        if(productDetail.getProduct() != null){
-            productDetailUpdate.setProduct(productDetail.getProduct());
-            productDetailUpdate.setPrice(productDetail.getPrice());
-            productDetailUpdate.setStock(productDetail.getStock());
-            productDetailUpdate.setWeight(productDetail.getWeight());
-            productDetailUpdate.setStatus(productDetail.getStatus());
-            productDetailRepository.save(productDetailUpdate);
-        }else{
-            throw new NotFoundException(NOT_FOUND + id);
-        }
+    public ProductDetailResponse updateProductDetail(int id, ProductDetailRequest request){
+        var productDetail = productDetailRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_DETAIL_NOT_FOUND));
+        productDetailMapper.updateProductDetail(productDetail, request);
+        int productId = request.getProductId();
+        productDetail.setProduct(productRepository.findById(productId)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
+        return productDetailMapper
+                .toProductDetailResponse(productDetailRepository.save(productDetail));
     }
 
     public void deleteProductDetail(int id){
-        if(!productDetailRepository.existsById(id))
-            throw new NotFoundException(NOT_FOUND+ id);
-        productDetailRepository.deleteById(id);
+        ProductDetail productDetail = productDetailRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_DETAIL_NOT_FOUND));
+        productDetailRepository.deleteById(productDetail.getId());
     }
 }

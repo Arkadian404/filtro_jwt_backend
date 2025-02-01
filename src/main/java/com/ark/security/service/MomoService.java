@@ -1,17 +1,14 @@
 package com.ark.security.service;
 
-import com.ark.security.dto.OrderDetailDto;
-import com.ark.security.dto.OrderDto;
+import com.ark.security.dto.response.OrderDetailResponse;
+import com.ark.security.dto.response.OrderResponse;
+import com.ark.security.mapper.OrderDetailMapper;
 import com.ark.security.models.Cart;
 import com.ark.security.models.CartItem;
 import com.ark.security.models.order.Order;
 import com.ark.security.models.order.OrderDetail;
 import com.ark.security.models.order.OrderStatus;
 import com.ark.security.models.payment.momo.*;
-import com.ark.security.models.product.Product;
-import com.ark.security.models.product.ProductDetail;
-import com.ark.security.service.product.ProductDetailService;
-import com.ark.security.service.product.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -49,10 +46,11 @@ public class MomoService {
     private final CartService cartService;
     private final OrderService orderService;
     private final RestTemplate restTemplate;
+    private final OrderDetailMapper orderDetailMapper;
     private final Logger logger = LoggerFactory.getLogger(MomoService.class);
 
 
-    public MomoResponse createMomoOrder(OrderDto orderDto){
+    public MomoResponse createMomoOrder(OrderResponse orderDto){
         String endpoint = MOMO_API + "/create";
         MomoRequest momoRequest = momoRequest(orderDto);
         return processMomoOrder(endpoint, momoRequest);
@@ -95,18 +93,18 @@ public class MomoService {
 
 
     private boolean verifyOrder(MomoIPN momoIPN){
-        Order order = orderService.getOrderByOrderCode(momoIPN.getOrderId());
+        OrderResponse order = orderService.getOrderByOrderCode(momoIPN.getOrderId());
         return order!=null;
     }
 
     private boolean verifyAmount(MomoIPN momoIPN){
-        Order order = orderService.getOrderByOrderCode(momoIPN.getOrderId());
+        OrderResponse order = orderService.getOrderByOrderCode(momoIPN.getOrderId());
         return String.valueOf(order.getTotal()).equals(String.valueOf(momoIPN.getAmount()));
     }
 
     private void updateOrderStatus(MomoIPN momoIPN){
-        Order order = orderService.getOrderByOrderCode(momoIPN.getOrderId());
-        Cart cart = cartService.getCartByUsername(order.getUser().getUsername());
+        Order order = orderService.getOrderByCode(momoIPN.getOrderId());
+        Cart cart = cartService.getCartById(order.getUser().getId());
         List<CartItem> cartItems = cart.getCartItems();
         switch (momoIPN.getResultCode().toString()) {
             case "0":
@@ -166,11 +164,13 @@ public class MomoService {
         return null;
     }
 
-    private MomoRequest momoRequest(OrderDto order){
+    private MomoRequest momoRequest(OrderResponse order){
         List<OrderDetail> orderDetail = orderDetailService.getOrderDetailByOrderId(order.getId());
-        List<OrderDetailDto> orderDetailDtos = new ArrayList<>();
+        List<OrderDetailResponse> orderDetailDtos = new ArrayList<>();
         if(orderDetail!=null){
-            orderDetail.forEach(od-> orderDetailDtos.add(od.convertToDto()));
+            orderDetail.stream()
+                    .map(orderDetailMapper::toOrderDetailResponse)
+                    .forEach(orderDetailDtos::add);
         }
         MomoRequest momoRequest = MomoRequest.builder()
                 .partnerCode(env.getProperty("application.security.momo.partner-code"))
@@ -197,7 +197,7 @@ public class MomoService {
         momoRequest.setSignature(signature);
 
         List<MomoItems> momoItems = new ArrayList<>();
-        for(OrderDetailDto od : orderDetailDtos){
+        for(OrderDetailResponse od : orderDetailDtos){
             MomoItems momoItem = MomoItems.builder()
                     .id(od.getProductDetail().getId().toString())
                     .name(od.getProductName())

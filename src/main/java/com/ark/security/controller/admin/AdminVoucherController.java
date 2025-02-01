@@ -1,19 +1,18 @@
 package com.ark.security.controller.admin;
 
-import com.ark.security.exception.SuccessMessage;
-import com.ark.security.models.Voucher;
+import com.ark.security.dto.ApiResponse;
+import com.ark.security.dto.request.VoucherRequest;
+import com.ark.security.dto.response.VoucherResponse;
 
 import com.ark.security.service.VoucherService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,51 +24,46 @@ public class AdminVoucherController {
 
 
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    @GetMapping("/getList")
-    public ResponseEntity<?> getAllVoucher(){
-        return ResponseEntity.ok(voucherService.getAllVoucher());
+    @GetMapping
+    public ApiResponse<List<VoucherResponse>> getAllVoucher(){
+        return ApiResponse.<List<VoucherResponse>>builder()
+                .result(voucherService.getAllVouchers())
+                .build();
     }
 
     @PreAuthorize("hasAnyAuthority('admin:read', 'employee:read')")
-    @GetMapping("/find/{id}")
-    public ResponseEntity<?> find(@PathVariable int id){
-        return ResponseEntity.ok(voucherService.getVoucherById(id));
+    @GetMapping("/{id}")
+    public ApiResponse<VoucherResponse> find(@PathVariable int id){
+        return ApiResponse.<VoucherResponse>builder()
+                .result(voucherService.getVoucherByVoucherId(id))
+                .build();
     }
 
     @PreAuthorize("hasAnyAuthority('admin:create', 'employee:create')")
-    @PostMapping("/create")
-    public ResponseEntity<?> create(@Valid @RequestBody Voucher voucher){
-        voucherService.saveVoucher(voucher);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    @PostMapping
+    public ApiResponse<VoucherResponse> create(@Valid @RequestBody VoucherRequest voucher){
+        return ApiResponse.<VoucherResponse>builder()
                 .message("Tạo voucher thành công")
-                .timestamp(new Date())
+                .result(voucherService.create(voucher))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
     @PreAuthorize("hasAnyAuthority('admin:update', 'employee:update')")
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody Voucher voucher){
-        voucherService.updateVoucher(id, voucher);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    @PutMapping("/{id}")
+    public ApiResponse<VoucherResponse> update(@PathVariable int id, @Valid @RequestBody VoucherRequest voucher){
+        return ApiResponse.<VoucherResponse>builder()
                 .message("Cập nhật voucher thành công")
-                .timestamp(new Date())
+                .result(voucherService.update(id, voucher))
                 .build();
-        return ResponseEntity.ok(success);
     }
 
     @PreAuthorize("hasAnyAuthority('admin:delete', 'employee:delete')")
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable int id){
-        voucherService.deleteVoucher(id);
-        var success = SuccessMessage.builder()
-                .statusCode(HttpStatus.OK.value())
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> delete(@PathVariable int id){
+        voucherService.delete(id);
+        return ApiResponse.<String>builder()
                 .message("Xóa voucher thành công")
-                .timestamp(new Date())
                 .build();
-        return ResponseEntity.ok(success);
     }
 
 }

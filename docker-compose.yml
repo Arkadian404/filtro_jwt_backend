@@ -1,6 +1,19 @@
 version: '3.7'
 
 services:
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   docker-mysql:
     image: mysql:8.0
     restart: always
@@ -15,24 +28,46 @@ services:
       - "3307:3306"
     volumes:
       - filtro-volume:/var/lib/mysql
-      - ./db/filtro.sql:/docker-entrypoint-initdb.d/filtro.sql
+      - ./db/dataSample.sql:/docker-entrypoint-initdb.d/dataSample.sql
+  fast-api:
+    image: zafuog/fastapi_filtro
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: docker-mysql
+      LANGCHAIN_API_KEY: "verysecretkey"
+      LANGCHAIN_TRACING_V2: "true"
+      OPENAI_API_KEY: "verysecret"
+    depends_on:
+      docker-mysql:
+        condition: service_healthy
   back-end:
     image: zafuog/springboot_filtro:latest
     ports:
       - "8080:8080"
     environment:
       DB_HOST: docker-mysql
+      FASTAPI_URL: fast-api
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       docker-mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
   front-end:
     image: zafuog/angular-filtro:latest
     volumes:
       - ./config/default.conf:/etc/nginx/conf.d/default.conf
+#      - /etc/letsencrypt:/etc/letsencrypt
     ports:
-      - "4200:80"
+      - "80:80"
+      - "443:443"
     depends_on:
+      - fast-api
       - back-end
 
 volumes:
   filtro-volume:
+  redis-data:

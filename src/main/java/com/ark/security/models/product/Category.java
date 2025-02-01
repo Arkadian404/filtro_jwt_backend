@@ -1,11 +1,8 @@
 package com.ark.security.models.product;
 
-import com.ark.security.dto.CategoryDto;
 import com.ark.security.models.Voucher;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -23,8 +20,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @NotNull
-    @NotBlank(message = "Tên danh mục không được để trống")
+    @Column(unique = true)
     private String name;
     private Boolean status;
 
@@ -35,11 +31,4 @@ public class Category {
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Voucher> voucherList;
-
-    public CategoryDto convertToDto(){
-        return CategoryDto.builder()
-                .id(this.id)
-                .name(this.name)
-                .build();
-    }
 }

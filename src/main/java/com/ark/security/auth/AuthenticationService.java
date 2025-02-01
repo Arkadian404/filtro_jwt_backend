@@ -1,10 +1,9 @@
 package com.ark.security.auth;
 
-import com.ark.security.exception.NotFoundException;
-import com.ark.security.exception.PasswordNotMatchException;
-import com.ark.security.exception.BadCredentialsException;
+import com.ark.security.exception.*;
 import com.ark.security.models.Employee;
 import com.ark.security.models.token.Token;
+import com.ark.security.repository.user.UserRepository;
 import com.ark.security.service.user.EmployeeService;
 import com.ark.security.service.user.TokenService;
 import com.ark.security.models.token.TokenType;
@@ -25,7 +24,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-
+    private final UserRepository userRepository;
     private final UserService userService;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
@@ -34,7 +33,7 @@ public class AuthenticationService {
     private final EmployeeService employeeService;
 
     public void register(RegisterRequest request){
-        if(!userService.matchPassword(request.getPassword(), request.getConfirmPassword())){
+        if(!request.getPassword().equals(request.getConfirmPassword())){
             throw new PasswordNotMatchException("Mật khẩu không khớp");
         }
         var user = User.builder()
@@ -44,7 +43,7 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(request.getPassword())
                 .build();
-        userService.saveUser(user);
+        userRepository.save(user);
     }
 
 
@@ -61,7 +60,7 @@ public class AuthenticationService {
         }   catch (AuthenticationException ex){
             throw new BadCredentialsException("Tài khoản hoặc mật khẩu không đúng");
         }
-        var user = this.userService.getByUsername(request.getUsername());
+        var user = userRepository.findUserByUsername(request.getUsername()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         var token = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
@@ -85,7 +84,7 @@ public class AuthenticationService {
         } catch (AuthenticationException ex){
             throw new BadCredentialsException("Tài khoản hoặc mật khẩu không đúng");
         }
-        var user = this.userService.getByUsername(request.getUsername());
+        var user = userRepository.findUserByUsername(request.getUsername()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         if(user.getRole().toString().equals("EMPLOYEE") || user.getRole().toString().equals("ADMIN")){
                 var token = jwtService.generateToken(user);
                 var refreshToken = jwtService.generateRefreshToken(user);
@@ -124,7 +123,7 @@ public class AuthenticationService {
             var role = jwtService.extractRole(jwt);
             var username = jwtService.extractUsername(jwt);
             if(username!=null){
-                return userService.getByUsername(username);
+                return userRepository.findUserByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             }else{
                 throw new NotFoundException("Không tìm thấy tài khoản");
             }
@@ -146,9 +145,8 @@ public class AuthenticationService {
                 if(roleStr.equals("EMPLOYEE")|| roleStr.equals("ADMIN")){
                     var username = jwtService.extractUsername(jwt);
                     if(username!=null){
-                        User user = userService.getByUsername(username);
-                        Employee employee = employeeService.getEmployeeByUserId(user.getId());
-                        return employee;
+                        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                        return employeeService.getEmployeeByUserId(user.getId());
                     }
                 }
             }else{
@@ -197,7 +195,7 @@ public class AuthenticationService {
         username = jwtService.extractUsername(refreshToken);
 
         if(username!=null){
-            var user = userService.getByUsername(username);
+            var user = userRepository.findUserByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             if(jwtService.isValidToken(refreshToken, user)){
                 String accessToken = jwtService.    generateToken(user);
                 revokeAllUserTokens(user);

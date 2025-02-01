@@ -1,18 +1,21 @@
 package com.ark.security.service.product;
 
-import com.ark.security.dto.ProductDetailDto;
-import com.ark.security.dto.ProductDto;
-import com.ark.security.dto.ProductImageDto;
-import com.ark.security.exception.DuplicateException;
-import com.ark.security.exception.NotFoundException;
-import com.ark.security.exception.NullException;
+import com.ark.security.dto.*;
+import com.ark.security.dto.request.ProductRequest;
+import com.ark.security.dto.response.ProductResponse;
+import com.ark.security.exception.*;
+import com.ark.security.mapper.ProductMapper;
 import com.ark.security.models.product.Category;
 import com.ark.security.models.product.Product;
 import com.ark.security.models.product.ProductDetail;
 import com.ark.security.models.product.ProductImage;
-import com.ark.security.repository.product.ProductRepository;
+import com.ark.security.repository.product.*;
+import com.ark.security.service.CacheService;
 import com.github.slugify.Slugify;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -21,452 +24,356 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductService {
+    ProductRepository productRepository;
+    BrandRepository brandRepository;
+    FlavorRepository flavorRepository;
+    CategoryRepository categoryRepository;
+    ProductOriginRepository productOriginRepository;
+    VendorRepository vendorRepository;
+    ProductMapper productMapper;
+    CacheService cacheService;
 
-    private final ProductRepository productRepository;
-    private final ProductImageService productImageService;
-    private final ProductDetailService productDetailService;
-    private final String PRODUCT_NOT_FOUND = "Không tìm thấy sản phẩm: ";
-    private final String PRODUCT_EMPTY = "Không có sản phẩm nào";
-    private final String PRODUCT_NAME_EXISTS = "Sản phẩm đã tồn tại";
-    private final String NON_BLANK = "Không được để trống";
+    static String PRODUCTS_KEY = "products:";
 
 
-    public Product getProductById(int id) {
-        return productRepository.findById(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
+    public List<ProductResponse> getAllProducts(){
+        return productRepository.findAll()
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public List<ProductDto> getProductDtoList(){
-        List<Product> products = productRepository.findAll();
-        List<ProductDto> dtos = new ArrayList<>();
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }else{
-            for(Product product : products){
-                dtos.add(product.convertToDto());
-            }
-        }
-        return dtos;
+    public ProductResponse getProductById(int id){
+        return productMapper.toProductResponse(
+                productRepository
+                        .findById(id)
+                        .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
     }
 
-    public ProductDto getProductDtoById(int id){
-        Product product = getProductById(id);
-        return  product.convertToDto();
+    public List<ProductResponse> getProductsByName(String name){
+        List<ProductResponse> list = productRepository.searchByName(name)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return cacheService.getOrSetCacheList(
+                PRODUCTS_KEY+"search:"+name,
+                list,
+                4,
+                TimeUnit.HOURS
+        );
     }
 
-    public Product getProductBySlug(String slug){
-        return productRepository.findBySlug(slug).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ slug));
+    public ProductResponse getProductBySlug(String slug){
+        return productMapper.toProductResponse(
+                productRepository.findBySlug(slug)
+                        .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+        );
     }
 
-    public ProductDto getProductDtoBySlug(String slug){
-        Product product = getProductBySlug(slug);
-        return convertProductToDto(product);
+    public List<ProductResponse> getProductsByCategory(int id){
+        List<ProductResponse> list = productRepository.findAllByCategoryId(id)
+                                        .orElseThrow(()-> new AppException(ErrorCode.CATEGORY_NOT_FOUND))
+                                        .stream()
+                                        .map(productMapper::toProductResponse)
+                                        .toList();
+        return cacheService.getOrSetCacheList(
+                PRODUCTS_KEY+":category:"+id, list, 4, TimeUnit.HOURS);
     }
 
-
-    public List<Product> getAllProducts(){
-        List<Product> products = productRepository.findAll();
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
+    public List<ProductResponse> getProductsByOrigin(int id){
+        List<ProductResponse> list = productRepository.findByOriginId(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_ORIGIN_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return cacheService.getOrSetCacheList(
+                PRODUCTS_KEY+":origin:"+id,
+                list,
+                4,
+                TimeUnit.HOURS
+        );
     }
 
-    public List<ProductDto> getAllProductsDto(){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.findAll();
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
-    }
-    Page<ProductDto> doPagination(List<ProductDto> list, int page, String sort, String flavor,
-                                  String category, String brand, String origin, String vendor){
-        Pageable pageable = PageRequest.of(page, 12);
-        List<Predicate<ProductDto>> filters = new ArrayList<>();
-        if(!flavor.isEmpty()){
-            filters.add(product -> flavor.contains(product.getFlavor().getName()));
-        }
-        if(!category.isEmpty()){
-            filters.add(product -> category.contains(product.getCategory().getName()));
-        }
-        if(!brand.isEmpty()){
-            filters.add(product -> brand.contains(product.getBrand().getName()));
-        }
-        if(!origin.isEmpty()){
-            filters.add(product -> origin.contains(product.getOrigin().getName()));
-        }
-        if(!vendor.isEmpty()){
-            filters.add(product -> vendor.contains(product.getVendor().getName()));
-        }
-
-        Predicate<ProductDto> filter = filters.stream().reduce(x -> true, Predicate::and);
-        list = list.stream().filter(filter).collect(Collectors.toList());
-        switch (sort){
-            case "product_name_asc":
-                list.sort(Comparator.comparing(ProductDto::getName));
-                break;
-            case "product_name_desc":
-                list.sort(Comparator.comparing(ProductDto::getName).reversed());
-                break;
-            case "price_asc":
-                list.sort(Comparator.comparing(product -> product.getProductDetails().get(0).getPrice()));
-                break;
-            case "price_desc":
-                Comparator<ProductDto> comparator =  Comparator.comparing(product -> product.getProductDetails().get(0).getPrice());
-                list.sort(comparator.reversed());
-                break;
-            default:
-                break;
-        }
-        if(list.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return convertListDtoToPage(list, pageable);
+    public List<ProductResponse> getProductsByFlavor(int id){
+        List<ProductResponse> list = productRepository.findAllByFlavorId(id)
+                .orElseThrow(()-> new AppException(ErrorCode.FLAVOR_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return cacheService.getOrSetCacheList(
+                PRODUCTS_KEY+":flavor:"+id,
+                list,
+                4,
+                TimeUnit.HOURS
+        );
     }
 
-    public Page<ProductDto> getAllProductsDtoPaging(int page, String sort, String flavor, String category,
-                                                    String brand, String origin, String vendor
-                                                    ){
-        List<Product> products = productRepository.findAll();
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        List<ProductDto> list = convertProductListToDto(products);
-        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    public List<ProductResponse> getTop3LatestProducts(){
+        return productRepository.findTop3LatestProducts()
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public Page<ProductDto> getAllProductsDtoByCategoryPaging(int id, int page, String sort, String flavor, String category,
-                                                              String brand, String origin, String vendor){
-        List<Product> products = getAllProductsByCategory(id);
-        List<ProductDto> list = convertProductListToDto(products);
-        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    public List<ProductResponse> getTop3BestSellerProducts(){
+        return productRepository.findTop3BestSellerProducts()
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public Page<ProductDto> getAllProductsDtoByOriginContinentPaging(String name,int page, String sort, String flavor, String category,
-                                                                     String brand, String origin, String vendor ){
-        List<Product> products = productRepository.findByOriginContinent(name).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductListToDto(products);
-        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    public List<ProductResponse> getTop3SpecialProducts(){
+        return productRepository.findTop3SpecialProducts()
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public Page<ProductDto> getAllProductsDtoByIsSpecialPaging(Boolean isSpecial, int page, String sort, String flavor, String category,
-                                                               String brand, String origin, String vendor){
-        List<Product> products = productRepository.findByIsSpecial(isSpecial).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductListToDto(products);
-        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    public List<ProductResponse> getColombiaTop10Products(){
+        List<Product> list = productRepository.findByOriginName(2).orElse(List.of());
+        return list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public Page<ProductDto> getAllProductsDtoByIsLimitedPaging(Boolean isLimited, int page, String sort, String flavor, String category,
-                                                               String brand, String origin, String vendor){
-        List<Product> products = productRepository.findByIsLimited(isLimited).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductListToDto(products);
-        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    public List<ProductResponse> getRoastedBeanTop10Products(){
+        List<Product> list = productRepository.findTop10ProductsInSpecific(2).orElse(List.of());
+        return list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public Page<ProductDto> getAllProductsDtoByBestSellerPaging(int page, String sort, String flavor, String category,
-                                                                String brand, String origin, String vendor){
-        List<Product> products = productRepository.findBestSellerProducts().orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        List<ProductDto> list = convertProductListToDto(products);
-        return doPagination(list, page, sort, flavor, category, brand, origin, vendor);
+    public List<ProductResponse> getBottledCoffeeTop10Products(){
+        List<Product> list = productRepository.findTop10ProductsInSpecific(4).orElse(List.of());
+        return list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public ProductDto getProductDtoByName(String name){
-        Product product = productRepository.findByName(name).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ name));
-        return convertProductToDto(product);
+    public List<ProductResponse> getTop10RelatedProductsByFlavor(int id, int flavorId){
+        List<Product> list = productRepository.findTop10RelatedProductsByFlavor(id, flavorId).orElse(List.of());
+        List<ProductResponse> responses = list.stream()
+                                .map(productMapper::toProductResponse)
+                                .toList();
+        return cacheService.getOrSetCacheList(
+                PRODUCTS_KEY+":relatedFlavor"+flavorId,
+                responses,
+                4,
+                TimeUnit.HOURS
+        );
     }
 
-
-    public Category getCategoryByProductId(int id){
-        return productRepository.findCategoryUsingId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
+    public List<ProductResponse> getProductsByVendor(int id){
+        List<ProductResponse> list = productRepository.findAllByVendorId(id)
+                .orElseThrow(()-> new AppException(ErrorCode.VENDOR_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return cacheService.getOrSetCacheList(
+                PRODUCTS_KEY+":vendor:"+id,
+                list,
+                4,
+                TimeUnit.HOURS
+        );
     }
 
 
-
-    public List<Product> getAllProductsByCategory(int id){
-        List<Product> products =productRepository.findAllByCategoryId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
+    public List<ProductResponse> getSpecialProducts(){
+        return productRepository.findByIsSpecial(true)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
 
-    public List<ProductDto> getProductsDtoByName(String name){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.searchByName(name)
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ name));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
+    public List<ProductResponse> getLimitedProducts(){
+        return productRepository.findByIsLimited(true)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND))
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
     }
 
-    public List<Product> getProductsBySale(int id){
-        List<Product> products = productRepository.findAllBySaleId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
-
-    public List<Product> getProductsByOrigin(int id){
-        List<Product> products = productRepository.findByOriginId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
-
-    public List<Product> getProductsByFlavor(int id){
-        List<Product> products = productRepository.findAllByFlavorId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
-
-    public List<Product> getProductsByIsSpecial(Boolean isSpecial){
-        List<Product> products = productRepository.findByIsSpecial(isSpecial).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
-
-
-    public List<Product> getProductsByIsLimited(Boolean isLimited){
-        List<Product> products = productRepository.findByIsSpecial(isLimited).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
-
-    public List<Product> getProductsByVendor(int id){
-        List<Product> products = productRepository.findAllByVendorId(id).orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND+ id));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        return products;
-    }
-
-
-    public List<ProductDto> getTop3LatestProducts(){
-        List<ProductDto> productDtos; //create ProductDto list
-        List<Product> products = productRepository.findTop3LatestProducts()
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND)); //get top 3 latest products
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products); //convert product list to product dto list
-        return productDtos;//return product dto list
-    }
-
-    public List<ProductDto> getTop3BestSellerProducts(){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.findTop3BestSellerProducts()
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
-    }
-
-    public List<ProductDto> getTop3SpecialProducts(){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.findTop3SpecialProducts()
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
-    }
-
-    public List<ProductDto> getTop10ProductsInColombia(){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.findByOriginName(2)
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
-    }
-
-    public List<ProductDto> getTop10ProductsByRoastedCoffeeBeans(){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.findTop10ProductsInSpecific(2)
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
-    }
-
-
-    public List<ProductDto> getTop10ProductsByBottledCoffee(){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.findTop10ProductsInSpecific(4)
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
-    }
-
-    public List<ProductDto> getTop10RelatedProductsByFlavor(int id, int flavorId){
-        List<ProductDto> productDtos;
-        List<Product> products = productRepository.findTop10RelatedProductsByFlavor(id, flavorId)
-                .orElseThrow(()-> new NotFoundException(PRODUCT_NOT_FOUND));
-        if(products.isEmpty()){
-            throw new NotFoundException(PRODUCT_EMPTY);
-        }
-        productDtos = convertProductListToDto(products);
-        return productDtos;
-    }
-
-
-    public boolean isExistsProductByName(String name){
-        return productRepository.existsProductByName(name);
-    }
-
-    public void saveProduct(Product product) {
-        if(isExistsProductByName(product.getName())) {
-            throw new DuplicateException(PRODUCT_NAME_EXISTS);
-        }
-        Slugify slugify = Slugify.builder().transliterator(true).build();
-        product.setSlug(slugify.slugify(product.getName()));
+    public ProductResponse createProduct(ProductRequest request){
+        Product product = productMapper.toProduct(request);
+        passProductRefs(request, product);
         product.setCreatedAt(LocalDateTime.now());
+        product.setUpdatedAt(LocalDateTime.now());
         product.setSold(0);
-        productRepository.save(product);
+        product = productRepository.save(product);
+        return productMapper.toProductResponse(product);
     }
 
-    public void save(Product product){
-        productRepository.save(product);
+    public ProductResponse updateProduct(int id, ProductRequest request){
+        var product = productRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        productMapper.updateProduct(product, request);
+        passProductRefs(request, product);
+        product.setUpdatedAt(LocalDateTime.now());
+        return productMapper.toProductResponse(productRepository.save(product));
     }
 
-    public void updateProduct(int id, Product product){
-        Product oldProduct = getProductById(id);
-        Slugify slugify = Slugify.builder().transliterator(true).build();
-        if(product == null){
-            throw new NullException(NON_BLANK);
-        }
-        if (oldProduct != null) {
-            oldProduct.setName(product.getName());
-            oldProduct.setSlug(slugify.slugify(product.getName()));
-            oldProduct.setBrand(product.getBrand());
-            oldProduct.setCategory(product.getCategory());
-            oldProduct.setDescription(product.getDescription());
-            oldProduct.setSale(product.getSale());
-            oldProduct.setFlavor(product.getFlavor());
-            oldProduct.setUpdatedAt(LocalDateTime.now());
-            oldProduct.setIsSpecial(product.getIsSpecial());
-            oldProduct.setIsLimited(product.getIsLimited());
-            oldProduct.setOrigin(product.getOrigin());
-            oldProduct.setVendor(product.getVendor());
-            oldProduct.setStatus(product.getStatus());
-            productRepository.save(oldProduct);
-        }else {
-            throw new NotFoundException(PRODUCT_NOT_FOUND+ id);
-        }
+    public void deleteProduct(int id){
+        Product product = productRepository.findById(id)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        productRepository.deleteById(product.getId());
     }
 
-    public void updateProductRating(int id, Double rating){
-        Product oldProduct = getProductById(id);
-        if (oldProduct != null) {
-            oldProduct.setRating(rating);
-            productRepository.save(oldProduct);
-        }else {
-            throw new NotFoundException(PRODUCT_NOT_FOUND+ id);
-        }
+    private void passProductRefs(ProductRequest request, Product product) {
+        int brandId = request.getBrandId();
+        int flavorId = request.getFlavorId();
+        int categoryId = request.getCategoryId();
+        int productOriginId = request.getOriginId();
+        int vendorId = request.getVendorId();
+        product.setBrand(brandRepository.findById(brandId)
+                .orElseThrow(()-> new AppException(ErrorCode.BRAND_NOT_FOUND)));
+        product.setFlavor(flavorRepository.findById(flavorId)
+                .orElseThrow(()-> new AppException(ErrorCode.FLAVOR_NOT_FOUND)));
+        product.setCategory(categoryRepository.findById(categoryId)
+                .orElseThrow(()-> new AppException(ErrorCode.CATEGORY_NOT_FOUND)));
+        product.setOrigin(productOriginRepository.findById(productOriginId)
+                .orElseThrow(()-> new AppException(ErrorCode.PRODUCT_ORIGIN_NOT_FOUND)));
+        product.setVendor(vendorRepository.findById(vendorId)
+                .orElseThrow(()-> new AppException(ErrorCode.VENDOR_NOT_FOUND)));
+        Slugify slug = Slugify.builder().transliterator(true).build();
+        product.setSlug(slug.slugify(product.getName()));
     }
 
-    public void deleteProduct(int id) {
-        Product product = getProductById(id);
-        if(product == null){
-            throw new NotFoundException(PRODUCT_NOT_FOUND+ id);
-        }
-        productRepository.deleteById(id);
+    public PageResponse<ProductResponse> getProductsPaging(int page, ProductFilterRequest request){
+        List<ProductResponse> products = productRepository.findAll()
+                .stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return doPagination(page, products, request);
+    }
+
+    private PageResponse<ProductResponse> pagingByCategory(int id, int page, ProductFilterRequest request){
+        List<Product> list = productRepository.findAllByCategoryId(id).orElse(List.of());
+        List<ProductResponse> products = list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return doPagination(page, products, request);
+    }
+
+    public PageResponse<ProductResponse> getInstantCoffeePaging(int page, ProductFilterRequest request){
+        return pagingByCategory(1, page, request);
+    }
+
+    public PageResponse<ProductResponse> getRoastedBeanCoffeePaging(int page, ProductFilterRequest request){
+        return pagingByCategory(2, page, request);
+    }
+
+    public PageResponse<ProductResponse> getCoffeeBallPaging(int page, ProductFilterRequest request){
+        return pagingByCategory(3, page, request);
+    }
+
+    public PageResponse<ProductResponse> getBottledCoffeePaging(int page, ProductFilterRequest request){
+        return pagingByCategory(4, page, request);
     }
 
 
-    public List<ProductDto> convertProductListToDto(List<Product> products){
-        List<ProductDto> productDtos = new ArrayList<>();
-        products.forEach(product ->{
-            List<ProductImageDto> productImageDtos = new ArrayList<>();
-            List<ProductDetailDto> productDetailDtos = new ArrayList<>();
-            List<ProductImage> productImages = productImageService.getProductImagesByProductId(product.getId());
-            productImages.forEach(productImage -> productImageDtos.add(productImage.convertToDto()));
-            List<ProductDetail> productDetails = productDetailService.getProductDetailsByProductId(product.getId());
-            productDetails.forEach(productDetail -> productDetailDtos.add(productDetail.convertToDto()));
-            ProductDto productDto = ProductDto.builder()
-                    .id(product.getId())
-                    .name(product.getName())
-                    .slug(product.getSlug())
-                    .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
-                    .rating(product.getRating())
-                    .description(product.getDescription())
-                    .images(productImageDtos)
-                    .productDetails(productDetailDtos)
-                    .category(product.getCategory() == null ? null : product.getCategory().convertToDto())
-                    .flavor(product.getFlavor() == null ? null : product.getFlavor().convertToDto())
-                    .sale(product.getSale() == null ? null : product.getSale().convertToDto())
-                    .origin(product.getOrigin() == null ? null : product.getOrigin().convertToDto())
-                    .vendor(product.getVendor() == null ? null : product.getVendor().convertToDto())
-                    .build();
-            productDtos.add(productDto);
-        });
-        return productDtos;
+    public PageResponse<ProductResponse> getProductsPagingByContinent(String name, int page, ProductFilterRequest request){
+        List<Product> list = productRepository.findByOriginContinent(name).orElse(List.of());
+        List<ProductResponse> products = list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return doPagination(page, products, request);
     }
 
-    public ProductDto convertProductToDto(Product product) {
-        List<ProductImageDto> productImageDtos = new ArrayList<>();
-        List<ProductDetailDto> productDetailDtos = new ArrayList<>();
-        List<ProductImage> productImages = productImageService.getProductImagesByProductId(product.getId());
-        productImages.forEach(productImage -> productImageDtos.add(productImage.convertToDto()));
-        List<ProductDetail> productDetails = productDetailService.getProductDetailsByProductId(product.getId());
-        productDetails.forEach(productDetail -> productDetailDtos.add(productDetail.convertToDto()));
-        return ProductDto.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .slug(product.getSlug())
-                .brand(product.getBrand() == null ? null : product.getBrand().convertToDto())
-                .rating(product.getRating())
-                .description(product.getDescription())
-                .images(productImageDtos)
-                .productDetails(productDetailDtos)
-                .category(product.getCategory() == null ? null : product.getCategory().convertToDto())
-                .flavor(product.getFlavor() == null ? null : product.getFlavor().convertToDto())
-                .sale(product.getSale() == null ? null : product.getSale().convertToDto())
-                .origin(product.getOrigin() == null ? null : product.getOrigin().convertToDto())
-                .vendor(product.getVendor() == null ? null : product.getVendor().convertToDto())
+    public PageResponse<ProductResponse> getProductsPagingBySpecial(int page, ProductFilterRequest request){
+        List<Product> list = productRepository.findByIsSpecial(true).orElse(List.of());
+        List<ProductResponse> products = list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return doPagination(page, products, request);
+    }
+
+    public PageResponse<ProductResponse> getProductsPagingByLimited(int page, ProductFilterRequest request){
+        List<Product> list = productRepository.findByIsLimited(true).orElse(List.of());
+        List<ProductResponse> products = list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return doPagination(page, products, request);
+    }
+
+    public PageResponse<ProductResponse> getProductsPagingByBestSeller(int page, ProductFilterRequest request){
+        List<Product> list = productRepository.findBestSellerProducts().orElse(List.of());
+        List<ProductResponse> products = list.stream()
+                .map(productMapper::toProductResponse)
+                .toList();
+        return doPagination(page, products, request);
+    }
+
+    private PageResponse<ProductResponse> doPagination(int page, List<ProductResponse> list ,ProductFilterRequest request){
+        int pageSize = 12;
+        request = request == null ? new ProductFilterRequest() : request;
+        List<ProductResponse> filteredProducts = applyFilters(list, request);
+        applySorting(filteredProducts, request.getSort());
+        int totalElements = filteredProducts.size();
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+        int start = Math.min((page - 1) * pageSize, totalElements);
+        int end = Math.min(start + pageSize, totalElements);
+        List<ProductResponse> data = filteredProducts.subList(start, end);
+        return PageResponse.<ProductResponse>builder()
+                .currentPage(page)
+                .pageSize(pageSize)
+                .totalPages(totalPages)
+                .totalElements(totalElements)
+                .data(data)
                 .build();
     }
 
+    private List<ProductResponse> applyFilters(List<ProductResponse> list, ProductFilterRequest request){
+        log.info("Request: {}", request.toString());
+        Predicate<ProductResponse> flavorFilter = product -> request.getFlavor().isEmpty()
+                || request.getFlavor().contains(product.getFlavor().getName());
+        Predicate<ProductResponse> categoryFilter = product -> request.getCategory().isEmpty()
+                || request.getCategory().contains(product.getCategory().getName());
+        Predicate<ProductResponse> brandFilter = product -> request.getBrand().isEmpty()
+                || request.getBrand().contains(product.getBrand().getName());
+        Predicate<ProductResponse> originFilter = product -> request.getOrigin().isEmpty()
+                || request.getOrigin().contains(product.getProductOrigin().getName());
+        Predicate<ProductResponse> vendorFilter = product -> request.getVendor().isEmpty()
+                || request.getVendor().contains(product.getVendor().getName());
 
-    public Page<ProductDto> convertListDtoToPage(List<ProductDto> products, Pageable pageable){
-        int totalPage = products.size() / pageable.getPageSize();
-        if(pageable.getPageNumber() < 0){
-            pageable = PageRequest.of(0, 12);
-        } else if(pageable.getPageNumber() >= totalPage) {
-            pageable = PageRequest.of(totalPage, 12);
+        return list.stream()
+                .filter(flavorFilter
+                        .and(categoryFilter)
+                        .and(brandFilter)
+                        .and(originFilter)
+                        .and(vendorFilter))
+                .collect(Collectors.toList());
+
+    }
+
+    private void applySorting(List<ProductResponse> list, String sort){
+        log.info("Sort: {}", sort);
+        Comparator<ProductResponse> comparator = switch (sort){
+            case "product_name_asc" -> Comparator.comparing(ProductResponse::getName);
+            case "product_name_desc" -> Comparator.comparing(ProductResponse::getName).reversed();
+            case "price_asc" -> Comparator.comparing(product-> product.getProductDetails().get(0).getPrice());
+            case "price_desc" -> Comparator.comparing((ProductResponse product)-> product.getProductDetails().get(0).getPrice()).reversed();
+            default -> null;
+        };
+        if(comparator != null){
+            list.sort(comparator);
+
         }
-       int start = (int) pageable.getOffset(); //lay offset 0,12,24,36,...
-       int end = Math.min((start + pageable.getPageSize()), products.size()); //lay phan tu luon = 12
-       List<ProductDto> sublist = products.subList(start, end);//cat danh sach
-       return new PageImpl<>(sublist, pageable, products.size()); // cai lol nay khong cho sort ?? deo hieu!
     }
 
 }

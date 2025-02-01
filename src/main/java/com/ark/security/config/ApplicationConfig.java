@@ -1,5 +1,8 @@
 package com.ark.security.config;
 
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
+import com.ark.security.repository.user.UserRepository;
 import com.ark.security.service.user.UserService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +25,10 @@ import org.apache.hc.core5.ssl.TrustStrategy;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -45,10 +52,6 @@ import java.util.TimeZone;
 @EnableWebMvc
 @RequiredArgsConstructor
 public class ApplicationConfig{
-
-
-    private final UserService userService;
-
     @Bean
     public RestTemplate restTemplate() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
@@ -75,29 +78,30 @@ public class ApplicationConfig{
     }
 
     @Bean
-    public UserDetailsService userDetailsService(){
-        return userService;
+    public UserDetailsService userDetailsService(UserRepository userRepository){
+        return username -> userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Bean
     public ObjectMapper objectMapper(){
         ObjectMapper mapper = new ObjectMapper();
-        mapper.findAndRegisterModules();
-        mapper.coercionConfigDefaults()
-                .setAcceptBlankAsEmpty(true)
-                .setCoercion(CoercionInputShape.EmptyObject, CoercionAction.AsNull)
-                .setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull);
-        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
+        mapper.registerModule(new JavaTimeModule());
+//        mapper.coercionConfigDefaults()
+//                .setAcceptBlankAsEmpty(true)
+//                .setCoercion(CoercionInputShape.EmptyObject, CoercionAction.AsNull)
+//                .setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull);
+//        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+//        mapper.configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
         return mapper;
     }
 
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService){
         DaoAuthenticationProvider daoAuthProvider = new DaoAuthenticationProvider();
-        daoAuthProvider.setUserDetailsService(userDetailsService());
+        daoAuthProvider.setUserDetailsService(userDetailsService);
         daoAuthProvider.setPasswordEncoder(passwordEncoder());
         return daoAuthProvider;
     }
@@ -110,6 +114,21 @@ public class ApplicationConfig{
     @Bean
      public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory){
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+
+        return template;
     }
 
 
