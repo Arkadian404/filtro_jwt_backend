@@ -52,6 +52,7 @@ public class User implements UserDetails {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean enabled;
+    private String accountId;
 
     @OneToMany(mappedBy = "user")
     @JsonBackReference

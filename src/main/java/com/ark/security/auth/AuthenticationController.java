@@ -2,6 +2,8 @@ package com.ark.security.auth;
 
 
 import com.ark.security.config.JwtService;
+import com.ark.security.exception.AppException;
+import com.ark.security.exception.ErrorCode;
 import com.ark.security.exception.SuccessMessage;
 import com.ark.security.models.Employee;
 import com.ark.security.models.user.User;
@@ -10,11 +12,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -22,6 +27,7 @@ import java.util.Date;
 @SecurityRequirement(name = "BearerAuth")
 public class AuthenticationController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
     private final AuthenticationService service;
     private final UserService userService;
     private final JwtService jwtService;
@@ -55,6 +61,17 @@ public class AuthenticationController {
             return ResponseEntity.ok(authenticate);
     }
 
+
+    @GetMapping("/social-login")
+    public ResponseEntity<String> getAuthenticationUrl(){
+        return ResponseEntity.ok(service.generateAuthUrl());
+    }
+
+    @GetMapping("/social/callback")
+    public ResponseEntity<AuthenticationResponse> callback(@RequestParam String code){
+        AuthenticationResponse response = service.authenticateWithGoogle(code);
+        return ResponseEntity.ok(response);
+    }
 
 
     @GetMapping("/current-user")

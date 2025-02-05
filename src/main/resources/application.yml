@@ -51,3 +51,15 @@ application:
 #      vnp_HashSecret: ND5W6RV8BWDVW0RQ65FRQ58E3OBPGKEG
       vnp_TmnCode: ZR6JX760
       vnp_HashSecret: Q5W93OC0WHLR5N47OJ8A7KLJ8IYV5TLE
+
+
+
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: secret
+            client-secret: verysecret
+            redirect-uri: http://localhost:4200/auth/google/callback
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            scope: email profile openid
